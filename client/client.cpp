@@ -1,119 +1,54 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <string.h>
-#include <netinet/in.h>
+#include <bits/stdc++.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
 #include <arpa/inet.h>
-#include <sys/types.h>
-
-#include <event2/event.h>
-#include <event2/bufferevent.h>
-
-#define SERV_PORT 8888
-#define MAX_LINE 1024
-
-void cmd_msg_cb(int fd, short event, void *arg);
-void read_cb(struct bufferevent *bev, void *arg);
-void error_cb(struct bufferevent *bev, short event, void *arg);
-
-int main(int argc, char *argv[])
+#include <thread>
+#include "../src/message.h"
+const int SERVER_PORT = 8888;
+const int BUFFER_SIZE = 100;
+void recv_func(int fd)
 {
-    if (argc < 2)
-    {
-        perror("usage: echocli <IPadress>");
-        return 1;
-    }
-
-    evutil_socket_t sockfd;
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    {
-        perror("socket\n");
-        return 1;
-    }
-
-    sockaddr_in servaddr;
-    bzero(&servaddr, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(SERV_PORT);
-    if (inet_pton(AF_INET, argv[1], &servaddr.sin_addr) < 1)
-    {
-        perror("inet_ntop\n");
-        return 1;
-    }
-    if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
-    {
-        perror("connect\n");
-        return 1;
-    }
-    evutil_make_socket_nonblocking(sockfd);
-
-    printf("Connect to server sucessfully!\n");
-    // build event base
-    event_base *base = event_base_new();
-    if (base == NULL)
-    {
-        perror("event_base\n");
-        return 1;
-    }
-    const char *eventMechanism = event_base_get_method(base);
-    printf("Event mechanism used is %s\n", eventMechanism);
-    printf("sockfd = %d\n", sockfd);
-
-    bufferevent *bev = bufferevent_socket_new(base, sockfd, BEV_OPT_CLOSE_ON_FREE);
-
-    event *ev_cmd;
-    ev_cmd = event_new(base, STDIN_FILENO, EV_READ | EV_PERSIST, cmd_msg_cb, (void *)bev);
-    event_add(ev_cmd, NULL);
-
-    bufferevent_setcb(bev, read_cb, NULL, error_cb, (void *)ev_cmd);
-    bufferevent_enable(bev, EV_READ | EV_PERSIST);
-
-    event_base_dispatch(base);
-
-    printf("The End.");
-    return 0;
-}
-
-void cmd_msg_cb(int fd, short event, void *arg)
-{
-    char msg[MAX_LINE];
-    int nread = read(fd, msg, sizeof(msg));
-    if (nread < 0)
-    {
-        perror("stdio read fail\n");
-        return;
-    }
-
-    bufferevent *bev = (struct bufferevent *)arg;
-    bufferevent_write(bev, msg, nread);
-}
-
-void read_cb(struct bufferevent *bev, void *arg)
-{
-    char line[MAX_LINE + 1];
+    // 仅用于显示server返回信息
     int n;
-    evutil_socket_t fd = bufferevent_getfd(bev);
-
-    while ((n = bufferevent_read(bev, line, MAX_LINE)) > 0)
+    message m;
+    while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0)
     {
-        line[n] = '\0';
-        printf("fd = %u, read from server: %s", fd, line);
+        if (m.type_ == MSG_TYPE_EXIT)
+        {
+            printf("exit success\n");
+            break;
+        }
+        else
+            printf("recv_message:%s\n", m.message_);
     }
 }
-
-void error_cb(struct bufferevent *bev, short e, void *arg)
+int main(int argc, char **argv)
 {
-    evutil_socket_t fd = bufferevent_getfd(bev);
-    printf("fd = %u, ", fd);
-    if (e & BEV_EVENT_TIMEOUT)
-        printf("Time out.\n"); // if bufferevent_set_timeouts() is called
-    else if (e & BEV_EVENT_EOF)
-        printf("Connection closed.\n");
-    else if (e & BEV_EVENT_ERROR)
-        printf("Some other error.\n");
-    bufferevent_free(bev);
-    event *ev = (event *)arg;
-    event_free(ev);
+    int sock_fd, n;
+    char buffer[BUFFER_SIZE];
+    sockaddr_in server_addr;
+    if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+        return EXIT_FAILURE;
+    bzero(&server_addr, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(SERVER_PORT);
+    if (inet_pton(AF_INET, argv[1], &server_addr.sin_addr) <= 0)
+        return EXIT_FAILURE;
+    if (connect(sock_fd, (sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+        return EXIT_FAILURE;
+    std::thread recv_thread(recv_func, sock_fd);
+    recv_thread.detach();
+    while (true)
+    {
+        printf("client:");
+        std::cin.getline(buffer, BUFFER_SIZE);
+        if (strcmp(buffer, "") != 0)
+        {
+            message m(MSG_TYPE_REQUEST, "");
+            strcpy(m.message_, buffer);
+            write(sock_fd, reinterpret_cast<char *>(&m), sizeof(m));
+        }
+    }
+    return EXIT_SUCCESS;
 }

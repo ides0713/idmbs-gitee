@@ -1,132 +1,56 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <assert.h>
+#include <bits/stdc++.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <unistd.h>
-#include <string.h>
-
-#include <event2/event.h>
-#include <event2/bufferevent.h>
-
-#define LISTEN_PORT 8888
-#define LISTEN_BACKLOG 32
-#define MAX_LINE 256
-
-void do_accept(evutil_socket_t listener, short event, void *arg);
-void read_cb(bufferevent *bev, void *arg);
-void error_cb(bufferevent *bev, short event, void *arg);
-void write_cb(bufferevent *bev, void *arg);
-
+#include <arpa/inet.h>
+#include <thread>
+#include "../src/message.h"
+const int SERVER_PORT = 8888;
+const int BUFFER_SIZE = 100;
+const int MAX_CONNECTS = 10;
+void send_func(const char *message, int fd)
+{
+    char buffer[BUFFER_SIZE];
+    strcpy(buffer, message);
+    write(fd, buffer, BUFFER_SIZE);
+}
+void recv_func(int fd)
+{
+    int n, ret_val;
+    message m;
+    while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0)
+    {
+        if(m.type_==MSG_TYPE_EXIT)
+        {
+            message m(MSG_TYPE_EXIT, "exit");
+            write(fd, reinterpret_cast<char *>(&m), sizeof(m));
+            break;
+        }
+        else{
+            printf("from client:%s\n",m.message_);
+            //detach a thread to do sql parsing and other work
+        }
+    }
+    close(fd);
+}
 int main()
 {
-    // int ret;
-    evutil_socket_t listener; // 用于跨平台表示socket的ID（在Linux下表示的是其文件描述符）
-    listener = socket(AF_INET, SOCK_STREAM, 0);
-    assert(listener > 0);
-    evutil_make_listen_socket_reuseable(listener);
-
-    sockaddr_in sin;
-    sin.sin_family = AF_INET;
-    sin.sin_addr.s_addr = 0;
-    sin.sin_port = htons(LISTEN_PORT);
-
-    if (bind(listener, (struct sockaddr *)&sin, sizeof(sin)) < 0)
+    int listen_fd, conn_fd;
+    sockaddr_in serve_addr;
+    listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+    bzero(&serve_addr, sizeof(serve_addr));
+    serve_addr.sin_family = AF_INET;
+    serve_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serve_addr.sin_port = htons(SERVER_PORT);
+    bind(listen_fd, (sockaddr *)&serve_addr, sizeof(serve_addr));
+    listen(listen_fd, MAX_CONNECTS);
+    const int port = 3306;
+    while (true)
     {
-        perror("bind");
-        return 1;
+        conn_fd = accept(listen_fd, (sockaddr *)NULL, NULL);
+        // int n = read(conn_fd, reinterpret_cast<char *>(&l), sizeof(l));
+        std::thread recv_thread(recv_func, conn_fd);
+        recv_thread.detach();
     }
-
-    if (listen(listener, LISTEN_BACKLOG) < 0)
-    {
-        perror("listen");
-        return 1;
-    }
-
-    printf("Listening...\n");
-    /* 用于跨平台将socket设置为非阻塞,使用bufferevent需要 */
-    evutil_make_socket_nonblocking(listener);
-    // 主要记录事件的相关属性
-    struct event_base *base = event_base_new();
-    assert(base != NULL);
-    /* Register listen event. */
-    struct event *listen_event;
-    listen_event = event_new(base, listener, EV_READ | EV_PERSIST, do_accept, (void *)base);
-    event_add(listen_event, NULL);
-    /* Start the event loop. */
-    event_base_dispatch(base);
-
-    printf("The End.");
-    // close(listener);
     return 0;
-}
-
-void do_accept(evutil_socket_t listener, short event, void *arg)
-{
-    event_base *base = (struct event_base *)arg;
-    evutil_socket_t fd;
-    sockaddr_in sin;
-    socklen_t slen = sizeof(sin);
-    fd = accept(listener, (struct sockaddr *)&sin, &slen);
-    if (fd < 0)
-    {
-        perror("accept");
-        return;
-    }
-    if (fd > FD_SETSIZE)
-    { // 这个if是参考了那个ROT13的例子，貌似是官方的疏漏，从select-based例子里抄过来忘了改
-        perror("fd > FD_SETSIZE\n");
-        return;
-    }
-
-    printf("ACCEPT: fd = %u\n", fd);
-    // 关联该sockfd，托管给event_base.
-    bufferevent *bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
-    // 设置读写对应的回调函数
-    bufferevent_setcb(bev, read_cb, NULL, error_cb, arg);
-    // 启用读写事件,其实是调用了event_add将相应读写事件加入事件监听队列poll.
-    // 如果相应事件不置为true，bufferevent是不会读写数据的
-    bufferevent_enable(bev, EV_READ | EV_PERSIST);
-    //    进入bufferevent_setcb回调函数：
-    //    在readcb里面从input中读取数据，处理完毕后填充到output中；
-    //    writecb对于服务端程序，只需要readcb就可以了，可以置为NULL；
-    //    errorcb用于处理一些错误信息
-}
-
-void read_cb(struct bufferevent *bev, void *arg)
-{
-    char line[MAX_LINE + 1];
-    int n;
-    evutil_socket_t fd = bufferevent_getfd(bev);
-
-    while (n = bufferevent_read(bev, line, MAX_LINE), n > 0)
-    {
-        line[n] = '\0';
-        printf("fd=%u, Server gets the message from client read line: %s\n", fd, line);
-        // 直接将读取的结果,不做任何修改(本文是跳过前两个字符),直接返回给客户端
-        bufferevent_write(bev, line + 2, n); // 方案1
-    }
-}
-
-void write_cb(struct bufferevent *bev, void *arg)
-{
-    printf("HelloWorld\n"); // 直接空代码即可，因为这里并不会被触发调用
-}
-
-void error_cb(struct bufferevent *bev, short event, void *arg)
-{
-    evutil_socket_t fd = bufferevent_getfd(bev);
-    printf("fd = %u, ", fd);
-    if (event & BEV_EVENT_TIMEOUT)
-    {
-        printf("Timed out\n"); // if bufferevent_set_timeouts() called
-    }
-    else if (event & BEV_EVENT_EOF)
-    {
-        printf("connection closed\n");
-    }
-    else if (event & BEV_EVENT_ERROR)
-    {
-        printf("some other error\n");
-    }
-    bufferevent_free(bev);
 }
