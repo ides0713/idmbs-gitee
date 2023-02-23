@@ -1,7 +1,6 @@
 project(idbms LANGUAGES CXX)
 link_directories("/usr/lib/x86_64-linux-gnu")
 include_directories("/usr/local/include")
-include_directories("root/idbms/src")
 add_executable(server server/server.cpp src/message.h)
 add_executable(client client/client.cpp src/message.h)
 target_link_libraries(server -levent -lpthread)
