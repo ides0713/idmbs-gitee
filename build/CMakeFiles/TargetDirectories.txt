@@ -1,0 +1,4 @@
+/home/ubuntu/idbms/build/CMakeFiles/rebuild_cache.dir
+/home/ubuntu/idbms/build/CMakeFiles/edit_cache.dir
+/home/ubuntu/idbms/build/CMakeFiles/client.dir
+/home/ubuntu/idbms/build/CMakeFiles/server.dir

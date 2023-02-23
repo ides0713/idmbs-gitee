@@ -1,0 +1,5 @@
+project(dbcourse LANGUAGES CXX)
+link_directories("/usr/lib/x86_64-linux-gnu")
+add_executable(server server/server.cpp)
+add_executable(client client/client.cpp)
+target_link_libraries(server -levent)
