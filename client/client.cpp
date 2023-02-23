@@ -11,7 +11,7 @@
 #include <event2/event.h>
 #include <event2/bufferevent.h>
  
-#define SERV_PORT 9999
+#define SERV_PORT 8888
 #define MAX_LINE 1024
  
 void cmd_msg_cb(int fd, short event, void *arg);
