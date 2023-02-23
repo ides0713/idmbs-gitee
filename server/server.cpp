@@ -8,7 +8,7 @@
 #include <event2/event.h>
 #include <event2/bufferevent.h>
  
-#define LISTEN_PORT 8888
+#define LISTEN_PORT 9999
 #define LISTEN_BACKLOG 32
 #define MAX_LINE    256
  
@@ -23,6 +23,7 @@ int main()
     evutil_socket_t listener;//用于跨平台表示socket的ID（在Linux下表示的是其文件描述符）
     listener = socket(AF_INET, SOCK_STREAM, 0);
     assert(listener > 0);
+    //用于跨平台将socket设置为可重用（实际上是将端口设为可重用
     evutil_make_listen_socket_reuseable(listener);
  
     struct sockaddr_in sin;
@@ -82,7 +83,10 @@ void do_accept(evutil_socket_t listener, short event, void *arg)
     //启用读写事件,其实是调用了event_add将相应读写事件加入事件监听队列poll.
     //如果相应事件不置为true，bufferevent是不会读写数据的
     bufferevent_enable(bev, EV_READ|EV_PERSIST);
-
+//    进入bufferevent_setcb回调函数：
+//    在readcb里面从input中读取数据，处理完毕后填充到output中；
+//    writecb对于服务端程序，只需要readcb就可以了，可以置为NULL；
+//    errorcb用于处理一些错误信息
 }
  
 void read_cb(struct bufferevent *bev, void *arg)
