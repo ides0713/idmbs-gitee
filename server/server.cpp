@@ -1,12 +1,14 @@
 // #include <bits/stdc++.h>
 // #include <stdio.h>
 #include <sys/socket.h>
+#include <string.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <thread>
+#include "parser/parse.h"
 #include "../src/message.h"
-#include "parser/yacc_sql.cpp"
+// #include "parser/yacc_sql.cpp"
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 const int MAX_CONNECTS = 10;
@@ -64,6 +66,6 @@ int main()
     // }
     char buffer[100];
     strcpy(buffer,"heat on heat on heat off");
-    sql_parse(buffer);
+    parse(buffer);
     return 0;
 }
