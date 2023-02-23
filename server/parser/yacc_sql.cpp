@@ -1557,18 +1557,16 @@ yyreturn:
 #line 41 "yacc_sql.y"
 
 //_____________________________________________________________________
-extern void scan_string(const char *str, yyscan_t scanner);
+// extern void scan_string(const char *str, yyscan_t scanner);
 
 // Query* sqls
 int sql_parse(const char *s){
-	ParserContext context;
-	memset(&context, 0, sizeof(context));
-
-	yyscan_t scanner;
-	yylex_init_extra(&context, &scanner);
-	// context.ssql = sqls;
-	scan_string(s, scanner);
-	int result = yyparse(scanner);
-	yylex_destroy(scanner);
+	// ParserContext context;
+	// memset(&context, 0, sizeof(context));
+	YY_BUFFER_STATE bp = yy_scan_string(s);
+    yy_switch_to_buffer(bp);
+	int result = yyparse();
+	yy_delete_buffer(bp);
+	yylex_destroy();
 	return result;
 }

@@ -1786,6 +1786,6 @@ void yyfree (void * ptr )
 
 #line 12 "lex_sql.l"
 
-void scan_string(const char *str, yyscan_t scanner) {
-  yy_switch_to_buffer(yy_scan_string(str, scanner), scanner);
-}
+// void scan_string(const char *str, yyscan_t scanner) {
+//   yy_switch_to_buffer(yy_scan_string(str, scanner), scanner);
+// }
