@@ -20,17 +20,24 @@ void recv_func(int fd)
     message m;
     while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0)
     {
-        if(m.type_==MSG_TYPE_EXIT)
-        {
-            message m(MSG_TYPE_EXIT, "exit");
-            write(fd, reinterpret_cast<char *>(&m), sizeof(m));
+        if (n == 0)
             break;
-        }
-        else{
-            printf("from client:%s\n",m.message_);
-            //detach a thread to do sql parsing and other work
+        else
+        {
+            if (m.type_ == MSG_TYPE_EXIT)
+            {
+                message m(MSG_TYPE_EXIT, "exit");
+                write(fd, reinterpret_cast<char *>(&m), sizeof(m));
+                break;
+            }
+            else
+            {
+                printf("from client:%s\n", m.message_);
+                // detach a thread to do sql parsing and other work
+            }
         }
     }
+    printf("disconnect from conn_fd:%d\n",fd);
     close(fd);
 }
 int main()
@@ -44,10 +51,11 @@ int main()
     serve_addr.sin_port = htons(SERVER_PORT);
     bind(listen_fd, (sockaddr *)&serve_addr, sizeof(serve_addr));
     listen(listen_fd, MAX_CONNECTS);
-    const int port = 3306;
+    printf("listening......\n");
     while (true)
     {
         conn_fd = accept(listen_fd, (sockaddr *)NULL, NULL);
+        printf("connect from conn_fd:%d\n", conn_fd);
         // int n = read(conn_fd, reinterpret_cast<char *>(&l), sizeof(l));
         std::thread recv_thread(recv_func, conn_fd);
         recv_thread.detach();

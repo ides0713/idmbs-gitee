@@ -9,7 +9,6 @@ const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 void recv_func(int fd)
 {
-    // 仅用于显示server返回信息
     int n;
     message m;
     while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0)
@@ -22,6 +21,7 @@ void recv_func(int fd)
         else
             printf("recv_message:%s\n", m.message_);
     }
+    close(fd);
 }
 int main(int argc, char **argv)
 {
@@ -45,9 +45,18 @@ int main(int argc, char **argv)
         std::cin.getline(buffer, BUFFER_SIZE);
         if (strcmp(buffer, "") != 0)
         {
-            message m(MSG_TYPE_REQUEST, "");
-            strcpy(m.message_, buffer);
-            write(sock_fd, reinterpret_cast<char *>(&m), sizeof(m));
+            if (strcmp(buffer, "exit") == 0 or strcmp(buffer, "EXIT") == 0)
+            {
+                message m(MSG_TYPE_EXIT, "exit");
+                write(sock_fd, reinterpret_cast<char *>(&m), sizeof(m));
+                break;
+            }
+            else
+            {
+                message m(MSG_TYPE_REQUEST, "");
+                strcpy(m.message_, buffer);
+                write(sock_fd, reinterpret_cast<char *>(&m), sizeof(m));
+            }
         }
     }
     return EXIT_SUCCESS;
