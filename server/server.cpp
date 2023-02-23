@@ -52,7 +52,7 @@ int main()
     serve_addr.sin_port = htons(SERVER_PORT);
     bind(listen_fd, (sockaddr *)&serve_addr, sizeof(serve_addr));
     listen(listen_fd, MAX_CONNECTS);
-    printf("listening......\n");
+    printf("start listening......\n");
     while (true)
     {
         conn_fd = accept(listen_fd, (sockaddr *)NULL, NULL);
