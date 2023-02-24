@@ -2,8 +2,6 @@
 // #define __SERVER_PARSE_H__
 #pragma once
 #include <stdio.h>
-// #include "parse_defs.h"
+#include "parse_defs.h"
 int parse(const char *st);
-
-int test_func();
 // #endif

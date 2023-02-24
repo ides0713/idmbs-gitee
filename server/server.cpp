@@ -6,9 +6,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <thread>
-#include "parser/parse.h"
-// #include "parser/yacc_sql.hpp"
-// #include "parser/lex_sql.h"
+#include "parse/parse_main.h"
 #include "../src/message.h"
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
@@ -65,10 +63,8 @@ int main()
     //     std::thread recv_thread(recv_func, conn_fd);
     //     recv_thread.detach();
     // }
-
-    test_func();
-    // char buffer[100];
-    // strcpy(buffer,"heat on heat on heat off");
-    // parse(buffer);
+    char buffer[100];
+    strcpy(buffer,"select name from student");
+    parse(buffer);
     return 0;
 }
