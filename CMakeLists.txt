@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(idbms LANGUAGES CXX)
 link_directories("/usr/lib/x86_64-linux-gnu")
 include_directories("/usr/local/include")

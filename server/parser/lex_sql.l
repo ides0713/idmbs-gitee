@@ -1,6 +1,17 @@
 %{
+
+#include<string.h>
+#include<stdio.h>
 #include "yacc_sql.hpp"
+
+// #if YYDEBUG > 0
+// #define debug_printf  printf
+// #else
+// #define debug_printf(...)
+// #endif // YYDEBUG
 %}
+%option case-insensitive
+
 %%
 [0-9]+ return NUMBER;
 heat return TOKHEAT;
@@ -10,6 +21,3 @@ temperature return TOKTEMPERATURE;
 n /* ignore end of line */;
 [ t]+ /* ignore whitespace */
 %%
-// void scan_string(const char *str, yyscan_t scanner) {
-//   yy_switch_to_buffer(yy_scan_string(str, scanner), scanner);
-// }

@@ -7,8 +7,9 @@
 #include <arpa/inet.h>
 #include <thread>
 #include "parser/parse.h"
+// #include "parser/yacc_sql.hpp"
+// #include "parser/lex_sql.h"
 #include "../src/message.h"
-// #include "parser/yacc_sql.cpp"
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 const int MAX_CONNECTS = 10;
@@ -64,8 +65,10 @@ int main()
     //     std::thread recv_thread(recv_func, conn_fd);
     //     recv_thread.detach();
     // }
-    char buffer[100];
-    strcpy(buffer,"heat on heat on heat off");
-    parse(buffer);
+
+    test_func();
+    // char buffer[100];
+    // strcpy(buffer,"heat on heat on heat off");
+    // parse(buffer);
     return 0;
 }

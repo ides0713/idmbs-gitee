@@ -2,7 +2,11 @@
 
 #include "yacc_sql.hpp"
 #include "lex_sql.h"
+#include "parse_defs.h"
 
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
 //在lex.yy.c里定义，会被yyparse()调用。在此声明消除编译和链接错误。
 extern int yylex(void); 
 // 在此声明，消除yacc生成代码时的告警
@@ -41,11 +45,8 @@ TOKTARGET TOKTEMPERATURE NUMBER
 %%
 //_____________________________________________________________________
 // extern void scan_string(const char *str, yyscan_t scanner);
-
-// Query* sqls
 int sql_parse(const char *s){
-	// ParserContext context;
-	// memset(&context, 0, sizeof(context));
+	printf("YACC_SQL.Y:SQL_PARSE");
 	YY_BUFFER_STATE bp = yy_scan_string(s);
     yy_switch_to_buffer(bp);
 	int result = yyparse();

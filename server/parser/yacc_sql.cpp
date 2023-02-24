@@ -71,7 +71,11 @@
 
 #include "yacc_sql.hpp"
 #include "lex_sql.h"
+#include "parse_defs.h"
 
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
 //在lex.yy.c里定义，会被yyparse()调用。在此声明消除编译和链接错误。
 extern int yylex(void); 
 // 在此声明，消除yacc生成代码时的告警
@@ -86,7 +90,7 @@ void yyerror(const char *s)
 	printf("[error] %sn", s);
 }
 
-#line 90 "yacc_sql.cpp"
+#line 94 "yacc_sql.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -517,7 +521,7 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    24,    24,    25,    28,    28,    31,    37
+       0,    28,    28,    29,    32,    32,    35,    41
 };
 #endif
 
@@ -1306,23 +1310,23 @@ yyreduce:
   switch (yyn)
     {
   case 6:
-#line 32 "yacc_sql.y"
+#line 36 "yacc_sql.y"
 {
 	printf("tHeat turned on or offn");
 }
-#line 1314 "yacc_sql.cpp"
+#line 1318 "yacc_sql.cpp"
     break;
 
   case 7:
-#line 38 "yacc_sql.y"
+#line 42 "yacc_sql.y"
 {
 	printf("tTemperature setn");
 }
-#line 1322 "yacc_sql.cpp"
+#line 1326 "yacc_sql.cpp"
     break;
 
 
-#line 1326 "yacc_sql.cpp"
+#line 1330 "yacc_sql.cpp"
 
       default: break;
     }
@@ -1554,15 +1558,12 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 41 "yacc_sql.y"
+#line 45 "yacc_sql.y"
 
 //_____________________________________________________________________
 // extern void scan_string(const char *str, yyscan_t scanner);
-
-// Query* sqls
 int sql_parse(const char *s){
-	// ParserContext context;
-	// memset(&context, 0, sizeof(context));
+	printf("YACC_SQL.Y:SQL_PARSE");
 	YY_BUFFER_STATE bp = yy_scan_string(s);
     yy_switch_to_buffer(bp);
 	int result = yyparse();
