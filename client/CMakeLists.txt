@@ -16,7 +16,7 @@ target_link_libraries(client
 )
 aux_source_directory(../src src_dir_var)
 target_sources(client
-    PRIVATE
+    PUBLIC
         ${src_dir_var}
 )
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../bin)
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../../bin)

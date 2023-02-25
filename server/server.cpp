@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <thread>
 #include "parse/parse_main.h"
-#include "../src/message.h"
+#include "../src/commonDefs.h"
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 const int MAX_CONNECTS = 10;
@@ -19,7 +19,9 @@ void sendFunc(const char *message, int fd)
 }
 void pStart(const char * sql,int sock_fd){
     //assert(sock_fd>0);
-    parse(sql);
+    returnInfo return_info;
+    QueryInfo* parse_res=nullptr;
+    return_info=parseMain(sql,parse_res);
 }
 void recvFunc(int fd)
 {
@@ -66,7 +68,7 @@ int main()
     //     conn_fd = accept(listen_fd, (sockaddr *)NULL, NULL);
     //     printf("connect from conn_fd:%d\n", conn_fd);
     //     // int n = read(conn_fd, reinterpret_cast<char *>(&l), sizeof(l));
-    //     std::thread recv_thread(recv_func, conn_fd);
+    //     std::thread recv_thread(recvFunc, conn_fd);
     //     recv_thread.detach();
     // }
     char buffer[100];
