@@ -7,7 +7,7 @@
 #include "../src/message.h"
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
-void recv_func(int fd)
+void recvFunc(int fd)
 {
     int n;
     message m;
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     if (connect(sock_fd, (sockaddr *)&server_addr, sizeof(server_addr)) < 0)
         return EXIT_FAILURE;
-    std::thread recv_thread(recv_func, sock_fd);
+    std::thread recv_thread(recvFunc, sock_fd);
     recv_thread.detach();
     while (true)
     {

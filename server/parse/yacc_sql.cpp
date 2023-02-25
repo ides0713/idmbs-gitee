@@ -76,23 +76,27 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-typedef struct ParserContext {
-//   Query * ssql;
+
+struct ParserContext {
+	QueryInfo * query_info;
+	size_t select_length,condition_length,from_length,value_length;
+	Condition conditions[MAX_CONDITIONS_NUM];
+	CompOp comp_op;
 //   size_t select_length,condition_length,from_length,value_length,value_tuple_num;
 //   Value values[MAX_NUM];
 //   Condition conditions[MAX_NUM];
 //   CompOp comp;
-  char rel_id[REL_ID_MAX_LENGTH];
-} ParserContext;
-//在lex.yy.c里定义，会被yyparse()调用。在此声明消除编译和链接错误。
+  	char rel_id[MAX_ID_LENGTH];
+};
+
 extern int yylex(void); 
-// 在此声明，消除yacc生成代码时的告警
-extern int yyparse(void); 
+extern int yyparse(void);
+
 int yywrap()
 {
 	return 1;
 }
-// 该函数在y.tab.c里会被调用，需要在此定义
+
 void yyerror(yyscan_t scanner, const char *str)
 {
   ParserContext *context = (ParserContext *)(yyget_extra(scanner));
@@ -107,7 +111,14 @@ void yyerror(yyscan_t scanner, const char *str)
   printf("parse sql failed. error=%s", str);
 }
 
-#line 111 "yacc_sql.cpp"
+ParserContext *get_context(yyscan_t scanner)
+{
+  return (ParserContext *)yyget_extra(scanner);
+}
+
+#define CONTEXT get_context(scanner)
+
+#line 122 "yacc_sql.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -212,17 +223,17 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 50 "yacc_sql.y"
+#line 61 "yacc_sql.y"
 
-//   struct _Attr *attr;
-//   struct _Condition *condition1;
-//   struct _Value *value1;
-  char* string;
-  int number;
-  float floats;
-  char *position;
+	struct RelAttr* attr;
+	struct Condition* condition;
+	struct Value* value;
+	char* string;
+	int number;
+	float floats;
+	char* position;
 
-#line 226 "yacc_sql.cpp"
+#line 237 "yacc_sql.cpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -599,12 +610,12 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_int8 yyrline[] =
+static const yytype_uint8 yyrline[] =
 {
-       0,    69,    69,    70,    74,    78,    83,    84,    85,    86,
-      87,    88,    89,    90,    91,    93,    95,    97,   100,   101,
-     102,   103,   104,   105,   106,   110,   111,   112,   113,   114,
-     115,   119,   120,   121,   122
+       0,    87,    87,    88,    91,    94,   102,   103,   104,   106,
+     107,   108,   110,   111,   113,   114,   116,   117,   120,   121,
+     122,   123,   124,   125,   126,   129,   130,   131,   132,   133,
+     134,   137,   138,   139,   140
 };
 #endif
 
@@ -1442,163 +1453,167 @@ yyreduce:
   switch (yyn)
     {
   case 5:
-#line 79 "yacc_sql.y"
-        {printf("select statement");}
-#line 1448 "yacc_sql.cpp"
+#line 95 "yacc_sql.y"
+        {
+		test_func(3);
+		printf("lexical semicolon\n");
+		printf("select statement\n");
+	}
+#line 1463 "yacc_sql.cpp"
     break;
 
   case 6:
-#line 83 "yacc_sql.y"
+#line 102 "yacc_sql.y"
             {}
-#line 1454 "yacc_sql.cpp"
+#line 1469 "yacc_sql.cpp"
     break;
 
   case 7:
-#line 84 "yacc_sql.y"
+#line 103 "yacc_sql.y"
                       {}
-#line 1460 "yacc_sql.cpp"
+#line 1475 "yacc_sql.cpp"
     break;
 
   case 8:
-#line 85 "yacc_sql.y"
+#line 104 "yacc_sql.y"
                               {}
-#line 1466 "yacc_sql.cpp"
+#line 1481 "yacc_sql.cpp"
     break;
 
   case 10:
-#line 87 "yacc_sql.y"
+#line 107 "yacc_sql.y"
                              {}
-#line 1472 "yacc_sql.cpp"
+#line 1487 "yacc_sql.cpp"
     break;
 
   case 11:
-#line 88 "yacc_sql.y"
+#line 108 "yacc_sql.y"
                                     {}
-#line 1478 "yacc_sql.cpp"
+#line 1493 "yacc_sql.cpp"
     break;
 
   case 13:
-#line 90 "yacc_sql.y"
+#line 111 "yacc_sql.y"
                             {}
-#line 1484 "yacc_sql.cpp"
+#line 1499 "yacc_sql.cpp"
     break;
 
   case 15:
-#line 93 "yacc_sql.y"
+#line 114 "yacc_sql.y"
                                          {}
-#line 1490 "yacc_sql.cpp"
+#line 1505 "yacc_sql.cpp"
     break;
 
   case 17:
-#line 97 "yacc_sql.y"
+#line 117 "yacc_sql.y"
                                        {}
-#line 1496 "yacc_sql.cpp"
+#line 1511 "yacc_sql.cpp"
     break;
 
   case 18:
-#line 100 "yacc_sql.y"
+#line 120 "yacc_sql.y"
                        {}
-#line 1502 "yacc_sql.cpp"
+#line 1517 "yacc_sql.cpp"
     break;
 
   case 19:
-#line 101 "yacc_sql.y"
+#line 121 "yacc_sql.y"
                            {}
-#line 1508 "yacc_sql.cpp"
+#line 1523 "yacc_sql.cpp"
     break;
 
   case 20:
-#line 102 "yacc_sql.y"
+#line 122 "yacc_sql.y"
                      {}
-#line 1514 "yacc_sql.cpp"
+#line 1529 "yacc_sql.cpp"
     break;
 
   case 21:
-#line 103 "yacc_sql.y"
+#line 123 "yacc_sql.y"
                        {}
-#line 1520 "yacc_sql.cpp"
+#line 1535 "yacc_sql.cpp"
     break;
 
   case 22:
-#line 104 "yacc_sql.y"
+#line 124 "yacc_sql.y"
                               {}
-#line 1526 "yacc_sql.cpp"
+#line 1541 "yacc_sql.cpp"
     break;
 
   case 23:
-#line 105 "yacc_sql.y"
+#line 125 "yacc_sql.y"
                               {}
-#line 1532 "yacc_sql.cpp"
+#line 1547 "yacc_sql.cpp"
     break;
 
   case 24:
-#line 106 "yacc_sql.y"
+#line 126 "yacc_sql.y"
                                   {}
-#line 1538 "yacc_sql.cpp"
+#line 1553 "yacc_sql.cpp"
     break;
 
   case 25:
-#line 110 "yacc_sql.y"
+#line 129 "yacc_sql.y"
            {}
-#line 1544 "yacc_sql.cpp"
+#line 1559 "yacc_sql.cpp"
     break;
 
   case 26:
-#line 111 "yacc_sql.y"
+#line 130 "yacc_sql.y"
          {}
-#line 1550 "yacc_sql.cpp"
+#line 1565 "yacc_sql.cpp"
     break;
 
   case 27:
-#line 112 "yacc_sql.y"
+#line 131 "yacc_sql.y"
          {}
-#line 1556 "yacc_sql.cpp"
+#line 1571 "yacc_sql.cpp"
     break;
 
   case 28:
-#line 113 "yacc_sql.y"
+#line 132 "yacc_sql.y"
          {}
-#line 1562 "yacc_sql.cpp"
+#line 1577 "yacc_sql.cpp"
     break;
 
   case 29:
-#line 114 "yacc_sql.y"
+#line 133 "yacc_sql.y"
          {}
-#line 1568 "yacc_sql.cpp"
+#line 1583 "yacc_sql.cpp"
     break;
 
   case 30:
-#line 115 "yacc_sql.y"
+#line 134 "yacc_sql.y"
          {}
-#line 1574 "yacc_sql.cpp"
+#line 1589 "yacc_sql.cpp"
     break;
 
   case 31:
-#line 119 "yacc_sql.y"
+#line 137 "yacc_sql.y"
           {}
-#line 1580 "yacc_sql.cpp"
+#line 1595 "yacc_sql.cpp"
     break;
 
   case 32:
-#line 120 "yacc_sql.y"
+#line 138 "yacc_sql.y"
                  {}
-#line 1586 "yacc_sql.cpp"
+#line 1601 "yacc_sql.cpp"
     break;
 
   case 33:
-#line 121 "yacc_sql.y"
+#line 139 "yacc_sql.y"
           {}
-#line 1592 "yacc_sql.cpp"
+#line 1607 "yacc_sql.cpp"
     break;
 
   case 34:
-#line 122 "yacc_sql.y"
+#line 140 "yacc_sql.y"
          {}
-#line 1598 "yacc_sql.cpp"
+#line 1613 "yacc_sql.cpp"
     break;
 
 
-#line 1602 "yacc_sql.cpp"
+#line 1617 "yacc_sql.cpp"
 
       default: break;
     }
@@ -1830,17 +1845,19 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 123 "yacc_sql.y"
+#line 141 "yacc_sql.y"
+
 
 //_____________________________________________________________________
 extern void scan_string(const char *str, yyscan_t scanner);
 // int sql_parse(const char *s, Query *sqls)
-int sql_parse(const char *s){
+int sql_parse(const char *s,QueryInfo* res){
 	ParserContext context;
 	memset(&context, 0, sizeof(context));
 	yyscan_t scanner;
 	yylex_init_extra(&context, &scanner);
-	// context.ssql = sqls;
+	//res指向的为parse外部已经申请好空间的内存 数据通信
+	context.query_info=res;
 	scan_string(s, scanner);
 	int result = yyparse(scanner);
 	yylex_destroy(scanner);

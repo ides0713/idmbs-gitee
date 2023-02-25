@@ -1,6 +1,12 @@
 #include "parse.h"
 
-int sql_parse(const char * st);
+int test_func(int param)
+{
+  printf("the param of the func is %d\n", param);
+  return 1;
+}
+
+int sql_parse(const char *st);
 
 int parse(const char *st)
 {

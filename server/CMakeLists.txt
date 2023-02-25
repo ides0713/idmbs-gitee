@@ -15,8 +15,10 @@ target_link_libraries(server
         -lpthread    
 )
 aux_source_directory(parse parse_dir_var)
+aux_source_directory(../src src_dir_var)
 target_sources(server
     PRIVATE
         ${parse_dir_var}
+        ${src_dir_var}
 )
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../bin)

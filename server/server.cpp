@@ -11,13 +11,17 @@
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 const int MAX_CONNECTS = 10;
-void send_func(const char *message, int fd)
+void sendFunc(const char *message, int fd)
 {
     char buffer[BUFFER_SIZE];
     strcpy(buffer, message);
     write(fd, buffer, BUFFER_SIZE);
 }
-void recv_func(int fd)
+void pStart(const char * sql,int sock_fd){
+    //assert(sock_fd>0);
+    parse(sql);
+}
+void recvFunc(int fd)
 {
     int n, ret_val;
     message m;
@@ -37,6 +41,8 @@ void recv_func(int fd)
             {
                 printf("from client:%s\n", m.message_);
                 // detach a thread to do sql parsing and other work
+                std::thread solve_thread(pStart,m.message_,fd);
+                solve_thread.detach();
             }
         }
     }
@@ -64,7 +70,7 @@ int main()
     //     recv_thread.detach();
     // }
     char buffer[100];
-    strcpy(buffer,"select name from student");
-    parse(buffer);
+    strcpy(buffer,"select name from student;");
+    pStart(buffer,-1);
     return 0;
 }

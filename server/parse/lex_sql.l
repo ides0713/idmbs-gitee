@@ -90,6 +90,7 @@ INFILE                                  RETURN_TOKEN(INFILE);
 
 .                                       printf("Unknown character [%c]\n",yytext[0]); return yytext[0];
 %%
+
 void scan_string(const char *str, yyscan_t scanner) {
   yy_switch_to_buffer(yy_scan_string(str, scanner), scanner);
 }

@@ -7,14 +7,18 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-typedef struct ParserContext {
-//   Query * ssql;
+
+struct ParserContext {
+	QueryInfo * query_info;
+	size_t select_length,condition_length,from_length,value_length;
+	Condition conditions[MAX_CONDITIONS_NUM];
+	CompOp comp_op;
 //   size_t select_length,condition_length,from_length,value_length,value_tuple_num;
 //   Value values[MAX_NUM];
 //   Condition conditions[MAX_NUM];
 //   CompOp comp;
-  char rel_id[REL_ID_MAX_LENGTH];
-} ParserContext;
+  	char rel_id[MAX_ID_LENGTH];
+};
 
 extern int yylex(void); 
 extern int yyparse(void);
@@ -55,14 +59,15 @@ ParserContext *get_context(yyscan_t scanner)
        DOT INTO VALUES FROM WHERE AND SET ON LOAD DATA INFILE EQ LT GT LE GE NE
 
 %union {
-//   struct _Attr *attr;
-//   struct _Condition *condition1;
-//   struct _Value *value1;
-  char* string;
-  int number;
-  float floats;
-  char *position;
+	struct RelAttr* attr;
+	struct Condition* condition;
+	struct Value* value;
+	char* string;
+	int number;
+	float floats;
+	char* position;
 }
+
 %token <number> NUMBER
 %token <floats> FLOAT 
 %token <string> ID
@@ -71,36 +76,44 @@ ParserContext *get_context(yyscan_t scanner)
 %token <string> SSS
 %token <string> STAR
 %token <string> STRING_V
+
+//non
+%type <number> type;
+%type <condition> _condition;
+%type <value> _value;
+%type <number> _number;
 %%
-//COMMANDS
+
 commands:
 	| commands command;
 
-//COMMAND 
 command: 
 	select;
 
-//SELECT
 select:
 	SELECT select_attr FROM ID rel_list where SEMICOLON
-	{printf("select statement");};
+	{
+		test_func(3);
+		printf("lexical semicolon\n");
+		printf("select statement\n");
+	}
 
-//SELECT_ATTR
 select_attr:
 	STAR{}
 	| ID attr_list{}
 	| ID DOT ID attr_list {};
+
 attr_list:
 	| COMMA ID attr_list {}
 	| COMMA ID DOT ID attr_list {};
+
 rel_list:
 	| COMMA ID rel_list {};
-where:
 
+where:
 	| WHERE condition condition_list {};
 
 condition_list:
-	
 	| AND condition condition_list {};
 
 condition:
@@ -112,15 +125,13 @@ condition:
 	|value comOp ID DOT ID{}
 	|ID DOT ID comOp ID DOT ID{};
 
-//COMOP
 comOp:
   	EQ {}
     | LT {}
     | GT {}
     | LE {}
     | GE {}
-    | NE {}
-    ;
+    | NE {};
 
 value:
     NUMBER{}
@@ -128,15 +139,17 @@ value:
     |FLOAT{}
     |SSS {};
 %%
+
 //_____________________________________________________________________
 extern void scan_string(const char *str, yyscan_t scanner);
 // int sql_parse(const char *s, Query *sqls)
-int sql_parse(const char *s){
+int sql_parse(const char *s,QueryInfo* res){
 	ParserContext context;
 	memset(&context, 0, sizeof(context));
 	yyscan_t scanner;
 	yylex_init_extra(&context, &scanner);
-	// context.ssql = sqls;
+	//res指向的为parse外部已经申请好空间的内存 数据通信
+	context.query_info=res;
 	scan_string(s, scanner);
 	int result = yyparse(scanner);
 	yylex_destroy(scanner);

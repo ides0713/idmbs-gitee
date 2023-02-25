@@ -14,4 +14,9 @@ target_link_libraries(client
     PRIVATE
         -lpthread    
 )
+aux_source_directory(../src src_dir_var)
+target_sources(client
+    PRIVATE
+        ${src_dir_var}
+)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../bin)
