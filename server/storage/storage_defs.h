@@ -1,5 +1,4 @@
 #pragma once
-//file storage of the dbms 
 class Page{
     public:
     private:
