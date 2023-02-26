@@ -18,10 +18,12 @@ target_link_libraries(server
         -lpthread    
 )
 aux_source_directory(parse parse_dir_var)
+aux_source_directory(storage storage_dir_var)
 aux_source_directory(../src src_dir_var)
 target_sources(server
     PRIVATE
         ${parse_dir_var}
+        ${storage_dir_var}
     PUBLIC
         ${src_dir_var}
 )

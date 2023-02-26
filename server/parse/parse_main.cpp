@@ -1,26 +1,27 @@
 #include "parse_main.h"
 
-void queryInfoInitialize(QueryInfo* ptr){
-    ptr = new QueryInfo();
-    ptr->SCF_Flag=SCF_ERROR;
+Parse::Parse(){
+    query_=nullptr;
+    return_info_=nullptr;
 }
-
-
-
-returnInfo parseMain(const char * st,QueryInfo* res){
-    returnInfo return_info;
-    queryInfoInitialize(res);
-    if (res==nullptr){
-        return_info.set(RI_STATUS_FAIL,"Failed to initialize QueryInfo");
-        return return_info;
+Parse::~Parse(){
+    delete query_;
+    delete return_info_;
+}
+returnInfo* Parse::parseMain(const char * st){
+    query_=new QueryInfo();
+    query_->SCF_Flag=SCF_ERROR;
+    if (return_info_==nullptr){
+        return_info_->set(RI_STATUS_FAIL,"Failed to initialize QueryInfo");
+        return return_info_;
     }
-    int rv=parse(st,res);
+    int rv=parse(st,query_);
     if(rv=0){
-
+        
     }else if(rv=1){
         
     }
     //succcess
-    return_info.set(RI_STATUS_SUCCESS,"Successed");
-    return return_info;
+    return_info_->set(RI_STATUS_SUCCESS,"Successed");
+    return return_info_;
 }

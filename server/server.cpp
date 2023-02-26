@@ -19,9 +19,11 @@ void sendFunc(const char *message, int fd)
 }
 void pStart(const char * sql,int sock_fd){
     //assert(sock_fd>0);
-    returnInfo return_info;
-    QueryInfo* parse_res=nullptr;
-    return_info=parseMain(sql,parse_res);
+    // returnInfo return_info;
+    // QueryInfo* parse_res=nullptr;
+    // return_info=parseMain(sql,parse_res);
+    Parse p1;
+    p1.parseMain(sql);
 }
 void recvFunc(int fd)
 {

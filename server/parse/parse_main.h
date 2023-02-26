@@ -3,15 +3,14 @@
 #include <stdio.h>
 #include <assert.h>
 #include "../../src/common_defs.h"
-void queryInfoInitialize(QueryInfo* ptr);
 
 
-
-
-
-
-
-
-
-
-returnInfo parseMain(const char * st,QueryInfo* res);
+class Parse{
+    public:
+        Parse();
+        ~Parse();
+        returnInfo* parseMain(const char * st);
+    private:
+        QueryInfo* query_;
+        returnInfo* return_info_;
+};
