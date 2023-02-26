@@ -2,7 +2,7 @@
 #include "parse.h"
 #include <stdio.h>
 #include <assert.h>
-#include "src/commonDefs.h"
+#include "../../src/common_defs.h"
 void queryInfoInitialize(QueryInfo* ptr);
 
 
@@ -14,4 +14,4 @@ void queryInfoInitialize(QueryInfo* ptr);
 
 
 
-int parseMain(const char * st,QueryInfo* res);
+returnInfo parseMain(const char * st,QueryInfo* res);

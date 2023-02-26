@@ -11,15 +11,16 @@ returnInfo parseMain(const char * st,QueryInfo* res){
     returnInfo return_info;
     queryInfoInitialize(res);
     if (res==nullptr){
-        return_info.status_=-1;
-        strcpy(return_info.message_,"Failed to initialize QueryInfo");
+        return_info.set(RI_STATUS_FAIL,"Failed to initialize QueryInfo");
         return return_info;
     }
-    parse(st,res);
+    int rv=parse(st,res);
+    if(rv=0){
 
-
-
+    }else if(rv=1){
+        
+    }
     //succcess
-    returnInfo
-    return 0;
+    return_info.set(RI_STATUS_SUCCESS,"Successed");
+    return return_info;
 }

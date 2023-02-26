@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <thread>
 #include "parse/parse_main.h"
-#include "../src/commonDefs.h"
+#include "../src/common_defs.h"
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 const int MAX_CONNECTS = 10;
