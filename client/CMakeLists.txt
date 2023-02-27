@@ -2,17 +2,21 @@ project(client)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 MESSAGE("Begin to build " client)
 add_executable(client client.cpp)
+find_package(Boost REQUIRED)
 target_include_directories(client
     PRIVATE        
         /usr/local/include
+        ${Boost_INCLUDE_DIR}
 )
 target_link_directories(client
     PRIVATE
-        /usr/lib/x86_64-linux-gnu     
+        /usr/local/lib
+        /usr/local/boost_1_81_0/lib
 )
 target_link_libraries(client
-    PRIVATE
-        -lpthread    
+        -lpthread
+        ${Boost_LIBS}
+        ${Boost_LIBRARY}
 )
 aux_source_directory(../src src_dir_var)
 target_sources(client

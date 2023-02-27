@@ -2,20 +2,22 @@ project(server)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 MESSAGE("Begin to build " server)
 add_executable(server server.cpp)
+find_package(Boost REQUIRED)
 target_include_directories(server
     PRIVATE        
         /usr/local/include
-        /usr/local/boost_1_81_0/include
+        ${Boost_INCLUDE_DIR}
 )
 target_link_directories(server
     PRIVATE
-        /usr/lib/x86_64-linux-gnu
         /usr/local/lib
         /usr/local/boost_1_81_0/lib
 )
 target_link_libraries(server
     PRIVATE
-        -lpthread    
+        -lpthread
+        ${Boost_LIBS}
+        ${Boost_LIBRARY}
 )
 aux_source_directory(parse parse_dir_var)
 aux_source_directory(storage storage_dir_var)
