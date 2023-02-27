@@ -101,7 +101,7 @@ void yyerror(yyscan_t scanner, const char *str)
 {
   ParserContext *context = (ParserContext *)(yyget_extra(scanner));
 //   query_reset(context->ssql);
-//   context->ssql->flag = SCF_ERROR;
+  context->query_info->SCF_Flag = SCF_ERROR;
 //   context->condition_length = 0;
 //   context->from_length = 0;
 //   context->select_length = 0;
@@ -612,10 +612,10 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    87,    87,    88,    91,    94,   102,   103,   104,   106,
-     107,   108,   110,   111,   113,   114,   116,   117,   120,   121,
-     122,   123,   124,   125,   126,   129,   130,   131,   132,   133,
-     134,   137,   138,   139,   140
+       0,    87,    87,    88,    91,    94,   100,   101,   102,   104,
+     105,   106,   108,   109,   111,   112,   114,   115,   118,   119,
+     120,   121,   122,   123,   124,   127,   128,   129,   130,   131,
+     132,   135,   136,   137,   138
 };
 #endif
 
@@ -1455,165 +1455,163 @@ yyreduce:
   case 5:
 #line 95 "yacc_sql.y"
         {
-		test_func(3);
-		printf("lexical semicolon\n");
-		printf("select statement\n");
+		CONTEXT->query_info->SCF_Flag=SCF_SELECT;
 	}
-#line 1463 "yacc_sql.cpp"
+#line 1461 "yacc_sql.cpp"
     break;
 
   case 6:
-#line 102 "yacc_sql.y"
+#line 100 "yacc_sql.y"
             {}
-#line 1469 "yacc_sql.cpp"
+#line 1467 "yacc_sql.cpp"
     break;
 
   case 7:
-#line 103 "yacc_sql.y"
+#line 101 "yacc_sql.y"
                       {}
-#line 1475 "yacc_sql.cpp"
+#line 1473 "yacc_sql.cpp"
     break;
 
   case 8:
-#line 104 "yacc_sql.y"
+#line 102 "yacc_sql.y"
                               {}
-#line 1481 "yacc_sql.cpp"
+#line 1479 "yacc_sql.cpp"
     break;
 
   case 10:
-#line 107 "yacc_sql.y"
+#line 105 "yacc_sql.y"
                              {}
-#line 1487 "yacc_sql.cpp"
+#line 1485 "yacc_sql.cpp"
     break;
 
   case 11:
-#line 108 "yacc_sql.y"
+#line 106 "yacc_sql.y"
                                     {}
-#line 1493 "yacc_sql.cpp"
+#line 1491 "yacc_sql.cpp"
     break;
 
   case 13:
-#line 111 "yacc_sql.y"
+#line 109 "yacc_sql.y"
                             {}
-#line 1499 "yacc_sql.cpp"
+#line 1497 "yacc_sql.cpp"
     break;
 
   case 15:
-#line 114 "yacc_sql.y"
+#line 112 "yacc_sql.y"
                                          {}
-#line 1505 "yacc_sql.cpp"
+#line 1503 "yacc_sql.cpp"
     break;
 
   case 17:
-#line 117 "yacc_sql.y"
+#line 115 "yacc_sql.y"
                                        {}
-#line 1511 "yacc_sql.cpp"
+#line 1509 "yacc_sql.cpp"
     break;
 
   case 18:
-#line 120 "yacc_sql.y"
+#line 118 "yacc_sql.y"
                        {}
-#line 1517 "yacc_sql.cpp"
+#line 1515 "yacc_sql.cpp"
     break;
 
   case 19:
-#line 121 "yacc_sql.y"
+#line 119 "yacc_sql.y"
                            {}
-#line 1523 "yacc_sql.cpp"
+#line 1521 "yacc_sql.cpp"
     break;
 
   case 20:
-#line 122 "yacc_sql.y"
+#line 120 "yacc_sql.y"
                      {}
-#line 1529 "yacc_sql.cpp"
+#line 1527 "yacc_sql.cpp"
     break;
 
   case 21:
-#line 123 "yacc_sql.y"
+#line 121 "yacc_sql.y"
                        {}
-#line 1535 "yacc_sql.cpp"
+#line 1533 "yacc_sql.cpp"
     break;
 
   case 22:
-#line 124 "yacc_sql.y"
+#line 122 "yacc_sql.y"
                               {}
-#line 1541 "yacc_sql.cpp"
+#line 1539 "yacc_sql.cpp"
     break;
 
   case 23:
-#line 125 "yacc_sql.y"
+#line 123 "yacc_sql.y"
                               {}
-#line 1547 "yacc_sql.cpp"
+#line 1545 "yacc_sql.cpp"
     break;
 
   case 24:
-#line 126 "yacc_sql.y"
+#line 124 "yacc_sql.y"
                                   {}
-#line 1553 "yacc_sql.cpp"
+#line 1551 "yacc_sql.cpp"
     break;
 
   case 25:
-#line 129 "yacc_sql.y"
+#line 127 "yacc_sql.y"
            {}
-#line 1559 "yacc_sql.cpp"
+#line 1557 "yacc_sql.cpp"
     break;
 
   case 26:
-#line 130 "yacc_sql.y"
+#line 128 "yacc_sql.y"
          {}
-#line 1565 "yacc_sql.cpp"
+#line 1563 "yacc_sql.cpp"
     break;
 
   case 27:
-#line 131 "yacc_sql.y"
+#line 129 "yacc_sql.y"
          {}
-#line 1571 "yacc_sql.cpp"
+#line 1569 "yacc_sql.cpp"
     break;
 
   case 28:
-#line 132 "yacc_sql.y"
+#line 130 "yacc_sql.y"
          {}
-#line 1577 "yacc_sql.cpp"
+#line 1575 "yacc_sql.cpp"
     break;
 
   case 29:
-#line 133 "yacc_sql.y"
+#line 131 "yacc_sql.y"
          {}
-#line 1583 "yacc_sql.cpp"
+#line 1581 "yacc_sql.cpp"
     break;
 
   case 30:
-#line 134 "yacc_sql.y"
+#line 132 "yacc_sql.y"
          {}
-#line 1589 "yacc_sql.cpp"
+#line 1587 "yacc_sql.cpp"
     break;
 
   case 31:
-#line 137 "yacc_sql.y"
+#line 135 "yacc_sql.y"
           {}
-#line 1595 "yacc_sql.cpp"
+#line 1593 "yacc_sql.cpp"
     break;
 
   case 32:
-#line 138 "yacc_sql.y"
+#line 136 "yacc_sql.y"
                  {}
-#line 1601 "yacc_sql.cpp"
+#line 1599 "yacc_sql.cpp"
     break;
 
   case 33:
-#line 139 "yacc_sql.y"
+#line 137 "yacc_sql.y"
           {}
-#line 1607 "yacc_sql.cpp"
+#line 1605 "yacc_sql.cpp"
     break;
 
   case 34:
-#line 140 "yacc_sql.y"
+#line 138 "yacc_sql.y"
          {}
-#line 1613 "yacc_sql.cpp"
+#line 1611 "yacc_sql.cpp"
     break;
 
 
-#line 1617 "yacc_sql.cpp"
+#line 1615 "yacc_sql.cpp"
 
       default: break;
     }
@@ -1845,7 +1843,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 141 "yacc_sql.y"
+#line 139 "yacc_sql.y"
 
 
 //_____________________________________________________________________

@@ -5,11 +5,10 @@ int sql_parse(const char *st,QueryInfo* res);
 int parse(const char *st,QueryInfo* res)
 {
   sql_parse(st,res);
-  // if (sqln->flag == SCF_ERROR)
-  //   return SQL_SYNTAX;
-  // else
-  //   return SUCCESS;
-  return 1;
+  if (res->SCF_Flag == SCF_ERROR)
+    return 0;
+  else
+    return 1;
 }
 
 //parse_defs

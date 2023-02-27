@@ -32,7 +32,7 @@ void yyerror(yyscan_t scanner, const char *str)
 {
   ParserContext *context = (ParserContext *)(yyget_extra(scanner));
 //   query_reset(context->ssql);
-//   context->ssql->flag = SCF_ERROR;
+  context->query_info->SCF_Flag = SCF_ERROR;
 //   context->condition_length = 0;
 //   context->from_length = 0;
 //   context->select_length = 0;
@@ -93,9 +93,7 @@ command:
 select:
 	SELECT select_attr FROM ID rel_list where SEMICOLON
 	{
-		test_func(3);
-		printf("lexical semicolon\n");
-		printf("select statement\n");
+		CONTEXT->query_info->SCF_Flag=SCF_SELECT;
 	}
 
 select_attr:
