@@ -3,6 +3,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 MESSAGE("Begin to build " server)
 add_executable(server server.cpp)
 find_package(Boost REQUIRED)
+find_library(boost_lib NAMES Boost BOOST Boost_system libboost_thread thread libboost)
+message("1312414 ${$boost_lib}")
 target_include_directories(server
     PRIVATE        
         /usr/local/include
