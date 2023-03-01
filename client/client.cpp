@@ -4,11 +4,13 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <thread>
+#include <boost/thread.hpp>
 #include "../src/common_defs.h"
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 void recvFunc(int fd)
 {
+
     int n;
     message m;
     while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0)

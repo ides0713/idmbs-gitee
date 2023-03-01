@@ -5,8 +5,6 @@
 #include <arpa/inet.h>
 #include <thread>
 #include "parse/parse_main.h"
-// #include <boost/thread/thread.hpp>
-// #include <boost/thread/mutex.hpp>
 #include "../src/common_defs.h"
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
@@ -47,7 +45,7 @@ void recvFunc(int fd)
                 printf("from client:%s\n", m.message_);
                 // detach a thread to do sql parsing and other work
                 std::thread solve_thread(pStart, m.message_, fd);
-                printf("thread id:%d launched\n",solve_thread.get_id());
+                printf("server.cpp::thread id:%d launched\n",solve_thread.get_id());
                 solve_thread.detach();
             }
         }
@@ -79,5 +77,7 @@ int main()
     // char buffer[100];
     // strcpy(buffer,"select name from student;");
     // pStart(buffer,-1);
+
+
     return 0;
 }
