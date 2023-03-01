@@ -5,10 +5,12 @@ add_executable(client client.cpp)
 target_include_directories(client
     PRIVATE        
         /usr/local/include
+        /usr/local/boost_1_81_0/include
 )
 target_link_directories(client
     PRIVATE
-        /usr/lib/x86_64-linux-gnu     
+        /usr/local/lib
+        /usr/local/boost_1_81_0/lib
 )
 target_link_libraries(client
     PRIVATE

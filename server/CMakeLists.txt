@@ -13,9 +13,6 @@ target_link_directories(server
         /usr/local/lib
         /usr/local/boost_1_81_0/lib
 )
-find_package()
-find_library()
-find
 target_link_libraries(server
     PRIVATE
         -lpthread    
