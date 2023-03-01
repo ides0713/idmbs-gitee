@@ -17,7 +17,6 @@ target_link_directories(client
 )
 target_link_libraries(client
         -lpthread
-        ${Boost_LIBS}
         ${Boost_LIBRARY}
 )
 aux_source_directory(../src src_dir_var)

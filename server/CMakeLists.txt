@@ -2,9 +2,9 @@ project(server)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 MESSAGE("Begin to build " server)
 add_executable(server server.cpp)
-find_package(Boost REQUIRED)
-find_library(boost_lib NAMES Boost BOOST Boost_system libboost_thread thread libboost)
-message("1312414 ${$boost_lib}")
+find_package(Boost COMPONENTS regex thread REQUIRED)
+MESSAGE(STATUS "Boost_INCLUDE_DIRS = ${Boost_INCLUDE_DIRS}")
+MESSAGE(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
 target_include_directories(server
     PRIVATE        
         /usr/local/include
@@ -18,7 +18,6 @@ target_link_directories(server
 target_link_libraries(server
     PRIVATE
         -lpthread
-        ${Boost_LIBS}
         ${Boost_LIBRARY}
 )
 aux_source_directory(parse parse_dir_var)
