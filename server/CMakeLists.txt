@@ -3,17 +3,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 MESSAGE("Begin to build " server)
 add_executable(server server.cpp)
 find_package(Boost COMPONENTS regex thread REQUIRED)
+SET (BOOST_ROOT "/usr/local/boost_1_81_0")
+SET (BOOST_INCLUDEDIR "/usr/local/boost_1_81_0/include")
+SET (BOOST_LIBRARYDIR "/usr/local/boost_1_81_0/lib")
 MESSAGE(STATUS "Boost_INCLUDE_DIRS = ${Boost_INCLUDE_DIRS}")
 MESSAGE(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
 target_include_directories(server
     PRIVATE        
         /usr/local/include
         ${Boost_INCLUDE_DIR}
-)
-target_link_directories(server
-    PRIVATE
-        /usr/local/lib
-        /usr/local/boost_1_81_0/lib
 )
 target_link_libraries(server
     PRIVATE
