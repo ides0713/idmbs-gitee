@@ -9,16 +9,19 @@
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 const int MAX_CONNECTS = 10;
-void sendFunc(const char *message, int fd)
-{
-    char buffer[BUFFER_SIZE];
-    strcpy(buffer, message);
-    write(fd, buffer, BUFFER_SIZE);
-}
+// void sendFunc(const char *message, int fd)
+// {
+//     char buffer[BUFFER_SIZE];
+//     strcpy(buffer, message);
+//     write(fd, buffer, BUFFER_SIZE);
+// }
 void pStart(const char *sql, int sock_fd)
 {
+    printf("create Parse\n");
     Parse p1;
+    printf("thread enter parseMain\n");
     returnInfo *rt_info1 = p1.parseMain(sql);
+    printf("thread out parseMain\n");
     if(rt_info1->status_==RI_STATUS_FAIL or rt_info1->status_==RI_STATUS_OTHERFAIL){
         printf("sql parse failed\n");
         exit(-1);
@@ -45,7 +48,6 @@ void recvFunc(int fd)
                 printf("from client:%s\n", m.message_);
                 // detach a thread to do sql parsing and other work
                 std::thread solve_thread(pStart, m.message_, fd);
-                printf("server.cpp::thread id:%d launched\n",solve_thread.get_id());
                 solve_thread.detach();
             }
         }
