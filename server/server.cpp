@@ -21,7 +21,10 @@ void pStart(const char *sql, int sock_fd)
     returnInfo *rt_info1 = p1.parseMain(sql);
     if(rt_info1->status_==RI_STATUS_FAIL or rt_info1->status_==RI_STATUS_OTHERFAIL){
         printf("sql parse failed\n");
-        exit(-1);
+        return;
+    }else{
+        printf("sql parse succeeded\n");
+        return;
     }
 }
 void recvFunc(int fd)
@@ -45,7 +48,8 @@ void recvFunc(int fd)
                 printf("from client:%s\n", m.message_);
                 // detach a thread to do sql parsing and other work
                 std::thread solve_thread(pStart, m.message_, fd);
-                printf("server.cpp::thread id:%d launched\n",solve_thread.get_id());
+                printf("1\n");
+                printf("2\n");
                 solve_thread.detach();
             }
         }
