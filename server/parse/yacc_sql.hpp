@@ -106,11 +106,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 61 "yacc_sql.y"
+#line 77 "yacc_sql.y"
 
 	struct RelAttr* attr;
-	struct Condition* condition;
-	struct Value* value;
+	struct Condition* condition1;
+	struct Value* value1;
 	char* string;
 	int number;
 	float floats;

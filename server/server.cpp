@@ -9,19 +9,11 @@
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 const int MAX_CONNECTS = 10;
-// void sendFunc(const char *message, int fd)
-// {
-//     char buffer[BUFFER_SIZE];
-//     strcpy(buffer, message);
-//     write(fd, buffer, BUFFER_SIZE);
-// }
+
 void pStart(const char *sql, int sock_fd)
 {
-    printf("create Parse\n");
     Parse p1;
-    printf("thread enter parseMain\n");
     returnInfo *rt_info1 = p1.parseMain(sql);
-    printf("thread out parseMain\n");
     if(rt_info1->status_==RI_STATUS_FAIL or rt_info1->status_==RI_STATUS_OTHERFAIL){
         printf("sql parse failed\n");
         return;
@@ -51,8 +43,6 @@ void recvFunc(int fd)
                 printf("from client:%s\n", m.message_);
                 // detach a thread to do sql parsing and other work
                 std::thread solve_thread(pStart, m.message_, fd);
-                printf("1\n");
-                printf("2\n");
                 solve_thread.detach();
             }
         }
@@ -62,29 +52,29 @@ void recvFunc(int fd)
 }
 int main()
 {
-    int listen_fd, conn_fd;
-    sockaddr_in serve_addr;
-    listen_fd = socket(AF_INET, SOCK_STREAM, 0);
-    bzero(&serve_addr, sizeof(serve_addr));
-    serve_addr.sin_family = AF_INET;
-    serve_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serve_addr.sin_port = htons(SERVER_PORT);
-    bind(listen_fd, (sockaddr *)&serve_addr, sizeof(serve_addr));
-    listen(listen_fd, MAX_CONNECTS);
-    printf("start listening......\n");
-    while (true)
-    {
-        conn_fd = accept(listen_fd, (sockaddr *)NULL, NULL);
-        printf("connect from conn_fd:%d\n", conn_fd);
-        // int n = read(conn_fd, reinterpret_cast<char *>(&l), sizeof(l));
-        std::thread recv_thread(recvFunc, conn_fd);
-        recv_thread.detach();
-    }
+    // int listen_fd, conn_fd;
+    // sockaddr_in serve_addr;
+    // listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+    // bzero(&serve_addr, sizeof(serve_addr));
+    // serve_addr.sin_family = AF_INET;
+    // serve_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    // serve_addr.sin_port = htons(SERVER_PORT);
+    // bind(listen_fd, (sockaddr *)&serve_addr, sizeof(serve_addr));
+    // listen(listen_fd, MAX_CONNECTS);
+    // printf("start listening......\n");
+    // while (true)
+    // {
+    //     conn_fd = accept(listen_fd, (sockaddr *)NULL, NULL);
+    //     printf("connect from conn_fd:%d\n", conn_fd);
+    //     // int n = read(conn_fd, reinterpret_cast<char *>(&l), sizeof(l));
+    //     std::thread recv_thread(recvFunc, conn_fd);
+    //     recv_thread.detach();
+    // }
 
-    // char buffer[100];
-    // strcpy(buffer,"select name from student;");
-    // pStart(buffer,-1);
-
+    char buffer[100];
+    strcpy(buffer,"create table test_table (float a,char b,int c);");
+    printf("buffer content:%s\n",buffer);
+    pStart(buffer,-1);
 
     return 0;
 }

@@ -11,6 +11,6 @@ class Parse{
         ~Parse();
         returnInfo* parseMain(const char * st);
     private:
-        QueryInfo* query_;
+        Query* query_;
         returnInfo* return_info_;
 };

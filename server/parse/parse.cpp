@@ -1,11 +1,11 @@
 #include "parse.h"
 
-int sql_parse(const char *st,QueryInfo* res);
+int sql_parse(const char *st,Query* &res);
 
-int parse(const char *st,QueryInfo* res)
+int parse(const char *st,Query* &res)
 {
   sql_parse(st,res);
-  if (res->SCF_Flag == SCF_ERROR)
+  if (res->getSCFFlag() == SCF_ERROR)
     return 0;
   else
     return 1;
