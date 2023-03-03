@@ -1,10 +1,13 @@
 #pragma once
 #include <stdio.h>
+#include <string.h>
 
-const int MAX_ID_LENGTH = 20;
+const int MAX_REL_LENGTH = 20;
 const int MAX_ATTRS_NUM = 20;
 const int MAX_CONDITIONS_NUM = 20;
 const int MAX_ATTR_LENGTH = 20;
+const int MAX_MSG_LENGTH = 50;
+
 
 enum SqlCommandFlag
 {
@@ -61,6 +64,7 @@ struct RelAttr
     char *rel_name;  // 关系名(表名)
     char *attr_name; // 属性名
 };
+
 struct AttrInfo
 {
     char *attr_name;    // 属性名
@@ -81,26 +85,80 @@ struct Condition
     Value right_value;
 };
 
-struct SelectQuery
-{
-    char *rel_name;
-};
-struct InsertQuery
-{
-    char *rel_name;
-};
-//Query中的值是parse阶段中获得信息的集合
-union Query
-{
-    SelectQuery select_query;
-    InsertQuery insert_query;
-    char *error_info;
+class Query{
+    public:
+    Query():SCF_Flag_(SCF_ERROR){}
+    Query(SqlCommandFlag scf):SCF_Flag_(scf){}
+    virtual void initialize()=0;
+    //~xxxquery()
+    virtual void destroy()=0;
+    SqlCommandFlag getSCFFlag(){return SCF_Flag_;}
+    private:
+    SqlCommandFlag SCF_Flag_;
 };
 
-struct QueryInfo{
-    SqlCommandFlag SCF_Flag;
-    Query query;
+
+class SelectQuery:public Query
+{
+    public:
+    SelectQuery():Query(SCF_SELECT){
+        rel_name_=nullptr;
+    }
+    void initialize(){
+        rel_name_=new char [MAX_REL_LENGTH+1];
+    }
+    void destroy(){
+        delete[]rel_name_;
+    }
+    private:
+    char *rel_name_;
 };
+class InsertQuery:public Query
+{
+    public:
+    InsertQuery():Query(SCF_INSERT){
+        rel_name_=nullptr;
+    }
+    void initialize(){
+        rel_name_=new char [MAX_REL_LENGTH+1];
+    }
+    void destroy(){
+        delete[] rel_name_;
+    }
+    private:
+    char *rel_name_;
+};
+class CreateTableQuery:public Query
+{
+    public:
+    CreateTableQuery():Query(SCF_CREATE_TABLE){
+        rel_name_=nullptr;
+    }
+    void initialize(){
+        rel_name_=new char [MAX_REL_LENGTH];
+    }
+    void destroy(){
+        delete[]rel_name_;
+    }
+    private:
+    char * rel_name_;
+};
+
+class ErrorQuery:public Query
+{
+    public:
+    ErrorQuery(const char * str):Query(SCF_ERROR){
+        error_message_=new char [MAX_MSG_LENGTH];
+        strcpy(error_message_,str);
+    }
+    void initialize(){}
+    void destroy(){
+        delete [] error_message_;
+    }
+    private:
+    char * error_message_;
+};
+
 
 // add func
 int test_func(int param);
