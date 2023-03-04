@@ -10,14 +10,11 @@
 
 struct ParserContext {
 	Query * query=nullptr;
-	size_t select_length,condition_length,from_length,value_length;
-	Condition conditions[MAX_CONDITIONS_NUM];
-	CompOp comp_op;
-//   size_t select_length,condition_length,from_length,value_length,value_tuple_num;
-//   Value values[MAX_NUM];
-//   Condition conditions[MAX_NUM];
-//   CompOp comp;
-  	char rel_id[MAX_REL_LENGTH+1];
+    size_t select_length,condition_length,from_length,value_length,value_tuple_num;
+    Value values[MAX_ATTRS_NUM];
+    Condition conditions[MAX_CONDITIONS_NUM];
+    CompOp comp;
+  	char id[MAX_ID_LENGTH];
 };
 
 extern int yylex(void); 
@@ -30,7 +27,8 @@ int yywrap()
 
 char *substr(const char *s,int n1,int n2)/*从s中提取下标为n1~n2的字符组成一个新字符串，然后返回这个新串的首地址*/
 {
-  char *sp = (char *)malloc(sizeof(char) * (n2 - n1 + 2));
+  char * sp =new char [n2-n1+2];
+//   char *sp = (char *)malloc(sizeof(char) * (n2 - n1 + 2));
   int i, j = 0;
   for (i = n1; i <= n2; i++) {
     sp[j++] = s[i];
@@ -48,12 +46,11 @@ void yyerror(yyscan_t scanner, const char *str)
 	context->query=nullptr;
   }
   context->query=new ErrorQuery(str);
-//   context->condition_length = 0;
-//   context->from_length = 0;
-//   context->select_length = 0;
-//   context->value_length=0;
-//   context->value_tuple_num = 0;
-//   context->ssql->sstr.insertion.value_num = 0;
+  context->condition_length = 0;
+  context->from_length = 0;
+  context->select_length = 0;
+  context->value_length=0;
+  context->value_tuple_num = 0;
   printf("parse sql failed. error=%s\n", str);
 }
 
@@ -191,62 +188,64 @@ drop_index:			/*drop index 语句的语法解析树*/
 		}
     ;
 create_table:		/*create table 语句的语法解析树*/
-    CREATE TABLE ID LBRACE attr_def attr_def_list RBRACE SEMICOLON 
-		{
-			// CONTEXT->query=new CreateTableQuery();
-			// CONTEXT->query->initialize();
-			printf("$3:%s\n",$3);
-			// create_table_init_name(&CONTEXT->ssql->sstr.create_table, $3);
-			// //临时变量清零
-			// CONTEXT->value_tuple_num=0;	
-			// CONTEXT->value_length = 0;
+    CREATE TABLE ID LBRACE attr_def attr_def_list RBRACE SEMICOLON {
+		CONTEXT->query=new CreateTableQuery();
+		CONTEXT->query->initialize();
+		printf("$3:%s\n",$3);
+		((CreateTableQuery*)(CONTEXT->query))->setRelName($3);
+		// //临时变量清零
+		CONTEXT->value_tuple_num=0;	
+		CONTEXT->value_length = 0;
 		}
     ;
 attr_def_list:
     /* empty */
-    | COMMA attr_def attr_def_list {    }
+    | COMMA attr_def attr_def_list {  }
     ;
     
 attr_def:
-    ID_get type LBRACE number RBRACE 
-		{
-			// AttrInfo attribute;
-			// attr_info_init(&attribute, CONTEXT->id, (AttrType)$2, $4);
-			// create_table_append_attribute(&CONTEXT->ssql->sstr.create_table, &attribute);
-			// CONTEXT->value_length++;
+    ID_get type LBRACE number RBRACE {
+		AttrInfo attribute(CONTEXT->id,(AttrType)$2,$4);
+		((CreateTableQuery*)(CONTEXT->query))->addAttr(attribute);
+		CONTEXT->value_length++;
 		}
-    |ID_get type
-		{
-			// AttrInfo attribute;
-			// attr_info_init(&attribute, CONTEXT->id, (AttrType)$2, 4);
-			// create_table_append_attribute(&CONTEXT->ssql->sstr.create_table, &attribute);
-			// CONTEXT->value_length++;
+    |ID_get type{
+		//attr with default length
+		AttrInfo attribute(CONTEXT->id,(AttrType)$2);
+		printf("here 1 \n");
+		printf("address:%lld\n",&attribute);
+		printf("size:%lld\n",sizeof(attribute));
+		((CreateTableQuery*)(CONTEXT->query))->addAttr(attribute);
+		// CreateTableQuery* ctq=(CreateTableQuery*)(CONTEXT->query);
+		// ctq->addAttr(attribute);
+		printf("here 2 \n");
+		CONTEXT->value_length++;
 		}
     ;
 number:
-		NUMBER {
-			// $$ = $1;
-			}
-		;
+	NUMBER{
+		$$ = $1;
+		}
+	;
 type:
-	INT_T {
-		//  $$=INTS; 
+	INT_T{
+		 $$=INTS; 
 		 }
-	   | DATE_T {
-		// $$=DATES;
+	|DATE_T{
+		$$=DATES;
 		}
-       | STRING_T {
-		//  $$=CHARS;
-		  }
-       | FLOAT_T { 
-		// $=FLOATS; 
+    |STRING_T{
+		$$=CHARS;
 		}
-       ;
+    |FLOAT_T{ 
+		$$=FLOATS; 
+		}
+    ;
 ID_get:
 	ID 
 	{
-		// char *temp=$1; 
-		// snprintf(CONTEXT->id, sizeof(CONTEXT->id), "%s", temp);
+		char *temp=$1; 
+		snprintf(CONTEXT->id, sizeof(CONTEXT->id), "%s", temp);
 	}
 	;
 
@@ -490,6 +489,7 @@ load_data:
 extern void scan_string(const char *str, yyscan_t scanner);
 // int sql_parse(const char *s, Query *sqls)
 int sql_parse(const char *s,Query* & res){
+	printf("sql parse begin\n");
 	ParserContext context;
 	memset(&context, 0, sizeof(context));
 	yyscan_t scanner;
@@ -498,5 +498,6 @@ int sql_parse(const char *s,Query* & res){
 	int result = yyparse(scanner);
 	res=context.query;
 	yylex_destroy(scanner);
+	printf("sql parse end\n");
 	return result;
 }

@@ -2,12 +2,17 @@
 #include <stdio.h>
 #include <string.h>
 
+const int MAX_ID_LENGTH=20;
 const int MAX_REL_LENGTH = 20;
 const int MAX_ATTRS_NUM = 20;
 const int MAX_CONDITIONS_NUM = 20;
 const int MAX_ATTR_LENGTH = 20;
 const int MAX_MSG_LENGTH = 50;
 
+// add func
+int test_func(int param);
+char * strnew(const char * str);
+void nullnew(char * & n,const char *str);
 
 enum SqlCommandFlag
 {
@@ -70,6 +75,44 @@ struct AttrInfo
     char *attr_name;    // 属性名
     AttrType attr_type; // 属性类型(数据类型)
     size_t attr_len;    // 属性长度(占空间大小)
+    AttrInfo(){
+        attr_name=nullptr;
+        attr_type=UNDEFINED;
+        attr_len=0;
+    }
+    //attr with default length
+    AttrInfo(const char * name,AttrType type){
+        attr_name=strnew(name);
+        attr_type=type;
+        switch (type)
+        {
+        case CHARS:
+            attr_len=1;
+            break;
+        case INTS:
+            attr_len=1;
+            break;
+        case FLOATS:
+            attr_len=1;
+            break;
+        case DATES:
+            attr_len=1;
+            break;
+        default:
+            printf("attribute with undefined type and default length was created\n");
+            attr_type=UNDEFINED;
+            attr_len=1;
+            break;
+        }
+    }
+    AttrInfo(const char * name,AttrType type,size_t len){
+        attr_name=strnew(name);
+        attr_type=type;
+        attr_len=len;
+    }
+    void destroy(){
+        delete[]attr_name;
+    }
 };
 
 struct Condition
@@ -132,16 +175,28 @@ class CreateTableQuery:public Query
 {
     public:
     CreateTableQuery():Query(SCF_CREATE_TABLE){
-        rel_name_=nullptr;
     }
     void initialize(){
-        rel_name_=new char [MAX_REL_LENGTH];
+        attr_num_=0;
+        attrs_=new AttrInfo[MAX_ATTRS_NUM];
     }
     void destroy(){
         delete[]rel_name_;
+        for(int i=0;i<attr_num_;i++)
+            attrs_[i].destroy();
+    }
+    void setRelName(const char * str){
+        rel_name_=strnew(str);
+    }
+    void addAttr(const AttrInfo& attr){
+        printf("%s\n%d\n%d\n",attr.attr_name,attr.attr_type,attr.attr_len);
+        printf("linelineline\n");
+        printf("%d\n%d\n",attrs_[0].attr_type,attrs_[0].attr_len);
     }
     private:
     char * rel_name_;
+    size_t attr_num_;
+    AttrInfo* attrs_;
 };
 
 class ErrorQuery:public Query
@@ -158,7 +213,3 @@ class ErrorQuery:public Query
     private:
     char * error_message_;
 };
-
-
-// add func
-int test_func(int param);

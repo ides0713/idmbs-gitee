@@ -72,8 +72,8 @@ int main()
     // }
 
     char buffer[100];
-    strcpy(buffer,"create table test_table (float a,char b,int c);");
-    printf("buffer content:%s\n",buffer);
+    strcpy(buffer,"create table t_basic(id int, age int, name char, score float);");
+    printf("buffer content:\n--\n%s\n--\n",buffer);
     pStart(buffer,-1);
 
     return 0;
