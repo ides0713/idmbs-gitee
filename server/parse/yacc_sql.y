@@ -189,12 +189,11 @@ drop_index:			/*drop index 语句的语法解析树*/
     ;
 create_table:		/*create table 语句的语法解析树*/
     CREATE TABLE ID LBRACE attr_def attr_def_list RBRACE SEMICOLON {
-		CONTEXT->query=new CreateTableQuery();
-		CONTEXT->query->initialize();
-		printf("$3:%s\n",$3);
-		((CreateTableQuery*)(CONTEXT->query))->setRelName($3);
+		// CONTEXT->query=new CreateTableQuery();
+		// CONTEXT->query->initialize();
+		(static_cast<CreateTableQuery*>(CONTEXT->query))->setRelName($3);
 		// //临时变量清零
-		CONTEXT->value_tuple_num=0;	
+		// CONTEXT->value_tuple_num=0;	
 		CONTEXT->value_length = 0;
 		}
     ;
@@ -205,20 +204,22 @@ attr_def_list:
     
 attr_def:
     ID_get type LBRACE number RBRACE {
+		if(CONTEXT->query==nullptr){
+			CONTEXT->query=new CreateTableQuery();
+			CONTEXT->query->initialize();
+		}
 		AttrInfo attribute(CONTEXT->id,(AttrType)$2,$4);
-		((CreateTableQuery*)(CONTEXT->query))->addAttr(attribute);
+		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);
 		CONTEXT->value_length++;
 		}
     |ID_get type{
 		//attr with default length
-		AttrInfo attribute(CONTEXT->id,(AttrType)$2);
-		printf("here 1 \n");
-		printf("address:%lld\n",&attribute);
-		printf("size:%lld\n",sizeof(attribute));
-		((CreateTableQuery*)(CONTEXT->query))->addAttr(attribute);
-		// CreateTableQuery* ctq=(CreateTableQuery*)(CONTEXT->query);
-		// ctq->addAttr(attribute);
-		printf("here 2 \n");
+		if(CONTEXT->query==nullptr){
+			CONTEXT->query=new CreateTableQuery();
+			CONTEXT->query->initialize();
+		}
+		AttrInfo attribute(CONTEXT->id,(AttrType)$2,1);
+		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);
 		CONTEXT->value_length++;
 		}
     ;
@@ -229,8 +230,8 @@ number:
 	;
 type:
 	INT_T{
-		 $$=INTS; 
-		 }
+		$$=INTS; 
+		}
 	|DATE_T{
 		$$=DATES;
 		}

@@ -12,7 +12,6 @@ const int MAX_MSG_LENGTH = 50;
 // add func
 int test_func(int param);
 char * strnew(const char * str);
-void nullnew(char * & n,const char *str);
 
 enum SqlCommandFlag
 {
@@ -77,35 +76,8 @@ struct AttrInfo
     size_t attr_len;    // 属性长度(占空间大小)
     AttrInfo(){
         attr_name=nullptr;
-        attr_type=UNDEFINED;
-        attr_len=0;
     }
-    //attr with default length
-    AttrInfo(const char * name,AttrType type){
-        attr_name=strnew(name);
-        attr_type=type;
-        switch (type)
-        {
-        case CHARS:
-            attr_len=1;
-            break;
-        case INTS:
-            attr_len=1;
-            break;
-        case FLOATS:
-            attr_len=1;
-            break;
-        case DATES:
-            attr_len=1;
-            break;
-        default:
-            printf("attribute with undefined type and default length was created\n");
-            attr_type=UNDEFINED;
-            attr_len=1;
-            break;
-        }
-    }
-    AttrInfo(const char * name,AttrType type,size_t len){
+    AttrInfo(const char *name,AttrType type,size_t len=1){
         attr_name=strnew(name);
         attr_type=type;
         attr_len=len;
@@ -189,9 +161,7 @@ class CreateTableQuery:public Query
         rel_name_=strnew(str);
     }
     void addAttr(const AttrInfo& attr){
-        printf("%s\n%d\n%d\n",attr.attr_name,attr.attr_type,attr.attr_len);
-        printf("linelineline\n");
-        printf("%d\n%d\n",attrs_[0].attr_type,attrs_[0].attr_len);
+        attrs_[attr_num_++]=attr;
     }
     private:
     char * rel_name_;
