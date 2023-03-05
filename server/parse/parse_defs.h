@@ -146,9 +146,9 @@ class InsertQuery:public Query
 class CreateTableQuery:public Query
 {
     public:
-    CreateTableQuery():Query(SCF_CREATE_TABLE){
-    }
+    CreateTableQuery():Query(SCF_CREATE_TABLE){}
     void initialize(){
+        rel_name_=nullptr;
         attr_num_=0;
         attrs_=new AttrInfo[MAX_ATTRS_NUM];
     }

@@ -40,7 +40,6 @@ char *substr(const char *s,int n1,int n2)/*从s中提取下标为n1~n2的字符�
 void yyerror(yyscan_t scanner, const char *str)
 {
   ParserContext *context = (ParserContext *)(yyget_extra(scanner));
-//   query_reset(context->ssql);
   if(context->query!=nullptr){
 	context->query->destroy();
 	context->query=nullptr;
