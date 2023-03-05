@@ -13,14 +13,15 @@ const int MAX_CONNECTS = 10;
 void pStart(const char *sql, int sock_fd)
 {
     Parse p1;
-    returnInfo *rt_info1 = p1.parseMain(sql);
-    if(rt_info1->status_==RI_STATUS_FAIL or rt_info1->status_==RI_STATUS_OTHERFAIL){
+    RE re_parse = p1.parseMain(sql);
+    if(re_parse!= RE::SUCCESS){
         printf("sql parse failed\n");
         return;
     }else{
         printf("sql parse succeeded\n");
         return;
     }
+    
 }
 void recvFunc(int fd)
 {

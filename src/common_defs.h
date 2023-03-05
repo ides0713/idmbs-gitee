@@ -16,17 +16,8 @@ struct message
     char message_[MSG_MSG_LEN];
 };
 
-struct returnInfo
-{
-    returnInfo()=default;
-    returnInfo(int status,const char * message):status_(status)
-    {
-        strcpy(message_,message);
-    }
-    void set(int status,const char* message){
-        status_=status;
-        strcpy(message_,message);
-    }
-    int status_=RI_STATUS_FAIL;
-    char message_[RI_MSG_LEN];
+enum RE{
+    SUCCESS=0,
+    FAIL,
+    ERROR
 };

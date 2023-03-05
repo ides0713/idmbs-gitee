@@ -9,8 +9,7 @@ class Parse{
     public:
         Parse();
         ~Parse();
-        returnInfo* parseMain(const char * st);
+        RE parseMain(const char * st);
     private:
         Query* query_;
-        returnInfo* return_info_;
 };
