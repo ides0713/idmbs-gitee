@@ -1,19 +1,19 @@
 #include "parse_main.h"
-
-Parse::Parse()
+#include "parse.h"
+#include <stdio.h>
+#include <assert.h>
+ParseMain::ParseMain()
 {
     query_ = nullptr;
 }
-Parse::~Parse()
-{
-    if(query_!=nullptr)
-        query_->destroy();
-}
-RE Parse::parseMain(const char *st)
+RE ParseMain::execute(const char *st)
 {
     int rv = parse(st, query_);
-    if (!rv)
+    if (!rv){
+        query_->destroy();
+        query_=nullptr;
         return RE::FAIL;
+    }
     else
         return RE::SUCCESS;
 }

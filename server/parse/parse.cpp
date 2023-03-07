@@ -1,5 +1,5 @@
 #include "parse.h"
-
+#include <stdio.h>
 int sql_parse(const char *st,Query* &res);
 
 int parse(const char *st,Query* &res)

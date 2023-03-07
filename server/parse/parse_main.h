@@ -1,15 +1,12 @@
 #pragma once
-#include "parse.h"
-#include <stdio.h>
-#include <assert.h>
 #include "../../src/common_defs.h"
+#include "parse_defs.h"
 
-
-class Parse{
+class ParseMain{
     public:
-        Parse();
-        ~Parse();
-        RE parseMain(const char * st);
+        ParseMain();
+        RE execute(const char * st);
+        Query* nextP(){return query_;}
     private:
         Query* query_;
 };
