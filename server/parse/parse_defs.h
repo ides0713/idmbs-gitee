@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-const int MAX_ID_LENGTH=20;
+const int MAX_ID_LENGTH = 20;
 const int MAX_REL_LENGTH = 20;
 const int MAX_ATTRS_NUM = 20;
 const int MAX_CONDITIONS_NUM = 20;
@@ -11,7 +11,7 @@ const int MAX_MSG_LENGTH = 50;
 
 // add func
 int test_func(int param);
-char * strnew(const char * str);
+char *strnew(const char *str);
 
 enum SqlCommandFlag
 {
@@ -74,16 +74,19 @@ struct AttrInfo
     char *attr_name;    // 属性名
     AttrType attr_type; // 属性类型(数据类型)
     size_t attr_len;    // 属性长度(占空间大小)
-    AttrInfo(){
-        attr_name=nullptr;
+    AttrInfo()
+    {
+        attr_name = nullptr;
     }
-    AttrInfo(const char *name,AttrType type,size_t len=1){
-        attr_name=strnew(name);
-        attr_type=type;
-        attr_len=len;
+    AttrInfo(const char *name, AttrType type, size_t len = 1)
+    {
+        attr_name = strnew(name);
+        attr_type = type;
+        attr_len = len;
     }
-    void destroy(){
-        delete[]attr_name;
+    void destroy()
+    {
+        delete[] attr_name;
     }
 };
 
@@ -100,86 +103,103 @@ struct Condition
     Value right_value;
 };
 
-class Query{
-    public:
-    Query():flag_(SCF_ERROR){}
-    Query(SqlCommandFlag flag):flag_(flag){}
-    virtual void initialize()=0;
+class Query
+{
+public:
+    Query() : flag_(SCF_ERROR) {}
+    Query(SqlCommandFlag flag) : flag_(flag) {}
+    virtual void initialize() = 0;
     //~xxxquery()
-    virtual void destroy()=0;
-    SqlCommandFlag getSCF(){return flag_;}
-    private:
+    virtual void destroy() = 0;
+    SqlCommandFlag getSCF() { return flag_; }
+
+private:
     SqlCommandFlag flag_;
 };
 
-
-class SelectQuery:public Query
+class SelectQuery : public Query
 {
-    public:
-    SelectQuery():Query(SCF_SELECT){
-        rel_name_=nullptr;
+public:
+    SelectQuery() : Query(SCF_SELECT)
+    {
+        rel_name_ = nullptr;
     }
-    void initialize() override{
-        rel_name_=new char [MAX_REL_LENGTH+1];
+    void initialize() override
+    {
+        rel_name_ = new char[MAX_REL_LENGTH + 1];
     }
-    void destroy() override{
-        delete[]rel_name_;
-    }
-    private:
-    char *rel_name_;
-};
-class InsertQuery:public Query
-{
-    public:
-    InsertQuery():Query(SCF_INSERT){
-        rel_name_=nullptr;
-    }
-    void initialize() override{
-        rel_name_=new char [MAX_REL_LENGTH+1];
-    }
-    void destroy() override{
+    void destroy() override
+    {
         delete[] rel_name_;
     }
-    private:
+
+private:
     char *rel_name_;
 };
-class CreateTableQuery:public Query
+class InsertQuery : public Query
 {
-    public:
-    CreateTableQuery():Query(SCF_CREATE_TABLE){}
-    void initialize() override{
-        rel_name_=nullptr;
-        attr_num_=0;
-        attrs_=new AttrInfo[MAX_ATTRS_NUM];
+public:
+    InsertQuery() : Query(SCF_INSERT)
+    {
+        rel_name_ = nullptr;
     }
-    void destroy() override{
-        delete[]rel_name_;
-        for(int i=0;i<attr_num_;i++)
+    void initialize() override
+    {
+        rel_name_ = new char[MAX_REL_LENGTH + 1];
+    }
+    void destroy() override
+    {
+        delete[] rel_name_;
+    }
+
+private:
+    char *rel_name_;
+};
+class CreateTableQuery : public Query
+{
+public:
+    CreateTableQuery() : Query(SCF_CREATE_TABLE) {}
+    void initialize() override
+    {
+        rel_name_ = nullptr;
+        attr_num_ = 0;
+        attrs_ = new AttrInfo[MAX_ATTRS_NUM];
+    }
+    void destroy() override
+    {
+        delete[] rel_name_;
+        for (int i = 0; i < attr_num_; i++)
             attrs_[i].destroy();
     }
-    void setRelName(const char * str){
-        rel_name_=strnew(str);
+    void setRelName(const char *str)
+    {
+        rel_name_ = strnew(str);
     }
-    void addAttr(const AttrInfo& attr){
-        attrs_[attr_num_++]=attr;
+    void addAttr(const AttrInfo &attr)
+    {
+        attrs_[attr_num_++] = attr;
     }
-    private:
-    char * rel_name_;
+
+private:
+    char *rel_name_;
     size_t attr_num_;
-    AttrInfo* attrs_;
+    AttrInfo *attrs_;
 };
 
-class ErrorQuery:public Query
+class ErrorQuery : public Query
 {
-    public:
-    ErrorQuery(const char * str):Query(SCF_ERROR){
-        error_message_=new char [MAX_MSG_LENGTH];
-        strcpy(error_message_,str);
+public:
+    ErrorQuery(const char *str) : Query(SCF_ERROR)
+    {
+        error_message_ = new char[MAX_MSG_LENGTH];
+        strcpy(error_message_, str);
     }
-    void initialize(){}
-    void destroy(){
-        delete [] error_message_;
+    void initialize() {}
+    void destroy()
+    {
+        delete[] error_message_;
     }
-    private:
-    char * error_message_;
+
+private:
+    char *error_message_;
 };

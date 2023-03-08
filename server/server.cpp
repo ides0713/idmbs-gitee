@@ -15,10 +15,13 @@ void pStart(const char *sql, int sock_fd)
 {
     ParseMain p1;
     RE re_parse = p1.handle(sql);
-    if(re_parse!= RE::SUCCESS){
+    if (re_parse != RE::SUCCESS)
+    {
         printf("sql parse failed\n");
         return;
-    }else{
+    }
+    else
+    {
         printf("sql parse succeeded\n");
     }
     StorageMain p2(p1.getQuery());
@@ -74,10 +77,9 @@ int main()
     // }
 
     char buffer[100];
-    strcpy(buffer,"create table t_basic(id int, age int, name char, score float);");
-    printf("buffer content:\n--\n%s\n--\n",buffer);
-    pStart(buffer,-1);
-
+    strcpy(buffer, "create table t_basic(id int, age int, name char, score float);");
+    printf("buffer content:\n--\n%s\n--\n", buffer);
+    pStart(buffer, -1);
 
     return 0;
 }

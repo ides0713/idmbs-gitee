@@ -1,10 +1,12 @@
 #pragma once
 #include "resolve_defs.h"
 #include "../../src/common_defs.h"
-class ResolveMain{
-    public:
+class ResolveMain
+{
+public:
     ResolveMain();
-    RE handle(Query* query);
-    private:
-    Statement * stmt_;
+    RE handle(Query *query);
+
+private:
+    Statement *stmt_;
 };

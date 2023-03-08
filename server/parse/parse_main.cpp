@@ -9,9 +9,10 @@ ParseMain::ParseMain()
 RE ParseMain::handle(const char *st)
 {
     int rv = parse(st, query_);
-    if (!rv){
+    if (!rv)
+    {
         query_->destroy();
-        query_=nullptr;
+        query_ = nullptr;
         return RE::FAIL;
     }
     else

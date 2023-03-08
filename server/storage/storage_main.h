@@ -9,17 +9,19 @@
 //          datefile
 //          indexfile
 
-
-class StorageMain{
-    public:
-    StorageMain(Query * query){
-        query_=query;
+class StorageMain
+{
+public:
+    StorageMain(Query *query)
+    {
+        query_ = query;
     }
     RE handle();
     void nextP();
-    private:
-    DIR * findBin();
-    DIR * findDBDir();
-    FILE* findDBFile(DIR* bin_dir);
-    Query* query_;
+
+private:
+    DIR *findBin();
+    DIR *findDBDir();
+    FILE *findDBFile(DIR *bin_dir);
+    Query *query_;
 };
