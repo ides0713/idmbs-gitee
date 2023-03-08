@@ -8,6 +8,8 @@
 //          dbfile
 //          datefile
 //          indexfile
+
+
 class StorageMain{
     public:
     StorageMain(Query * query){
@@ -17,6 +19,7 @@ class StorageMain{
     void nextP();
     private:
     DIR * findBin();
+    DIR * findDBDir();
     FILE* findDBFile(DIR* bin_dir);
     Query* query_;
 };

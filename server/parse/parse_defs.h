@@ -102,14 +102,14 @@ struct Condition
 
 class Query{
     public:
-    Query():SCF_Flag_(SCF_ERROR){}
-    Query(SqlCommandFlag scf):SCF_Flag_(scf){}
+    Query():flag_(SCF_ERROR){}
+    Query(SqlCommandFlag flag):flag_(flag){}
     virtual void initialize()=0;
     //~xxxquery()
     virtual void destroy()=0;
-    SqlCommandFlag getSCFFlag(){return SCF_Flag_;}
+    SqlCommandFlag getSCF(){return flag_;}
     private:
-    SqlCommandFlag SCF_Flag_;
+    SqlCommandFlag flag_;
 };
 
 
@@ -119,10 +119,10 @@ class SelectQuery:public Query
     SelectQuery():Query(SCF_SELECT){
         rel_name_=nullptr;
     }
-    void initialize(){
+    void initialize() override{
         rel_name_=new char [MAX_REL_LENGTH+1];
     }
-    void destroy(){
+    void destroy() override{
         delete[]rel_name_;
     }
     private:
@@ -134,10 +134,10 @@ class InsertQuery:public Query
     InsertQuery():Query(SCF_INSERT){
         rel_name_=nullptr;
     }
-    void initialize(){
+    void initialize() override{
         rel_name_=new char [MAX_REL_LENGTH+1];
     }
-    void destroy(){
+    void destroy() override{
         delete[] rel_name_;
     }
     private:
@@ -147,12 +147,12 @@ class CreateTableQuery:public Query
 {
     public:
     CreateTableQuery():Query(SCF_CREATE_TABLE){}
-    void initialize(){
+    void initialize() override{
         rel_name_=nullptr;
         attr_num_=0;
         attrs_=new AttrInfo[MAX_ATTRS_NUM];
     }
-    void destroy(){
+    void destroy() override{
         delete[]rel_name_;
         for(int i=0;i<attr_num_;i++)
             attrs_[i].destroy();
