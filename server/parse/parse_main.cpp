@@ -1,28 +1,19 @@
 #include "parse_main.h"
-
-Parse::Parse()
+#include "parse.h"
+#include <stdio.h>
+#include <assert.h>
+ParseMain::ParseMain()
 {
     query_ = nullptr;
-    return_info_ = nullptr;
 }
-Parse::~Parse()
+RE ParseMain::execute(const char *st)
 {
-    if(query_!=nullptr)
-        query_->destroy();
-    delete return_info_;
-}
-returnInfo *Parse::parseMain(const char *st)
-{
-    return_info_=new returnInfo();
-    if (return_info_ == nullptr)
-    {
-        return_info_->set(RI_STATUS_FAIL, "Failed to initialize QueryInfo");
-        return return_info_;
-    }
     int rv = parse(st, query_);
-    if (!rv)
-        return_info_->set(RI_STATUS_FAIL, "Failed");
+    if (!rv){
+        query_->destroy();
+        query_=nullptr;
+        return RE::FAIL;
+    }
     else
-        return_info_->set(RI_STATUS_SUCCESS, "Succeeded");
-    return return_info_;
+        return RE::SUCCESS;
 }

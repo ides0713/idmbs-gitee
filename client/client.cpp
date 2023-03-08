@@ -4,7 +4,8 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <thread>
-#include <boost/thread.hpp>
+#include <strings.h>
+#include <string.h>
 #include "../src/common_defs.h"
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;

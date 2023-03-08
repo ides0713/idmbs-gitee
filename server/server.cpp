@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <thread>
 #include "parse/parse_main.h"
+#include "storage/storage_main.h"
 #include "../src/common_defs.h"
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
@@ -12,15 +13,16 @@ const int MAX_CONNECTS = 10;
 
 void pStart(const char *sql, int sock_fd)
 {
-    Parse p1;
-    returnInfo *rt_info1 = p1.parseMain(sql);
-    if(rt_info1->status_==RI_STATUS_FAIL or rt_info1->status_==RI_STATUS_OTHERFAIL){
+    ParseMain p1;
+    RE re_parse = p1.execute(sql);
+    if(re_parse!= RE::SUCCESS){
         printf("sql parse failed\n");
         return;
     }else{
         printf("sql parse succeeded\n");
-        return;
     }
+    StorageMain p2(p1.nextP());
+    p2.execute();
 }
 void recvFunc(int fd)
 {
@@ -72,9 +74,10 @@ int main()
     // }
 
     char buffer[100];
-    strcpy(buffer,"create table test_table (float a,char b,int c);");
-    printf("buffer content:%s\n",buffer);
+    strcpy(buffer,"create table t_basic(id int, age int, name char, score float);");
+    printf("buffer content:\n--\n%s\n--\n",buffer);
     pStart(buffer,-1);
+
 
     return 0;
 }

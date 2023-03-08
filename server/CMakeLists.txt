@@ -6,9 +6,6 @@ SET (BOOST_ROOT "/usr/local/boost_1_81_0")
 SET (BOOST_INCLUDEDIR "/usr/local/boost_1_81_0/include")
 SET (BOOST_LIBRARYDIR "/usr/local/boost_1_81_0/lib")
 find_package(Boost COMPONENTS regex thread REQUIRED)
-SET (BOOST_ROOT "/usr/local/boost_1_81_0")
-SET (BOOST_INCLUDEDIR "/usr/local/boost_1_81_0/include")
-SET (BOOST_LIBRARYDIR "/usr/local/boost_1_81_0/lib")
 MESSAGE(STATUS "Boost_INCLUDE_DIRS = ${Boost_INCLUDE_DIRS}")
 MESSAGE(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
 target_include_directories(server
@@ -24,6 +21,7 @@ target_link_libraries(server
 aux_source_directory(parse parse_dir_var)
 aux_source_directory(storage storage_dir_var)
 aux_source_directory(../src src_dir_var)
+
 target_sources(server
     PRIVATE
         ${parse_dir_var}

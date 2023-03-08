@@ -2,12 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 
+const int MAX_ID_LENGTH=20;
 const int MAX_REL_LENGTH = 20;
 const int MAX_ATTRS_NUM = 20;
 const int MAX_CONDITIONS_NUM = 20;
 const int MAX_ATTR_LENGTH = 20;
 const int MAX_MSG_LENGTH = 50;
 
+// add func
+int test_func(int param);
+char * strnew(const char * str);
 
 enum SqlCommandFlag
 {
@@ -70,6 +74,17 @@ struct AttrInfo
     char *attr_name;    // 属性名
     AttrType attr_type; // 属性类型(数据类型)
     size_t attr_len;    // 属性长度(占空间大小)
+    AttrInfo(){
+        attr_name=nullptr;
+    }
+    AttrInfo(const char *name,AttrType type,size_t len=1){
+        attr_name=strnew(name);
+        attr_type=type;
+        attr_len=len;
+    }
+    void destroy(){
+        delete[]attr_name;
+    }
 };
 
 struct Condition
@@ -87,14 +102,14 @@ struct Condition
 
 class Query{
     public:
-    Query():SCF_Flag_(SCF_ERROR){}
-    Query(SqlCommandFlag scf):SCF_Flag_(scf){}
+    Query():flag_(SCF_ERROR){}
+    Query(SqlCommandFlag flag):flag_(flag){}
     virtual void initialize()=0;
     //~xxxquery()
     virtual void destroy()=0;
-    SqlCommandFlag getSCFFlag(){return SCF_Flag_;}
+    SqlCommandFlag getSCF(){return flag_;}
     private:
-    SqlCommandFlag SCF_Flag_;
+    SqlCommandFlag flag_;
 };
 
 
@@ -104,10 +119,10 @@ class SelectQuery:public Query
     SelectQuery():Query(SCF_SELECT){
         rel_name_=nullptr;
     }
-    void initialize(){
+    void initialize() override{
         rel_name_=new char [MAX_REL_LENGTH+1];
     }
-    void destroy(){
+    void destroy() override{
         delete[]rel_name_;
     }
     private:
@@ -119,10 +134,10 @@ class InsertQuery:public Query
     InsertQuery():Query(SCF_INSERT){
         rel_name_=nullptr;
     }
-    void initialize(){
+    void initialize() override{
         rel_name_=new char [MAX_REL_LENGTH+1];
     }
-    void destroy(){
+    void destroy() override{
         delete[] rel_name_;
     }
     private:
@@ -131,17 +146,27 @@ class InsertQuery:public Query
 class CreateTableQuery:public Query
 {
     public:
-    CreateTableQuery():Query(SCF_CREATE_TABLE){
+    CreateTableQuery():Query(SCF_CREATE_TABLE){}
+    void initialize() override{
         rel_name_=nullptr;
+        attr_num_=0;
+        attrs_=new AttrInfo[MAX_ATTRS_NUM];
     }
-    void initialize(){
-        rel_name_=new char [MAX_REL_LENGTH];
-    }
-    void destroy(){
+    void destroy() override{
         delete[]rel_name_;
+        for(int i=0;i<attr_num_;i++)
+            attrs_[i].destroy();
+    }
+    void setRelName(const char * str){
+        rel_name_=strnew(str);
+    }
+    void addAttr(const AttrInfo& attr){
+        attrs_[attr_num_++]=attr;
     }
     private:
     char * rel_name_;
+    size_t attr_num_;
+    AttrInfo* attrs_;
 };
 
 class ErrorQuery:public Query
@@ -158,7 +183,3 @@ class ErrorQuery:public Query
     private:
     char * error_message_;
 };
-
-
-// add func
-int test_func(int param);
