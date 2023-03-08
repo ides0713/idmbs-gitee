@@ -5,8 +5,8 @@
 class ParseMain{
     public:
         ParseMain();
-        RE execute(const char * st);
-        Query* nextP(){return query_;}
+        RE handle(const char * st);
+        Query* getQuery(){return query_;}
     private:
         Query* query_;
 };

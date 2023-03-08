@@ -6,7 +6,7 @@ ParseMain::ParseMain()
 {
     query_ = nullptr;
 }
-RE ParseMain::execute(const char *st)
+RE ParseMain::handle(const char *st)
 {
     int rv = parse(st, query_);
     if (!rv){

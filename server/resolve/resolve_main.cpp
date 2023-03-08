@@ -4,7 +4,7 @@ ResolveMain::ResolveMain()
 {
     stmt_ = nullptr;
 }
-RE ResolveMain::execute(Query *query)
+RE ResolveMain::handle(Query *query)
 {
     Statement::createStatement(query, stmt_);
     if (stmt_ == nullptr)
@@ -13,6 +13,6 @@ RE ResolveMain::execute(Query *query)
         return RE::FAIL;
     }
     stmt_->initialize(query);
-    stmt_->create(query);
+    stmt_->handle(query);
     query->destroy();
 }

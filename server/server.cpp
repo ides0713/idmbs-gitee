@@ -14,15 +14,15 @@ const int MAX_CONNECTS = 10;
 void pStart(const char *sql, int sock_fd)
 {
     ParseMain p1;
-    RE re_parse = p1.execute(sql);
+    RE re_parse = p1.handle(sql);
     if(re_parse!= RE::SUCCESS){
         printf("sql parse failed\n");
         return;
     }else{
         printf("sql parse succeeded\n");
     }
-    StorageMain p2(p1.nextP());
-    p2.execute();
+    StorageMain p2(p1.getQuery());
+    p2.handle();
 }
 void recvFunc(int fd)
 {

@@ -4,7 +4,7 @@
 class ResolveMain{
     public:
     ResolveMain();
-    RE execute(Query* query);
+    RE handle(Query* query);
     private:
     Statement * stmt_;
 };

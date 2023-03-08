@@ -15,7 +15,7 @@ class StorageMain{
     StorageMain(Query * query){
         query_=query;
     }
-    RE execute();
+    RE handle();
     void nextP();
     private:
     DIR * findBin();

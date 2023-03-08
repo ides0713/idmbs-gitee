@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
-RE StorageMain::execute(){
+RE StorageMain::handle(){
     DIR* bin_dir=findBin();
     if(bin_dir==nullptr)
         printf("get bin dir failed\n");
