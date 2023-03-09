@@ -13,9 +13,11 @@ public:
     GlobalParamsManager();
     void initialize();
     void destroy();
+    char *getBinDirPath() { return bin_dir_path_; }
+    DIR *getBinDirDir() { return bin_dir_dir_; }
 
 private:
-    const char *bin_dir_path_;
+    char *bin_dir_path_;
     DIR *bin_dir_dir_;
 } GPM;
 
@@ -44,5 +46,5 @@ void GlobalParamsManager::initialize()
 void GlobalParamsManager::destroy()
 {
     closedir(bin_dir_dir_);
-    delete[]bin_dir_path_;
+    delete[] bin_dir_path_;
 }

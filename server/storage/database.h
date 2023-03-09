@@ -4,7 +4,7 @@ class DataBase
 {
 public:
     DataBase(const char *name);
-
+    
 private:
     char *database_name_;
 };
