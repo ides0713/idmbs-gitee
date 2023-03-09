@@ -31,7 +31,6 @@ void GlobalParamsManager::initialize()
     getcwd(parent_str, DIR_PATH_LEN);
     parent_str = getParentDir(parent_str);
     DIR *parent_dir = opendir(parent_str);
-    printf("parent_dir_path:%s\n", parent_str);
     dirent *a = findDir(parent_dir, "bin");
     strcat(parent_str, "/bin");
     if (a == nullptr)
