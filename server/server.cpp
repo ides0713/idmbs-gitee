@@ -12,7 +12,10 @@
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 const int MAX_CONNECTS = 10;
-
+void serverInitialize()
+{
+    GlobalParamsManager::getInstance().initialize();
+}
 void pStart(const char *sql, int sock_fd)
 {
     ParseMain p1;
@@ -59,8 +62,6 @@ void recvFunc(int fd)
 }
 int main()
 {
-    GlobalParamsManager::getInstance().initialize();
-    printf("bin_path:%s\n",GlobalParamsManager::getInstance().getBinPath());
     // int listen_fd, conn_fd;
     // sockaddr_in serve_addr;
     // listen_fd = socket(AF_INET, SOCK_STREAM, 0);

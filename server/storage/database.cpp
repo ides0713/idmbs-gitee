@@ -1,10 +1,24 @@
 #include "database.h"
 #include "../parse/parse_defs.h"
-DataBase::DataBase(const char *name)
+DataBase::DataBase()
 {
-    database_name_=strnew(name);
-    database_dfile_=nullptr;
+    database_name_ = nullptr;
+    database_dfile_ = nullptr;
 }
-void DataBase::initialize(){
+bool DataBase::initialize(const char * name)
+{
     GlobalParamsManager::getInstance().getBinDir();
 }
+
+void DataBase::create()
+{
+
+}
+
+DataBaseManager &DataBaseManager::getInstance()
+{
+    static DataBaseManager instance;
+    return instance;
+}
+
+
