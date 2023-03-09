@@ -1,5 +1,5 @@
 #pragma once
-#include "../../src/common_defs.h"
+#include "../../src/server_defs.h"
 #include <stdio.h>
 class DataBase
 {

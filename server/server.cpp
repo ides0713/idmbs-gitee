@@ -59,7 +59,8 @@ void recvFunc(int fd)
 }
 int main()
 {
-    GlobalParamsManager::getInstance();
+    GlobalParamsManager::getInstance().initialize();
+    printf("bin_path:%s\n",GlobalParamsManager::getInstance().getBinPath());
     // int listen_fd, conn_fd;
     // sockaddr_in serve_addr;
     // listen_fd = socket(AF_INET, SOCK_STREAM, 0);

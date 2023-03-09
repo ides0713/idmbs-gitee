@@ -10,6 +10,7 @@
 
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
+
 void recvFunc(int fd)
 {
     int n;
@@ -26,6 +27,7 @@ void recvFunc(int fd)
     }
     close(fd);
 }
+
 int main(int argc, char **argv)
 {
     int sock_fd, n;
