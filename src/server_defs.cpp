@@ -11,3 +11,9 @@ char *substr(const char *s, int n1, int n2) /*从s中提取下标为n1~n2的字�
     sp[j] = 0;
     return sp;
 }
+
+GlobalParamsManager &GlobalParamsManager::getInstance()
+{
+    static GlobalParamsManager instance;
+    return instance;
+}

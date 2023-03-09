@@ -1,6 +1,6 @@
 #pragma once
 #include "resolve_defs.h"
-#include "../../src/common_defs.h"
+#include "../../src/server_defs.h"
 class ResolveMain
 {
 public:
