@@ -1,6 +1,6 @@
 #include "storage_defs.h"
 #include <string.h>
-#include "../../src/common_defs.h"
+#include "../../src/server_defs.h"
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>

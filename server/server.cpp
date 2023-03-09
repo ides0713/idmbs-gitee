@@ -7,6 +7,9 @@
 #include "parse/parse_main.h"
 #include "storage/storage_main.h"
 #include "../src/common_defs.h"
+#include "../src/server_defs.h"
+#include "../src/global_defs.h"
+
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 const int MAX_CONNECTS = 10;
@@ -57,6 +60,7 @@ void recvFunc(int fd)
 }
 int main()
 {
+    GPM.initialize();
     // int listen_fd, conn_fd;
     // sockaddr_in serve_addr;
     // listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -81,5 +85,7 @@ int main()
     printf("buffer content:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);
 
+
+    GPM.destroy();
     return 0;
 }

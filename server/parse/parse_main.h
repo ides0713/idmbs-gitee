@@ -1,5 +1,5 @@
 #pragma once
-#include "../../src/common_defs.h"
+#include "../../src/server_defs.h"
 #include "parse_defs.h"
 
 class ParseMain

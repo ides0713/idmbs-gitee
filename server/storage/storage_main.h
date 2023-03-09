@@ -1,6 +1,6 @@
 #pragma once
-#include "../parse/parse_defs.h"
-#include "../../src/common_defs.h"
+#include "../parse/parse.h"
+#include "../../src/server_defs.h"
 #include <unistd.h>
 #include <dirent.h>
 // bin---
