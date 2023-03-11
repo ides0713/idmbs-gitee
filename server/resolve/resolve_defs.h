@@ -1,5 +1,5 @@
 #pragma once
-#include "../../src/common_defs.h"
+#include "../../src/server_defs.h"
 #include "../parse/parse_defs.h"
 #include <vector>
 
@@ -38,4 +38,5 @@ public:
 private:
     char *table_name_;
     AttrInfo *attr_infos_;
+    size_t attr_infos_num_;
 };

@@ -1,7 +1,6 @@
 #pragma once
 #include "../../src/server_defs.h"
-
-class Statement;
+#include "resolve_defs.h"
 
 class ResolveMain
 {

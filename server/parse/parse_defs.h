@@ -84,9 +84,21 @@ struct AttrInfo
         attr_type = type;
         attr_len = len;
     }
+    AttrInfo(const AttrInfo &attr_info)
+    {
+        attr_name = strnew(attr_info.attr_name);
+        attr_type = attr_info.attr_type;
+        attr_len = attr_info.attr_len;
+    }
     void destroy()
     {
         delete[] attr_name;
+    }
+    AttrInfo &operator=(const AttrInfo &attr_info)
+    {
+        attr_name = strnew(attr_info.attr_name);
+        attr_type = attr_info.attr_type;
+        attr_len = attr_info.attr_len;
     }
 };
 
@@ -179,6 +191,9 @@ public:
     {
         attrs_[attr_num_++] = attr;
     }
+    char *getRelName() { return rel_name_; }
+    size_t getAttrNum() { return attr_num_; }
+    AttrInfo *getAttrs() { return attrs_; }
 
 private:
     char *rel_name_;
