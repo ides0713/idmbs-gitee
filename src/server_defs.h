@@ -16,8 +16,9 @@ class GlobalParamsManager
 public:
     static GlobalParamsManager &getInstance();
     void initialize();
-    char * getBinPath(){return bin_dir_path_;}
-    DIR* getBinDir(){return bin_dir_dir_;}
+    char *getBinPath() { return bin_dir_path_; }
+    DIR *getBinDir() { return bin_dir_dir_; }
+
 private:
     GlobalParamsManager();
     ~GlobalParamsManager();

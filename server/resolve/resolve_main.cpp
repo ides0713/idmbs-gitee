@@ -4,6 +4,7 @@ ResolveMain::ResolveMain()
 {
     stmt_ = nullptr;
 }
+
 RE ResolveMain::handle(Query *query)
 {
     Statement::createStatement(query, stmt_);

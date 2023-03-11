@@ -12,21 +12,9 @@ void Statement::createStatement(Query *const query, Statement *&stmt)
     }
 }
 
-void SelectStatement::initialize(Query *query)
-{
-}
-void SelectStatement::handle(Query *query)
-{
-}
-void SelectStatement::destroy()
-{
-}
-void CreateTableStatement::initialize(Query *query)
-{
-}
-void CreateTableStatement::handle(Query *query)
-{
-}
-void CreateTableStatement::destroy()
-{
-}
+void SelectStatement::initialize(Query *query) {}
+void SelectStatement::handle(Query *query) {}
+void SelectStatement::destroy() {}
+void CreateTableStatement::initialize(Query *query) {}
+void CreateTableStatement::handle(Query *query) {}
+void CreateTableStatement::destroy() {}

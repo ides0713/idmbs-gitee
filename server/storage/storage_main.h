@@ -13,9 +13,10 @@
 class StorageMain
 {
 public:
-    StorageMain(Query *query);
-    RE handle(Query* query);
+    StorageMain();
+    RE handle(Query *query);
     void nextP();
+
 private:
     DIR *findBin();
     DIR *findDBDir();

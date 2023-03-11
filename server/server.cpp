@@ -10,8 +10,9 @@
 #include "resolve/resolve_main.h"
 #include "storage/storage_main.h"
 void serverInitialize();
-void pStart(const char * sql,int sock_fd);
+void pStart(const char *sql, int sock_fd);
 void recvFunc(int fd);
+
 int main()
 {
     serverInitialize();
@@ -58,9 +59,10 @@ void pStart(const char *sql, int sock_fd)
         return;
     }
     printf("sql parse succeeded\n");
-    ResolveMain rm;
-    rm.handle(pm.getQuery());
-    StorageMain sm;
+    // ResolveMain rm;
+    // rm.handle(pm.getQuery());
+    // StorageMain sm;
+    // sm.handle();
     // StorageMain sm(pm.getQuery());
     // sm.handle();
 }

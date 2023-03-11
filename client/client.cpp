@@ -8,9 +8,6 @@
 #include <string.h>
 #include "../src/common_defs.h"
 
-const int SERVER_PORT = 8888;
-const int BUFFER_SIZE = 100;
-
 void recvFunc(int fd)
 {
     int n;

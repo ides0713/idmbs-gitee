@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
-RE StorageMain::handle()
+RE StorageMain::handle(Query *query)
 {
     DIR *bin_dir = findBin();
     if (bin_dir == nullptr)
@@ -12,7 +12,7 @@ RE StorageMain::handle()
     closedir(bin_dir);
     return RE::FAIL;
 }
-StorageMain::StorageMain(Query *query){}
+StorageMain::StorageMain() {}
 DIR *StorageMain::findBin()
 {
     char *parent_str = new char[100];
