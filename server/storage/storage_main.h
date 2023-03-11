@@ -3,6 +3,7 @@
 #include "../../src/server_defs.h"
 #include <unistd.h>
 #include <dirent.h>
+#include "database.h"
 // bin---
 //      dbdir
 //          dbfile
@@ -12,16 +13,11 @@
 class StorageMain
 {
 public:
-    StorageMain(Query *query)
-    {
-        query_ = query;
-    }
-    RE handle();
+    StorageMain(Query *query);
+    RE handle(Query* query);
     void nextP();
-
 private:
     DIR *findBin();
     DIR *findDBDir();
     FILE *findDBFile(DIR *bin_dir);
-    Query *query_;
 };

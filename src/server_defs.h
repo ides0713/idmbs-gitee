@@ -1,6 +1,9 @@
 #pragma once
 #include <unistd.h>
 #include <dirent.h>
+#include <vector>
+const int MAX_CONNECTS = 10;
+
 enum RE
 {
     SUCCESS = 0,

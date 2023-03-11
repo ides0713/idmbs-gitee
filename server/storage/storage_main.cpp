@@ -12,6 +12,7 @@ RE StorageMain::handle()
     closedir(bin_dir);
     return RE::FAIL;
 }
+StorageMain::StorageMain(Query *query){}
 DIR *StorageMain::findBin()
 {
     char *parent_str = new char[100];
