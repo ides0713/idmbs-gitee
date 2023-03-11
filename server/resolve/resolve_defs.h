@@ -1,7 +1,8 @@
 #pragma once
-#include "../parse/parse_defs.h"
 #include "../../src/common_defs.h"
+#include "../parse/parse_defs.h"
 #include <vector>
+
 class Statement
 {
 public:
@@ -18,7 +19,7 @@ private:
 class SelectStatement : public Statement
 {
 public:
-    SelectStatement(Query *query) : Statement(query->getSCF()) {}
+    SelectStatement(Query *query);
     void initialize(Query *query) override;
     void handle(Query *query) override;
     void destroy() override;
@@ -29,7 +30,7 @@ private:
 class CreateTableStatement : public Statement
 {
 public:
-    CreateTableStatement(Query *query) : Statement(query->getSCF()) {}
+    CreateTableStatement(Query *query);
     void initialize(Query *query) override;
     void handle(Query *query) override;
     void destroy() override;

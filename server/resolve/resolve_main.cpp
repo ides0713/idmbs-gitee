@@ -1,5 +1,6 @@
 #include "resolve_main.h"
 #include <stdio.h>
+#include "resolve_defs.h"
 ResolveMain::ResolveMain()
 {
     stmt_ = nullptr;

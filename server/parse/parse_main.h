@@ -1,6 +1,7 @@
 #pragma once
 #include "../../src/server_defs.h"
-#include "parse_defs.h"
+
+class Query;
 
 class ParseMain
 {

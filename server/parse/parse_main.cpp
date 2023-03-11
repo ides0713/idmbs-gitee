@@ -1,5 +1,6 @@
 #include "parse_main.h"
 #include "parse.h"
+#include "parse_defs.h"
 #include <stdio.h>
 #include <assert.h>
 ParseMain::ParseMain()
