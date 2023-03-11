@@ -7,6 +7,9 @@ ParseMain::ParseMain()
 {
     query_ = nullptr;
 }
+ParseMain::~ParseMain()
+{
+}
 RE ParseMain::handle(const char *st)
 {
     int rv = parse(st, query_);

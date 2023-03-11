@@ -18,12 +18,14 @@ target_link_libraries(client
         ${Boost_LIBRARY}
 )
 aux_source_directory(../server/parse parse_dir_var)
+aux_source_directory(../server/resolve resolve_dir_var)
 aux_source_directory(../server/storage storage_dir_var)
 aux_source_directory(../src src_dir_var)
 
 target_sources(client
     PRIVATE
         ${parse_dir_var}
+        ${resolve_dir_var}
         ${storage_dir_var}
     PUBLIC
         ${src_dir_var}

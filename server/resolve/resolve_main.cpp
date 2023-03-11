@@ -17,3 +17,8 @@ RE ResolveMain::handle(Query *query)
     stmt_->handle(query);
     query->destroy();
 }
+
+Statement *ResolveMain::getStatement()
+{
+    return stmt_;
+}

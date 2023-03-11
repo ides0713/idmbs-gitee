@@ -7,6 +7,7 @@ class ParseMain
 {
 public:
     ParseMain();
+    ~ParseMain();
     RE handle(const char *st);
     Query *getQuery() { return query_; }
 private:

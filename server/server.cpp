@@ -59,12 +59,20 @@ void pStart(const char *sql, int sock_fd)
         return;
     }
     printf("sql parse succeeded\n");
-    // ResolveMain rm;
-    // rm.handle(pm.getQuery());
-    // StorageMain sm;
-    // sm.handle();
-    // StorageMain sm(pm.getQuery());
-    // sm.handle();
+    ResolveMain rm;
+    RE re_resolve = rm.handle(pm.getQuery());
+    if (re_resolve != RE::SUCCESS)
+    {
+        printf("resolve stmt failed\n");
+        return;
+    }
+    StorageMain sm;
+    RE re_storage = sm.handle(rm.getStatement());
+    if (re_storage != RE::SUCCESS)
+    {
+        printf("storage failed\n");
+        return;
+    }
 }
 
 void recvFunc(int fd)

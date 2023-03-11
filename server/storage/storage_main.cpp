@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
-RE StorageMain::handle(Query *query)
+RE StorageMain::handle(Statement *stmt)
 {
     DIR *bin_dir = findBin();
     if (bin_dir == nullptr)

@@ -7,7 +7,7 @@ class ResolveMain
 public:
     ResolveMain();
     RE handle(Query *query);
-
+    Statement* getStatement();
 private:
     Statement *stmt_;
 };
