@@ -9,10 +9,11 @@
 #include "parse/parse_main.h"
 #include "resolve/resolve_main.h"
 #include "storage/storage_main.h"
+#include "storage/page.h"
+
 void serverInitialize();
 void pStart(const char *sql, int sock_fd);
 void recvFunc(int fd);
-
 int main()
 {
     serverInitialize();
@@ -39,7 +40,6 @@ int main()
     strcpy(buffer, "create table t_basic(id int, age int, name char, score float);");
     printf("buffer content:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);
-
     return 0;
 }
 
