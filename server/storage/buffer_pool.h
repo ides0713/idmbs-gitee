@@ -13,3 +13,15 @@ struct BPFileHeader
     // file header是一页 使用该页存储 字节*8个bit
     static const int MAX_PAGE_NUM = (BP_PAGE_DATA_SIZE - sizeof(page_count) - sizeof(allocated_pages)) * 8;
 };
+
+class Frame
+{
+public:
+    Frame();
+private:
+    bool dirty_ = false;
+    unsigned int pin_count_ = 0;
+    unsigned long acc_time_ = 0;
+    int file_desc_ = -1;
+    Page page_;
+};
