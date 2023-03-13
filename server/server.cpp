@@ -9,7 +9,6 @@
 #include "parse/parse_main.h"
 #include "resolve/resolve_main.h"
 #include "storage/storage_main.h"
-#include "storage/page.h"
 
 void serverInitialize();
 void pStart(const char *sql, int sock_fd);
