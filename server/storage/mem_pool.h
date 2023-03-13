@@ -11,7 +11,7 @@
 #define DEFAULT_ITEM_NUM_PER_POOL 128
 #define DEFAULT_POOL_NUM 1
 // 接管new/delete
-template <class t>
+template <class T>
 class MemoryPool
 {
 public:
@@ -21,8 +21,8 @@ public:
                     int item_num_per_pool = DEFAULT_ITEM_NUM_PER_POOL);
     void cleanUp();
     bool extend();
-    t *alloc();
-    void free(t *item);
+    T *alloc();
+    void free(T *item);
     std::string toString();
     const std::string getName() const { return name_; }
     int getSize() const { return size_; }
@@ -35,25 +35,25 @@ private:
     std::string name_;
     // why list and set
     // pools_中的单位只是作为申请新空间的单位 本身所有pools_中的成员数组构成一整个pool作为整体活动
-    std::list<t *> pools_;
-    std::set<t *> used_;
-    std::list<t *> free_;
+    std::list<T *> pools_;
+    std::set<T *> used_;
+    std::list<T *> free_;
     int item_num_per_pool_;
 };
 
-template <class t>
-inline MemoryPool<t>::MemoryPool(const char *name) : name_(name)
+template <class T>
+inline MemoryPool<T>::MemoryPool(const char *name) : name_(name)
 {
     size_ = 0;
 }
 
-template <class t>
-inline MemoryPool<t>::~MemoryPool()
+template <class T>
+inline MemoryPool<T>::~MemoryPool()
 {
 }
 
-template <class t>
-inline bool MemoryPool<t>::initialize(bool is_dynamic, int pool_num, int item_num_per_pool)
+template <class T>
+inline bool MemoryPool<T>::initialize(bool is_dynamic, int pool_num, int item_num_per_pool)
 {
     if (!pools_.empty())
     {
@@ -79,23 +79,23 @@ inline bool MemoryPool<t>::initialize(bool is_dynamic, int pool_num, int item_nu
     return true;
 }
 
-template <class t>
-inline void MemoryPool<t>::cleanUp()
+template <class T>
+inline void MemoryPool<T>::cleanUp()
 {
     free_.clear();
     used_.clear();
     mutex_.lock();
     for (auto it = pools_.begin(); it != pools_.end(); it++)
     {
-        t *ptr = *it;
+        T *ptr = *it;
         delete[] ptr;
     }
     pools_.clear();
     mutex_.unlock();
 }
 
-template <class t>
-inline bool MemoryPool<t>::extend()
+template <class T>
+inline bool MemoryPool<T>::extend()
 {
     if (!is_dynamic_)
     {
@@ -103,7 +103,7 @@ inline bool MemoryPool<t>::extend()
         return false;
     }
     mutex_.lock();
-    t *new_items = new t[item_num_per_pool_];
+    T *new_items = new T[item_num_per_pool_];
     if (new_items == nullptr)
     {
         printf("MemoryPool:extend failed;number of items is %d\n", item_num_per_pool_);
@@ -116,8 +116,8 @@ inline bool MemoryPool<t>::extend()
     return true;
 }
 
-template <class t>
-inline t *MemoryPool<t>::alloc()
+template <class T>
+inline T *MemoryPool<T>::alloc()
 {
     if (free_.empty())
     {
@@ -127,20 +127,28 @@ inline t *MemoryPool<t>::alloc()
             return nullptr;
     }
     mutex_.lock();
-    t *res = free_.front();
+    T *res = free_.front();
     free_.pop_front();
     used_.insert(res);
     mutex_.unlock();
     return res;
 }
 
-template <class t>
-inline void MemoryPool<t>::free(t *item)
+template <class T>
+inline void MemoryPool<T>::free(T *item)
 {
+    mutex_.lock();
+    size_t temp=used_.erase(item);
+    if(temp==0){
+        mutex_.unlock();
+        return;
+    }
+    free_.push_back(item);
+    mutex_.unlock();
 }
 
-template <class t>
-inline std::string MemoryPool<t>::toString()
+template <class T>
+inline std::string MemoryPool<T>::toString()
 {
     std::stringstream ss;
     ss << "name:" << name_ << ","
@@ -152,8 +160,8 @@ inline std::string MemoryPool<t>::toString()
     return ss.str();
 }
 
-template <class t>
-inline int MemoryPool<t>::getUsedSize()
+template <class T>
+inline int MemoryPool<T>::getUsedSize()
 {
     mutex_.lock();
     int res = used_.size();
