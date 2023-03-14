@@ -111,7 +111,7 @@ inline bool MemoryPool<T>::extend()
     }
     pools_.push_back(new_items);
     for (int i = 0; i < item_num_per_pool_; i++)
-        free_.push_back(new_items[i]);
+        free_.push_back(new_items+i);
     lock_.unlock();
     return true;
 }

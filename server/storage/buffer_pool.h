@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include "LRU_cache.h"
 #include "mem_pool.h"
+#include "bitmap.h"
+#include <string.h>
 #include "../../src/server_defs.h"
 #define BP_INVALID_PAGE_NUM (-1)
 #define BP_PAGE_SIZE (1 << 14)
@@ -10,8 +12,6 @@
 class Page
 {
 public:
-    Page();
-
 private:
     int32_t page_id_;
     char page_data_[BP_PAGE_SIZE];
@@ -35,15 +35,15 @@ struct BPFileHeader
 class Frame
 {
 public:
-    Frame();
-    void resetPage();
+    Frame(): dirty_(false), pin_count_(0), acc_time_(0), file_desc_(-1){}
+    void resetPage(){memset(&page_, 0, sizeof(page_));}
     void dirtyMark() { dirty_ = true; };
     int32_t getPageId() const { return page_.page_id_; };
-    void setPageId(int32_t id);
+    void setPageId(int32_t id){page_.page_id_ = id;}
     char *getPageData() { return page_.page_data_; };
     // void setPageData(const char * data);
     int getFileDesc() const { return file_desc_; };
-    void setFileDesc(int file_desc);
+    void setFileDesc(int file_desc){file_desc_ = file_desc;}
     bool isPurgable() { return pin_count_ <= 0; }
 
 private:
@@ -59,20 +59,11 @@ class FrameId
 public:
     FrameId(int file_desc, int32_t page_num) : file_desc_(file_desc), page_id_(page_num) {}
 
-    bool equal_to(const FrameId &other) const
-    {
-        return file_desc_ == other.file_desc_ && page_id_ == other.page_id_;
-    }
+    bool equal_to(const FrameId &other) const { return file_desc_ == other.file_desc_ && page_id_ == other.page_id_; }
 
-    bool operator==(const FrameId &other) const
-    {
-        return this->equal_to(other);
-    }
+    bool operator==(const FrameId &other) const { return this->equal_to(other); }
 
-    size_t hash() const
-    {
-        return static_cast<size_t>(file_desc_) << 32L | page_id_;
-    }
+    size_t hash() const { return static_cast<size_t>(file_desc_) << 32L | page_id_; }
 
     int getFileDesc() const { return file_desc_; }
     int32_t getPageId() const { return page_id_; }
@@ -82,13 +73,13 @@ private:
     int32_t page_id_;
 };
 
-class BPFrameManager
+class FrameManager
 {
 public:
-    BPFrameManager(const char *tag);
+    FrameManager(const char *tag):allocator_(tag){}
 
-    RE init(int pool_num);
-    RE cleanup();
+    RE initialize(int pool_num);
+    RE cleanUp();
 
     Frame *get(int file_desc, int32_t page_num);
 
@@ -96,38 +87,45 @@ public:
 
     Frame *alloc(int file_desc, int32_t page_num);
 
-    /**
-     * 尽管frame中已经包含了file_desc和page_num，但是依然要求
-     * 传入，因为frame可能忘记初始化或者没有初始化
-     */
     RE free(int file_desc, int32_t page_num, Frame *frame);
 
-    /**
-     * 如果不能从空闲链表中分配新的页面，就使用这个接口，
-     * 尝试从pin count=0的页面中淘汰一个
-     */
-    Frame *begin_purge();
+    Frame *beginPurge();
 
     size_t frame_num() const { return frames_.count(); }
 
-    /**
-     * 测试使用。返回已经从内存申请的个数
-     */
     size_t total_frame_num() const { return allocator_.getSize(); }
 
 private:
-    class BPFrameIdHasher
+    class FrameIdHasher
     {
     public:
-        size_t operator()(const FrameId &frame_id) const
-        {
-            return frame_id.hash();
-        }
+        size_t operator()(const FrameId &frame_id) const{return frame_id.hash();}
+        private:
     };
-    //   using FrameLruCache = common::LruCache<BPFrameId, Frame *, BPFrameIdHasher>;
-    //   using FrameAllocator = MemoryPool<Frame>;
 
     std::mutex lock_;
-    LRUCache<FrameId, Frame *, BPFrameIdHasher> frames_;
+    LRUCache<FrameId, Frame *, FrameIdHasher, std::equal_to<FrameId>> frames_;
     MemoryPool<Frame> allocator_;
+};
+
+class DiskBufferPool
+{
+public:
+private:
+};
+
+class BufferPoolIterator
+{
+public:
+    BufferPoolIterator();
+    ~BufferPoolIterator();
+
+    RE init(DiskBufferPool &bp, size_t start_page = 0);
+    bool has_next();
+    size_t next();
+    RE reset();
+
+private:
+    BitMap bitmap_;
+    size_t current_page_num_ = -1;
 };
