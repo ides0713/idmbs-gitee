@@ -11,7 +11,7 @@
 #define DEFAULT_ITEM_NUM_PER_POOL 128
 #define DEFAULT_POOL_NUM 1
 // 接管new/delete
-template <class T>
+template <typename T>
 class MemoryPool
 {
 public:
@@ -30,7 +30,7 @@ public:
 
 private:
     bool is_dynamic_;
-    std::recursive_mutex mutex_;
+    std::recursive_mutex lock_;
     int size_;
     std::string name_;
     // why list and set
@@ -84,14 +84,14 @@ inline void MemoryPool<T>::cleanUp()
 {
     free_.clear();
     used_.clear();
-    mutex_.lock();
+    lock_.lock();
     for (auto it = pools_.begin(); it != pools_.end(); it++)
     {
         T *ptr = *it;
         delete[] ptr;
     }
     pools_.clear();
-    mutex_.unlock();
+    lock_.unlock();
 }
 
 template <class T>
@@ -102,7 +102,7 @@ inline bool MemoryPool<T>::extend()
         printf("MemoryPool:not a dynamic pool\n");
         return false;
     }
-    mutex_.lock();
+    lock_.lock();
     T *new_items = new T[item_num_per_pool_];
     if (new_items == nullptr)
     {
@@ -112,7 +112,7 @@ inline bool MemoryPool<T>::extend()
     pools_.push_back(new_items);
     for (int i = 0; i < item_num_per_pool_; i++)
         free_.push_back(new_items[i]);
-    mutex_.unlock();
+    lock_.unlock();
     return true;
 }
 
@@ -126,25 +126,25 @@ inline T *MemoryPool<T>::alloc()
         if (!extend())
             return nullptr;
     }
-    mutex_.lock();
+    lock_.lock();
     T *res = free_.front();
     free_.pop_front();
     used_.insert(res);
-    mutex_.unlock();
+    lock_.unlock();
     return res;
 }
 
 template <class T>
 inline void MemoryPool<T>::free(T *item)
 {
-    mutex_.lock();
+    lock_.lock();
     size_t temp=used_.erase(item);
     if(temp==0){
-        mutex_.unlock();
+        lock_.unlock();
         return;
     }
     free_.push_back(item);
-    mutex_.unlock();
+    lock_.unlock();
 }
 
 template <class T>
@@ -163,8 +163,8 @@ inline std::string MemoryPool<T>::toString()
 template <class T>
 inline int MemoryPool<T>::getUsedSize()
 {
-    mutex_.lock();
+    lock_.lock();
     int res = used_.size();
-    mutex_.unlock();
+    lock_.unlock();
     return res;
 }

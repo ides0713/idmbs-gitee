@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "LRU_cache.h"
 #include "mem_pool.h"
+#include "../../src/server_defs.h"
 #define BP_INVALID_PAGE_NUM (-1)
 #define BP_PAGE_SIZE (1 << 14)
 #define BP_PAGE_DATA_SIZE (BP_PAGE_SIZE - sizeof(int32_t))
@@ -81,6 +82,52 @@ private:
     int32_t page_id_;
 };
 
-class FrameManager{
+class BPFrameManager
+{
+public:
+    BPFrameManager(const char *tag);
 
+    RE init(int pool_num);
+    RE cleanup();
+
+    Frame *get(int file_desc, int32_t page_num);
+
+    std::list<Frame *> find_list(int file_desc);
+
+    Frame *alloc(int file_desc, int32_t page_num);
+
+    /**
+     * 尽管frame中已经包含了file_desc和page_num，但是依然要求
+     * 传入，因为frame可能忘记初始化或者没有初始化
+     */
+    RE free(int file_desc, int32_t page_num, Frame *frame);
+
+    /**
+     * 如果不能从空闲链表中分配新的页面，就使用这个接口，
+     * 尝试从pin count=0的页面中淘汰一个
+     */
+    Frame *begin_purge();
+
+    size_t frame_num() const { return frames_.count(); }
+
+    /**
+     * 测试使用。返回已经从内存申请的个数
+     */
+    size_t total_frame_num() const { return allocator_.getSize(); }
+
+private:
+    class BPFrameIdHasher
+    {
+    public:
+        size_t operator()(const FrameId &frame_id) const
+        {
+            return frame_id.hash();
+        }
+    };
+    //   using FrameLruCache = common::LruCache<BPFrameId, Frame *, BPFrameIdHasher>;
+    //   using FrameAllocator = MemoryPool<Frame>;
+
+    std::mutex lock_;
+    LRUCache<FrameId, Frame *, BPFrameIdHasher> frames_;
+    MemoryPool<Frame> allocator_;
 };
