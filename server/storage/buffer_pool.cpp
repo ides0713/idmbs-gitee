@@ -12,10 +12,7 @@ RE FrameManager::initialize(int pool_num)
 RE FrameManager::cleanUp()
 {
   if (frames_.count() > 0)
-  {
     return RE::FAIL;
-  }
-
   frames_.destroy();
   return RE::SUCCESS;
 }
@@ -76,4 +73,16 @@ RE FrameManager::free(int file_desc, int32_t page_num, Frame *frame)
   frames_.remove(frame_id);
   allocator_.free(frame);
   return RE::SUCCESS;
+}
+std::list<Frame *> FrameManager::find_list(int file_desc)
+{
+  std::lock_guard<std::mutex> lock_guard(lock_);
+  std::list<Frame *> frames;
+  auto fetcher = [&frames, file_desc](const FrameId &frame_id, Frame * const frame) -> bool {
+    if (file_desc == frame_id.getFileDesc())
+          frames.push_back(frame);
+    return true;
+  };
+  frames_.foreach(fetcher);
+  return frames;
 }
