@@ -58,11 +58,12 @@ inline bool MemoryPool<T>::initialize(bool is_dynamic, int pool_num, int item_nu
     if (!pools_.empty())
     {
         printf("MemoryPool:pool is not empty,the memory pool is already initialized\n");
-        return false;
+        return true;
     }
     if (pool_num <= 0 or item_num_per_pool <= 0)
     {
         printf("MemoryPool:invalid args:pool_num:%d item_num_per_pool%d\n", pool_num, item_num_per_pool);
+        return false;
     }
     item_num_per_pool_ = item_num_per_pool;
     is_dynamic_ =  true;

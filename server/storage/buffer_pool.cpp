@@ -1,11 +1,9 @@
 #include "buffer_pool.h"
 RE FrameManager::initialize(int pool_num)
 {
-  int ret = allocator_.initialize(false, pool_num);
-  if (ret == 0)
-  {
+  bool ret = allocator_.initialize(false, pool_num);
+  if (ret)
     return RE::SUCCESS;
-  }
   return RE::FAIL;
 }
 
@@ -20,7 +18,7 @@ RE FrameManager::cleanUp()
 Frame *FrameManager::beginPurge()
 {
   Frame *purgable_frame = nullptr;
-  auto purge_finder = [&purgable_frame](const FrameId &frame_id, Frame *const frame)
+  auto purge_finder = [&purgable_frame](const FrameId &frame_id, Frame *const frame)->bool
   {
     if (frame->isPurgable())
     {
