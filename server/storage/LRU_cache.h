@@ -16,6 +16,8 @@ private:
         Value value_;
         ListNode *prev_ = nullptr;
         ListNode *next_ = nullptr;
+
+    private:
         friend class LRUCache;
     };
     class PListNodeHasher
@@ -53,6 +55,7 @@ private:
     void LRUPush(ListNode *node);
     /// @brief 移出
     void LRURemove(ListNode *node);
+private:
     std::unordered_set<ListNode *, PListNodeHasher, PListNodePredicator> searcher_;
     ListNode *lru_front_ = nullptr;
     ListNode *lru_tail_ = nullptr;

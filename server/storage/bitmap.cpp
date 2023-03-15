@@ -15,31 +15,31 @@ int find_first_setted(char byte, int start)
     return -1;
 }
 
-void BitMap::init(char *bitmap, int size)
+void BitMap::initialize(char *bitmap, int size)
 {
     bit_map_ = bitmap;
     size_ = size;
 }
 
-bool BitMap::get_bit(int index)
+bool BitMap::getBit(int index)
 {
     char bits = bit_map_[index / 8];
     return (bits & (1 << (index % 8))) != 0;
 }
 
-void BitMap::set_bit(int index)
+void BitMap::setBit(int index)
 {
     char &bits = bit_map_[index / 8];
     bits |= (1 << (index % 8));
 }
 
-void BitMap::clear_bit(int index)
+void BitMap::clearBit(int index)
 {
     char &bits = bit_map_[index / 8];
     bits &= ~(1 << (index % 8));
 }
 
-int BitMap::next_unsetted_bit(int start)
+int BitMap::nextUnsettedBit(int start)
 {
     int ret = -1;
     int start_in_byte = start % 8;
@@ -62,7 +62,7 @@ int BitMap::next_unsetted_bit(int start)
     return ret;
 }
 
-int BitMap::next_setted_bit(int start)
+int BitMap::nextSettedBit(int start)
 {
     int ret = -1;
     int start_in_byte = start % 8;

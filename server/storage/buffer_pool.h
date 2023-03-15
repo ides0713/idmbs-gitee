@@ -15,6 +15,8 @@ public:
 private:
     int32_t page_id_;
     char page_data_[BP_PAGE_SIZE];
+
+private:
     friend class Frame;
 };
 // first page of bpfile
@@ -35,25 +37,26 @@ struct BPFileHeader
 class Frame
 {
 public:
-    Frame(): dirty_(false), pin_count_(0), acc_time_(0), file_desc_(-1){}
-    void resetPage(){memset(&page_, 0, sizeof(page_));}
+    Frame() : dirty_(false), pin_count_(0), acc_time_(0), file_desc_(-1) {}
+    void resetPage() { memset(&page_, 0, sizeof(page_)); }
     void dirtyMark() { dirty_ = true; };
     int32_t getPageId() const { return page_.page_id_; };
-    void setPageId(int32_t id){page_.page_id_ = id;}
+    void setPageId(int32_t id) { page_.page_id_ = id; }
     char *getPageData() { return page_.page_data_; };
     // void setPageData(const char * data);
     int getFileDesc() const { return file_desc_; };
-    void setFileDesc(int file_desc){file_desc_ = file_desc;}
+    void setFileDesc(int file_desc) { file_desc_ = file_desc; }
     bool isPurgable() { return pin_count_ <= 0; }
 
 private:
-    bool dirty_ = false;
-    unsigned int pin_count_ = 0;
-    unsigned long acc_time_ = 0;
-    int file_desc_ = -1;
+    bool dirty_;
+    unsigned int pin_count_;
+    unsigned long acc_time_;
+    int file_desc_;
     Page page_;
 };
 
+///@brief get frameid by hash file_desc and page_num
 class FrameId
 {
 public:
@@ -76,56 +79,97 @@ private:
 class FrameManager
 {
 public:
-    FrameManager(const char *tag):allocator_(tag){}
+    FrameManager(const char *tag) : memory_pool_allocator_(tag) {}
 
     RE initialize(int pool_num);
     RE cleanUp();
 
     Frame *get(int file_desc, int32_t page_num);
 
-    std::list<Frame *> find_list(int file_desc);
-
     Frame *alloc(int file_desc, int32_t page_num);
 
     RE free(int file_desc, int32_t page_num, Frame *frame);
 
     Frame *beginPurge();
+    std::list<Frame *> find_list(int file_desc);
+    size_t frame_num() const { return frames_LRU_cache_.count(); }
 
-    size_t frame_num() const { return frames_.count(); }
-
-    size_t total_frame_num() const { return allocator_.getSize(); }
+    size_t total_frame_num() const { return memory_pool_allocator_.getSize(); }
 
 private:
     class FrameIdHasher
     {
     public:
-        size_t operator()(const FrameId &frame_id) const{return frame_id.hash();}
-        private:
+        size_t operator()(const FrameId &frame_id) const { return frame_id.hash(); }
+
+    private:
     };
 
+private:
     std::mutex lock_;
-    LRUCache<FrameId, Frame *, FrameIdHasher, std::equal_to<FrameId>> frames_;
-    MemoryPool<Frame> allocator_;
+    LRUCache<FrameId, Frame *, FrameIdHasher, std::equal_to<FrameId>> frames_LRU_cache_;
+    MemoryPool<Frame> memory_pool_allocator_;
 };
 
+///@brief class above does not make on-disk change
 class DiskBufferPool
 {
 public:
+    DiskBufferPool(BufferPoolManager &bp_manager, FrameManager &frame_manager);
+    ~DiskBufferPool();
+    RE create_file(const char *file_name);
+    RE open_file(const char *file_name);
+    RE close_file();
+    RE get_this_page(int32_t page_num, Frame **frame);
+    RE allocate_page(Frame **frame);
+    RE dispose_page(int32_t page_num);
+    RE purge_page(int32_t page_num);
+    RE purge_all_pages();
+    RE unpin_page(Frame *frame);
+    RE get_page_count(int *page_count);
+    RE check_all_pages_unpinned();
+    int file_desc() const;
+    RE flush_page(Frame &frame);
+    RE flush_all_pages();
+    RE recover_page(int32_t page_num);
+
+protected:
+    RE allocate_frame(int32_t page_num, Frame **buf);
+    RE purge_frame(int32_t page_num, Frame *used_frame);
+    RE check_page_num(int32_t page_num);
+    RE load_page(int32_t page_num, Frame *frame);
+
 private:
+    BufferPoolManager &bp_manager_;
+    FrameManager &frame_manager_;
+    std::string file_name_;
+    int file_desc_ = -1;
+    Frame *hdr_frame_ = nullptr;
+    BPFileHeader *file_header_ = nullptr;
+    std::set<int32_t> disposed_pages;
+
+private:
+    friend class BufferPoolIterator;
 };
 
 class BufferPoolIterator
 {
 public:
-    BufferPoolIterator();
-    ~BufferPoolIterator();
+    BufferPoolIterator() : current_page_num_(-1) {}
+    ~BufferPoolIterator() {}
 
-    RE init(DiskBufferPool &bp, size_t start_page = 0);
-    bool has_next();
-    size_t next();
+    RE initialize(DiskBufferPool &bp, int32_t start_page = 0);
+    bool hasNext();
+    int32_t next();
     RE reset();
 
 private:
-    BitMap bitmap_;
-    size_t current_page_num_ = -1;
+    BitMap bit_map_;
+    int32_t current_page_num_ = -1;
+};
+
+class BufferPoolManager
+{
+public:
+private:
 };
