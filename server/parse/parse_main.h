@@ -9,6 +9,7 @@ public:
     ParseMain();
     ~ParseMain();
     RE handle(const char *st);
+    std::pair<Query*,Session>
     Query *getQuery() { return query_; }
 private:
     Query *query_;

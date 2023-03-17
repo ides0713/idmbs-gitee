@@ -25,3 +25,4 @@ private:
     char *bin_dir_path_;
     DIR *bin_dir_dir_;
 };
+

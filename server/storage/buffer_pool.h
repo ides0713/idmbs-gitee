@@ -4,6 +4,7 @@
 #include "mem_pool.h"
 #include "bitmap.h"
 #include <string.h>
+#include <unordered_map>
 #include "../../src/server_defs.h"
 #define BP_INVALID_PAGE_NUM (-1)
 #define BP_PAGE_SIZE (1 << 14)
@@ -18,6 +19,8 @@ private:
 
 private:
     friend class Frame;
+    friend class DiskBufferPool;
+    friend class BufferPoolManager;
 };
 // first page of bpfile
 struct BPFileHeader
@@ -54,6 +57,8 @@ private:
     unsigned long acc_time_;
     int file_desc_;
     Page page_;
+private:
+    friend class DiskBufferPool;
 };
 
 ///@brief get frameid by hash file_desc and page_num
@@ -111,13 +116,15 @@ private:
     MemoryPool<Frame> memory_pool_allocator_;
 };
 
+class BufferPoolManager;
 ///@brief class above does not make on-disk change
+
 class DiskBufferPool
 {
 public:
-    DiskBufferPool(BufferPoolManager &bp_manager, FrameManager &frame_manager);
+    DiskBufferPool(BufferPoolManager &bp_manager, FrameManager &frame_manager) : bp_manager_(bp_manager), frame_manager_(frame_manager) {}
     ~DiskBufferPool();
-    RE create_file(const char *file_name);
+    // RE create_file(const char *file_name);
     RE open_file(const char *file_name);
     RE close_file();
     RE get_this_page(int32_t page_num, Frame **frame);
@@ -144,12 +151,35 @@ private:
     FrameManager &frame_manager_;
     std::string file_name_;
     int file_desc_ = -1;
-    Frame *hdr_frame_ = nullptr;
+    Frame *header_frame_ = nullptr;
     BPFileHeader *file_header_ = nullptr;
     std::set<int32_t> disposed_pages;
 
 private:
     friend class BufferPoolIterator;
+    
+};
+
+class BufferPoolManager
+{
+public:
+  BufferPoolManager();
+  ~BufferPoolManager();
+
+  RE create_file(const char *file_name);
+  RE open_file(const char *file_name, DiskBufferPool *&bp);
+  RE close_file(const char *file_name);
+
+  RE flush_page(Frame &frame);
+  
+public:
+  static void set_instance(BufferPoolManager *bpm);
+  static BufferPoolManager &instance();
+  
+private:
+  FrameManager frame_manager_{"BufPool"};
+  std::unordered_map<std::string, DiskBufferPool *> buffer_pools_;
+  std::unordered_map<int, DiskBufferPool *> fd_buffer_pools_;
 };
 
 class BufferPoolIterator
@@ -166,10 +196,4 @@ public:
 private:
     BitMap bit_map_;
     int32_t current_page_num_ = -1;
-};
-
-class BufferPoolManager
-{
-public:
-private:
 };
