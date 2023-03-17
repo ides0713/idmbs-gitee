@@ -31,6 +31,7 @@ public:
     RE openDB(const char *databse_name);
     RE delDB(const char *database_name);
     RE closeDB(const char *database_name);
+    void destroy();
 private:
     DataBaseManager();
     ~DataBaseManager();

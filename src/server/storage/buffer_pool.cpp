@@ -129,7 +129,7 @@ Frame *FrameManager::beginPurge()
   return purgable_frame;
 }
 
-std::list<Frame *> FrameManager::find_list(int file_desc)
+std::list<Frame *> FrameManager::findList(int file_desc)
 {
   std::lock_guard<std::mutex> lock_guard(lock_);
   std::list<Frame *> frames;
@@ -338,7 +338,7 @@ RE DiskBufferPool::purgePage(int32_t page_num)
 
 RE DiskBufferPool::purgeAllPages()
 {
-  std::list<Frame *> used = frame_manager_.find_list(file_desc_);
+  std::list<Frame *> used = frame_manager_.findList(file_desc_);
   for (std::list<Frame *>::iterator it = used.begin(); it != used.end(); ++it)
   {
     Frame *frame = *it;
@@ -387,7 +387,7 @@ RE DiskBufferPool::getPageCount(int *page_count)
 
 RE DiskBufferPool::checkAllPagesUnpinned()
 {
-  std::list<Frame *> frames = frame_manager_.find_list(file_desc_);
+  std::list<Frame *> frames = frame_manager_.findList(file_desc_);
   for (auto &frame : frames)
   {
     if (frame->getPageId() == BP_HEADER_PAGE && frame->pin_count_ > 1)
@@ -428,7 +428,7 @@ RE DiskBufferPool::flushPage(Frame &frame)
 
 RE DiskBufferPool::flushAllPages()
 {
-  std::list<Frame *> used = frame_manager_.find_list(file_desc_);
+  std::list<Frame *> used = frame_manager_.findList(file_desc_);
   for (Frame *frame : used)
   {
     RE re = flushPage(*frame);

@@ -97,10 +97,10 @@ public:
     RE free(int file_desc, int32_t page_num, Frame *frame);
 
     Frame *beginPurge();
-    std::list<Frame *> find_list(int file_desc);
-    size_t frame_num() const { return frames_LRU_cache_.count(); }
+    std::list<Frame *> findList(int file_desc);
+    size_t getFrameNum() const { return frames_LRU_cache_.count(); }
 
-    size_t total_frame_num() const { return memory_pool_allocator_.getSize(); }
+    size_t getTotalFrameNum() const { return memory_pool_allocator_.getSize(); }
 
 private:
     class FrameIdHasher

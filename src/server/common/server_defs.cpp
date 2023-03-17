@@ -27,6 +27,10 @@ void GlobalParamsManager::initialize()
     delete[] parent_str;
 }
 
+void GlobalParamsManager::destroy()
+{
+}
+
 GlobalParamsManager::GlobalParamsManager()
 {
     bin_dir_dir_ = nullptr;

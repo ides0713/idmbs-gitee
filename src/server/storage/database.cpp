@@ -57,6 +57,10 @@ RE DataBaseManager::createDB(const char *database_name)
     return RE();
 }
 
+void DataBaseManager::destroy()
+{
+}
+
 DataBaseManager::DataBaseManager() {}
 
 DataBaseManager::~DataBaseManager() {}

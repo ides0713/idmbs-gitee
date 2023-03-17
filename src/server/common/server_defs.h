@@ -18,7 +18,7 @@ public:
     void initialize();
     char *getBinPath() { return bin_dir_path_; }
     DIR *getBinDir() { return bin_dir_dir_; }
-
+    void destroy();
 private:
     GlobalParamsManager();
     ~GlobalParamsManager();
