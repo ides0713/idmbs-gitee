@@ -145,11 +145,11 @@ std::list<Frame *> FrameManager::find_list(int file_desc)
 
 DiskBufferPool::~DiskBufferPool()
 {
-  close_file();
+  closeFile();
   printf("DiskBufferPool:Exit\n");
 }
 
-RE DiskBufferPool::open_file(const char *file_name)
+RE DiskBufferPool::openFile(const char *file_name)
 {
   int fd;
   if ((fd = open(file_name, O_RDWR)) < 0)
@@ -161,7 +161,7 @@ RE DiskBufferPool::open_file(const char *file_name)
   file_name_ = file_name;
   file_desc_ = fd;
   RE re = RE::SUCCESS;
-  re = allocate_frame(BP_HEADER_PAGE, &header_frame_);
+  re = allocateFrame(BP_HEADER_PAGE, &header_frame_);
   if (re != RE::SUCCESS)
   {
     printf("failed to allocate frame for header. file name %s\n", file_name_.c_str());
@@ -173,11 +173,11 @@ RE DiskBufferPool::open_file(const char *file_name)
   header_frame_->file_desc_ = fd;
   header_frame_->pin_count_ = 1;
   header_frame_->acc_time_ = getCurrentTime();
-  if ((re = load_page(BP_HEADER_PAGE, header_frame_)) != RE::SUCCESS)
+  if ((re = loadPage(BP_HEADER_PAGE, header_frame_)) != RE::SUCCESS)
   {
     printf("Failed to load first page of %s, due to %s.\n", file_name, strerror(errno));
     header_frame_->pin_count_ = 0;
-    purge_frame(BP_HEADER_PAGE, header_frame_);
+    purgeFrame(BP_HEADER_PAGE, header_frame_);
     close(fd);
     file_desc_ = -1;
     return re;
@@ -187,7 +187,7 @@ RE DiskBufferPool::open_file(const char *file_name)
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::close_file()
+RE DiskBufferPool::closeFile()
 {
   RE re = RE::SUCCESS;
   if (file_desc_ < 0)
@@ -197,7 +197,7 @@ RE DiskBufferPool::close_file()
 
   header_frame_->pin_count_--;
   // TODO: 理论上是在回放时回滚未提交事务，但目前没有undo log，因此不下刷数据page，只通过redo log回放
-  if ((re = purge_page(0)) != RE::SUCCESS)
+  if ((re = purgePage(0)) != RE::SUCCESS)
   {
     header_frame_->pin_count_++;
     printf("Failed to close %s, due to failed to purge all pages.\n", file_name_.c_str());
@@ -214,11 +214,11 @@ RE DiskBufferPool::close_file()
   printf("Successfully close file %d:%s.\n", file_desc_, file_name_.c_str());
   file_desc_ = -1;
 
-  bp_manager_.close_file(file_name_.c_str());
+  bp_manager_.closeFile(file_name_.c_str());
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::get_this_page(int32_t page_num, Frame **frame)
+RE DiskBufferPool::getThisPage(int32_t page_num, Frame **frame)
 {
   RE re = RE::SUCCESS;
   Frame *used_match_frame = frame_manager_.get(file_desc_, page_num);
@@ -231,7 +231,7 @@ RE DiskBufferPool::get_this_page(int32_t page_num, Frame **frame)
   }
   // Allocate one page and load the data into this page
   Frame *allocated_frame = nullptr;
-  if ((re = allocate_frame(page_num, &allocated_frame)) != RE::SUCCESS)
+  if ((re = allocateFrame(page_num, &allocated_frame)) != RE::SUCCESS)
   {
     printf("Failed to alloc frame %s:%d, due to failed to alloc page.\n", file_name_.c_str(), page_num);
     return re;
@@ -240,18 +240,18 @@ RE DiskBufferPool::get_this_page(int32_t page_num, Frame **frame)
   allocated_frame->file_desc_ = file_desc_;
   allocated_frame->pin_count_ = 1;
   allocated_frame->acc_time_ = getCurrentTime();
-  if ((re = load_page(page_num, allocated_frame)) != RE::SUCCESS)
+  if ((re = loadPage(page_num, allocated_frame)) != RE::SUCCESS)
   {
     printf("Failed to load page %s:%d\n", file_name_.c_str(), page_num);
     allocated_frame->pin_count_ = 0;
-    purge_frame(page_num, allocated_frame);
+    purgeFrame(page_num, allocated_frame);
     return re;
   }
   *frame = allocated_frame;
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::allocate_page(Frame **frame)
+RE DiskBufferPool::allocatePage(Frame **frame)
 {
   RE re = RE::SUCCESS;
   int byte = 0, bit = 0;
@@ -267,7 +267,7 @@ RE DiskBufferPool::allocate_page(Frame **frame)
         file_header_->bitmap[byte] |= (1 << bit);
         // TODO,  do we need clean the loaded page's data?
         header_frame_->dirtyMark();
-        return get_this_page(i, frame);
+        return getThisPage(i, frame);
       }
     }
   }
@@ -280,7 +280,7 @@ RE DiskBufferPool::allocate_page(Frame **frame)
   }
   int32_t page_num = file_header_->page_count;
   Frame *allocated_frame = nullptr;
-  if ((re = allocate_frame(page_num, &allocated_frame)) != RE::SUCCESS)
+  if ((re = allocateFrame(page_num, &allocated_frame)) != RE::SUCCESS)
   {
     printf("Failed to allocate frame %s, due to no free page.\n", file_name_.c_str());
     return re;
@@ -302,7 +302,7 @@ RE DiskBufferPool::allocate_page(Frame **frame)
   allocated_frame->page_.page_id_ = file_header_->page_count - 1;
 
   // Use flush operation to extension file
-  if ((re = flush_page(*allocated_frame)) != RE::SUCCESS)
+  if ((re = flushPage(*allocated_frame)) != RE::SUCCESS)
   {
     printf("Failed to alloc page %s , due to failed to extend one page.\n", file_name_.c_str());
     // skip return false, delay flush the extended page
@@ -312,9 +312,9 @@ RE DiskBufferPool::allocate_page(Frame **frame)
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::dispose_page(int32_t page_num)
+RE DiskBufferPool::disposePage(int32_t page_num)
 {
-  RE re = purge_page(page_num);
+  RE re = purgePage(page_num);
   if (re != RE::SUCCESS)
   {
     printf("Dispose page %s:%d later, due to this page is being used\n", file_name_.c_str(), page_num);
@@ -328,15 +328,15 @@ RE DiskBufferPool::dispose_page(int32_t page_num)
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::purge_page(int32_t page_num)
+RE DiskBufferPool::purgePage(int32_t page_num)
 {
   Frame *used_frame = frame_manager_.get(file_desc_, page_num);
   if (used_frame != nullptr)
-    return purge_frame(page_num, used_frame);
+    return purgeFrame(page_num, used_frame);
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::purge_all_pages()
+RE DiskBufferPool::purgeAllPages()
 {
   std::list<Frame *> used = frame_manager_.find_list(file_desc_);
   for (std::list<Frame *>::iterator it = used.begin(); it != used.end(); ++it)
@@ -350,7 +350,7 @@ RE DiskBufferPool::purge_all_pages()
     }
     if (frame->dirty_)
     {
-      RE re = flush_page(*frame);
+      RE re = flushPage(*frame);
       if (re != RE::SUCCESS)
       {
         printf("Failed to flush all pages' of %s.\n", file_name_.c_str());
@@ -362,7 +362,7 @@ RE DiskBufferPool::purge_all_pages()
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::unpin_page(Frame *frame)
+RE DiskBufferPool::unpinPage(Frame *frame)
 {
   assert(frame->pin_count_ >= 1);
   if (--frame->pin_count_ == 0)
@@ -372,20 +372,20 @@ RE DiskBufferPool::unpin_page(Frame *frame)
     if (pages_it != disposed_pages.end())
     {
       printf("Dispose file_desc:%d, page:%d\n", file_desc_, page_num);
-      dispose_page(page_num);
+      disposePage(page_num);
       disposed_pages.erase(pages_it);
     }
   }
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::get_page_count(int *page_count)
+RE DiskBufferPool::getPageCount(int *page_count)
 {
   *page_count = file_header_->allocated_pages;
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::check_all_pages_unpinned()
+RE DiskBufferPool::checkAllPagesUnpinned()
 {
   std::list<Frame *> frames = frame_manager_.find_list(file_desc_);
   for (auto &frame : frames)
@@ -401,12 +401,12 @@ RE DiskBufferPool::check_all_pages_unpinned()
   return RE::SUCCESS;
 }
 
-int DiskBufferPool::file_desc() const
+int DiskBufferPool::getFileDesc() const
 {
   return file_desc_;
 }
 
-RE DiskBufferPool::flush_page(Frame &frame)
+RE DiskBufferPool::flushPage(Frame &frame)
 {
   Page &page = frame.page_;
   long long offset = ((long long)page.page_id_) * sizeof(Page);
@@ -426,12 +426,12 @@ RE DiskBufferPool::flush_page(Frame &frame)
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::flush_all_pages()
+RE DiskBufferPool::flushAllPages()
 {
   std::list<Frame *> used = frame_manager_.find_list(file_desc_);
   for (Frame *frame : used)
   {
-    RE re = flush_page(*frame);
+    RE re = flushPage(*frame);
     if (re != RE::SUCCESS)
     {
       printf("failed to flush all pages\n");
@@ -441,7 +441,7 @@ RE DiskBufferPool::flush_all_pages()
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::recover_page(int32_t page_num)
+RE DiskBufferPool::recoverPage(int32_t page_num)
 {
   int byte = 0, bit = 0;
   byte = page_num / 8;
@@ -456,7 +456,7 @@ RE DiskBufferPool::recover_page(int32_t page_num)
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::allocate_frame(int32_t page_num, Frame **buf)
+RE DiskBufferPool::allocateFrame(int32_t page_num, Frame **buf)
 {
   while (true)
   {
@@ -474,7 +474,7 @@ RE DiskBufferPool::allocate_frame(int32_t page_num, Frame **buf)
     }
     if (frame->dirty_)
     {
-      RE re = bp_manager_.flush_page(*frame);
+      RE re = bp_manager_.flushPage(*frame);
       if (re != RE::SUCCESS)
       {
         printf("Failed to aclloc block due to failed to flush old block.\n");
@@ -486,7 +486,7 @@ RE DiskBufferPool::allocate_frame(int32_t page_num, Frame **buf)
   return RE::FAIL;
 }
 
-RE DiskBufferPool::purge_frame(int32_t page_num, Frame *used_frame)
+RE DiskBufferPool::purgeFrame(int32_t page_num, Frame *used_frame)
 {
   if (used_frame->pin_count_ > 0)
   {
@@ -496,7 +496,7 @@ RE DiskBufferPool::purge_frame(int32_t page_num, Frame *used_frame)
   }
   if (used_frame->dirty_)
   {
-    RE rc = flush_page(*used_frame);
+    RE rc = flushPage(*used_frame);
     if (rc != RE::SUCCESS)
     {
       printf("Failed to flush page %d of %d(file desc) during purge page.\n", used_frame->getPageId(), used_frame->file_desc_);
@@ -508,7 +508,7 @@ RE DiskBufferPool::purge_frame(int32_t page_num, Frame *used_frame)
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::check_page_num(int32_t page_num)
+RE DiskBufferPool::checkPageNum(int32_t page_num)
 {
   if (page_num >= file_header_->page_count)
   {
@@ -523,7 +523,7 @@ RE DiskBufferPool::check_page_num(int32_t page_num)
   return RE::SUCCESS;
 }
 
-RE DiskBufferPool::load_page(int32_t page_num, Frame *frame)
+RE DiskBufferPool::loadPage(int32_t page_num, Frame *frame)
 {
   long long offset = ((long long)page_num) * sizeof(Page);
   if (lseek(file_desc_, offset, SEEK_SET) == -1)
@@ -572,21 +572,23 @@ RE BufferPoolIterator::reset()
   return RE::SUCCESS;
 }
 
-
 BufferPoolManager::BufferPoolManager()
 {
   frame_manager_.initialize(MEM_POOL_ITEM_NUM);
 }
 
-BufferPoolManager::~BufferPoolManager()
+BufferPoolManager &BufferPoolManager::getInstance()
 {
-  std::unordered_map<std::string, DiskBufferPool *> tmp_bps;
-  tmp_bps.swap(buffer_pools_);
-  for (auto &iter : tmp_bps)
-    delete iter.second;
+  static BufferPoolManager instance;
+  return instance;
 }
 
-RE BufferPoolManager::create_file(const char *file_name)
+void BufferPoolManager::initialize()
+{
+  frame_manager_.initialize(DEFAULT_ITEM_NUM_PER_POOL);
+}
+
+RE BufferPoolManager::createFile(const char *file_name)
 {
   int fd = open(file_name, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
   if (fd < 0)
@@ -625,7 +627,7 @@ RE BufferPoolManager::create_file(const char *file_name)
   return RE::SUCCESS;
 }
 
-RE BufferPoolManager::open_file(const char *_file_name, DiskBufferPool *&_bp)
+RE BufferPoolManager::openFile(const char *_file_name, DiskBufferPool *&_bp)
 {
   std::string file_name(_file_name);
   if (buffer_pools_.find(file_name) != buffer_pools_.end())
@@ -634,7 +636,7 @@ RE BufferPoolManager::open_file(const char *_file_name, DiskBufferPool *&_bp)
     return RE::FAIL;
   }
   DiskBufferPool *bp = new DiskBufferPool(*this, frame_manager_);
-  RE re = bp->open_file(_file_name);
+  RE re = bp->openFile(_file_name);
   if (re != RE::SUCCESS)
   {
     printf("failed to open file name\n");
@@ -642,12 +644,12 @@ RE BufferPoolManager::open_file(const char *_file_name, DiskBufferPool *&_bp)
     return re;
   }
   buffer_pools_.insert(std::pair<std::string, DiskBufferPool *>(file_name, bp));
-  fd_buffer_pools_.insert(std::pair<int, DiskBufferPool *>(bp->file_desc(), bp));
+  fd_buffer_pools_.insert(std::pair<int, DiskBufferPool *>(bp->getFileDesc(), bp));
   _bp = bp;
   return RE::SUCCESS;
 }
 
-RE BufferPoolManager::close_file(const char *_file_name)
+RE BufferPoolManager::closeFile(const char *_file_name)
 {
   std::string file_name(_file_name);
   auto iter = buffer_pools_.find(file_name);
@@ -656,7 +658,7 @@ RE BufferPoolManager::close_file(const char *_file_name)
     printf("file has not opened: %s", _file_name);
     return RE::FAIL;
   }
-  int fd = iter->second->file_desc();
+  int fd = iter->second->getFileDesc();
   fd_buffer_pools_.erase(fd);
   DiskBufferPool *bp = iter->second;
   buffer_pools_.erase(iter);
@@ -664,30 +666,23 @@ RE BufferPoolManager::close_file(const char *_file_name)
   return RE::SUCCESS;
 }
 
-RE BufferPoolManager::flush_page(Frame &frame)
+RE BufferPoolManager::flushPage(Frame &frame)
 {
   int fd = frame.getFileDesc();
   auto iter = fd_buffer_pools_.find(fd);
-  if (iter == fd_buffer_pools_.end()) {
+  if (iter == fd_buffer_pools_.end())
+  {
     printf("unknown buffer pool of fd %d\n", fd);
     return RE::FAIL;
   }
   DiskBufferPool *bp = iter->second;
-  return bp->flush_page(frame);
+  return bp->flushPage(frame);
 }
 
-static BufferPoolManager *default_bpm = nullptr;
-
-void BufferPoolManager::set_instance(BufferPoolManager *bpm)
+void BufferPoolManager::destroy()
 {
-  if (default_bpm != nullptr && bpm != nullptr) {
-    printf("default buffer pool manager has been setted\n");
-    abort();
-  }
-  default_bpm = bpm;
-}
-
-BufferPoolManager &BufferPoolManager::instance()
-{
-  return *default_bpm;
+  std::unordered_map<std::string, DiskBufferPool *> tmp_bps;
+  tmp_bps.swap(buffer_pools_);
+  for (auto &iter : tmp_bps)
+    delete iter.second;
 }

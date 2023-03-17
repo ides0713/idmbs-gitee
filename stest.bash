@@ -1,2 +1,2 @@
 #!/bin/bash
-./bin/server
+./build/bin/server

@@ -1,4 +1,4 @@
 #!/bin/bash
-cd server/parse/
+cd src/server/parse/
 bash gen_parser.sh
-cd ../../
+cd ../../../

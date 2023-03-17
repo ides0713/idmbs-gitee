@@ -1,9 +1,9 @@
 #include "server_defs.h"
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "common_defs.h"
-#include "../server/parse/parse_defs.h"
-#include "../server/storage/storage_defs.h"
+#include "../../common/common_defs.h"
+#include "../parse/parse_defs.h"
+#include "../storage/storage_defs.h"
 
 GlobalParamsManager &GlobalParamsManager::getInstance()
 {

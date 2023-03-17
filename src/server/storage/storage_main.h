@@ -1,6 +1,6 @@
 #pragma once
 #include "../parse/parse.h"
-#include "../../src/server_defs.h"
+#include "../common/server_defs.h"
 #include "../resolve/resolve_defs.h"
 #include <unistd.h>
 #include <dirent.h>

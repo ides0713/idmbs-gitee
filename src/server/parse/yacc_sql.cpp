@@ -72,7 +72,7 @@
 #include "yacc_sql.hpp"
 #include "lex_sql.h"
 #include "parse_defs.h"
-#include "../../src/common_defs.h"
+#include "../../common/common_defs.h"
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>

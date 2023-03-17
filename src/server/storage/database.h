@@ -1,5 +1,5 @@
 #pragma once
-#include "../../src/server_defs.h"
+#include "../common/server_defs.h"
 #include <stdio.h>
 #include <map>
 class DataBase
@@ -36,3 +36,4 @@ private:
     ~DataBaseManager();
     std::map<const char *, DataBase *> opened_databases;
 };
+

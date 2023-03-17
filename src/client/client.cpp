@@ -6,7 +6,7 @@
 #include <thread>
 #include <strings.h>
 #include <string.h>
-#include "../src/common_defs.h"
+#include "../common/common_defs.h"
 
 void recvFunc(int fd)
 {

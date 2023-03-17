@@ -1,5 +1,5 @@
 #pragma once
-#include "../../src/server_defs.h"
+#include "../common/server_defs.h"
 #include "resolve_defs.h"
 
 class ResolveMain

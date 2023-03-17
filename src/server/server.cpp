@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <thread>
-#include "../src/common_defs.h"
-#include "../src/server_defs.h"
+#include "../common/common_defs.h"
+#include "common/server_defs.h"
 #include "parse/parse_main.h"
 #include "resolve/resolve_main.h"
 #include "storage/storage_main.h"

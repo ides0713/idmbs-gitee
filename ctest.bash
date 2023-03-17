@@ -1,2 +1,2 @@
 #!/bin/bash
-./bin/client 81.68.226.148
+./build/bin/client 81.68.226.148
