@@ -1,19 +1,19 @@
 #include "managers_initializer.h"
 
-ManagerInitializer &ManagerInitializer::getInstance()
+GlobalManagerInitializer &GlobalManagerInitializer::getInstance()
 {
-    static ManagerInitializer instance;
+    static GlobalManagerInitializer instance;
     return instance;
 }
 
-void ManagerInitializer::handle()
+void GlobalManagerInitializer::handle()
 {
     GlobalParamsManager::getInstance().initialize();
     DataBaseManager::getInstance().initialize();
     BufferPoolManager::getInstance().initialize();
 }
 
-void ManagerInitializer::destroy()
+void GlobalManagerInitializer::destroy()
 {
     GlobalParamsManager::getInstance().destroy();
     DataBaseManager::getInstance().destroy();

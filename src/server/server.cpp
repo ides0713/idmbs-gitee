@@ -6,7 +6,7 @@
 #include <thread>
 #include "../common/common_defs.h"
 #include "common/server_defs.h"
-#include "common/managers_initializer.h"
+#include "common/global_managers_initializer.h"
 #include "parse/parse_main.h"
 #include "resolve/resolve_main.h"
 #include "storage/storage_main.h"
@@ -14,7 +14,7 @@ void pStart(const char *sql, int sock_fd);
 void recvFunc(int fd);
 int main()
 {
-    ManagerInitializer::getInstance().handle();
+    GlobalManagerInitializer::getInstance().handle();
     // int listen_fd, conn_fd;
     // sockaddr_in serve_addr;
     // listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -38,7 +38,7 @@ int main()
     strcpy(buffer, "create table t_basic(id int, age int, name char, score float);");
     printf("buffer content:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);
-    ManagerInitializer::getInstance().destroy();
+    GlobalManagerInitializer::getInstance().destroy();
     return 0;
 }
 

@@ -1,9 +1,9 @@
 #include "server_defs.h"
 #include "../storage/database.h"
 #include "../storage/buffer_pool.h"
-class ManagerInitializer{
+class GlobalManagerInitializer{
     public:
-    static ManagerInitializer &getInstance();
+    static GlobalManagerInitializer &getInstance();
     void handle();
     void destroy();
     private:
