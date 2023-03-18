@@ -4,5 +4,6 @@
 
 class StorageHandler{
     public:
+        void openDB();
     private:
 };

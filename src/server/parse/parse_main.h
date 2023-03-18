@@ -7,10 +7,9 @@ class ParseMain
 {
 public:
     ParseMain();
-    ~ParseMain();
     RE handle(const char *st);
-    std::pair<Query*,Session> callBack();
-    Query *getQuery() { return query_; }
+    Session* callBack();
 private:
     Query *query_;
+    Session* parse_session_;
 };

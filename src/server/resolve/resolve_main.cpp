@@ -1,24 +1,28 @@
 #include "resolve_main.h"
 #include <stdio.h>
-ResolveMain::ResolveMain()
+ResolveMain::ResolveMain(Session* session)
 {
+    parse_session_=session;
     stmt_ = nullptr;
 }
 
-RE ResolveMain::handle(Query *query)
+RE ResolveMain::handle()
 {
-    Statement::createStatement(query, stmt_);
+    ParseSession* ps=static_cast<ParseSession*>(parse_session_);
+    Query* q=ps->getQuery();
+    Statement::createStatement(q, stmt_);
     if (stmt_ == nullptr)
     {
-        printf("create statement failed\n");
+        printf("ResolveMain:create statement failed\n");
         return RE::FAIL;
     }
-    stmt_->initialize(query);
-    stmt_->handle(query);
-    query->destroy();
+    stmt_->initialize(q);
+    stmt_->handle(q);
+    resolve_session_=new ResolveSession(parse_session_,stmt_);
+    q->destroy();
 }
 
-Statement *ResolveMain::getStatement()
+Session *ResolveMain::callBack()
 {
-    return stmt_;
+    return resolve_session_;
 }

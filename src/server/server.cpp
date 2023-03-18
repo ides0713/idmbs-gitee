@@ -14,7 +14,7 @@ void pStart(const char *sql, int sock_fd);
 void recvFunc(int fd);
 int main()
 {
-    GlobalManagerInitializer::getInstance().handle();
+    GlobalManagersInitializer::getInstance().handle();
     // int listen_fd, conn_fd;
     // sockaddr_in serve_addr;
     // listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -38,7 +38,7 @@ int main()
     strcpy(buffer, "create table t_basic(id int, age int, name char, score float);");
     printf("buffer content:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);
-    GlobalManagerInitializer::getInstance().destroy();
+    GlobalManagersInitializer::getInstance().destroy();
     return 0;
 }
 
@@ -52,20 +52,20 @@ void pStart(const char *sql, int sock_fd)
         return;
     }
     printf("sql parse succeeded\n");
-    ResolveMain rm;
-    RE re_resolve = rm.handle(pm.getQuery());
+    ResolveMain rm(pm.callBack());
+    RE re_resolve = rm.handle();
     if (re_resolve != RE::SUCCESS)
     {
         printf("resolve stmt failed\n");
         return;
     }
-    StorageMain sm;
-    RE re_storage = sm.handle(rm.getStatement());
-    if (re_storage != RE::SUCCESS)
-    {
-        printf("storage failed\n");
-        return;
-    }
+    // StorageMain sm();
+    // RE re_storage = sm.handle(rm.getStatement());
+    // if (re_storage != RE::SUCCESS)
+    // {
+    //     printf("storage failed\n");
+    //     return;
+    // }
 }
 
 void recvFunc(int fd)
