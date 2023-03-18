@@ -3,11 +3,7 @@
 #include "parse_defs.h"
 #include <stdio.h>
 #include <assert.h>
-ParseMain::ParseMain()
-{
-    query_ = nullptr;
-    parse_session_=nullptr;
-}
+
 RE ParseMain::handle(const char *st)
 {
     int rv = parse(st, query_);
@@ -17,8 +13,9 @@ RE ParseMain::handle(const char *st)
         query_ = nullptr;
         return RE::FAIL;
     }
-    else{
-        parse_session_=new ParseSession(nullptr,nullptr,false,query_);
+    else
+    {
+        parse_session_ = new ParseSession(nullptr, nullptr, false, query_);
         return RE::SUCCESS;
     }
 }

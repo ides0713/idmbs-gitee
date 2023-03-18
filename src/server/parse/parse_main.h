@@ -6,10 +6,11 @@ class Query;
 class ParseMain
 {
 public:
-    ParseMain();
+    ParseMain() : query_(nullptr), parse_session_(nullptr) {}
     RE handle(const char *st);
-    Session* callBack();
+    Session *callBack();
+
 private:
     Query *query_;
-    Session* parse_session_;
+    Session *parse_session_;
 };
