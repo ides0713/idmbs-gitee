@@ -3,6 +3,10 @@
 #include "../parse/parse_defs.h"
 #include <vector>
 
+enum STMT{
+    Select=0,
+    CreateTable,
+};
 class Statement
 {
 public:
@@ -10,6 +14,7 @@ public:
     virtual void initialize(Query *query) = 0;
     virtual void handle(Query *query) = 0;
     virtual void destroy() = 0;
+    virtual STMT getType()=0;
     SqlCommandFlag getSCF() { return flag_; }
     static void createStatement(Query *const query, Statement *&stmt);
 
@@ -23,7 +28,7 @@ public:
     void initialize(Query *query) override;
     void handle(Query *query) override;
     void destroy() override;
-
+    STMT getType(){return STMT::Select;}
 private:
 };
 
@@ -34,7 +39,7 @@ public:
     void initialize(Query *query) override;
     void handle(Query *query) override;
     void destroy() override;
-
+    STMT getType() {return STMT::CreateTable;}
 private:
     char *table_name_;
     AttrInfo *attr_infos_;

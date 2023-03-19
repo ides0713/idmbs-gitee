@@ -9,5 +9,7 @@ public:
     Session *callBack();
 
 private:
+    RE doSelect(Statement* stmt);
+    RE doCreateTable(Statement* stmt);
     Session *resolve_session_, *execute_session_;
 };
