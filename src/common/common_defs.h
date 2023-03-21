@@ -5,6 +5,7 @@ const int DP_STATUS_OFF = 0, DP_STATUS_ON = 1;
 const int DIR_PATH_LEN = 100, FILE_PATH_LEN = 100;
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
+
 char *substr(const char *s, int n1, int n2);
 struct message
 {
