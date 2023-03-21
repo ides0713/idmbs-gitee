@@ -59,6 +59,12 @@ void pStart(const char *sql, int sock_fd) {
         printf("resolve stmt failed\n");
         return;
     }
+    ExecuteMain em(rm.callBack());
+    RE re_execute = em.handle();
+    if (re_execute != RE::SUCCESS) {
+        printf("execute stmt failed\n");
+        return;
+    }
     // StorageMain sm();
     // RE re_storage = sm.handle(rm.getStatement());
     // if (re_storage != RE::SUCCESS)
