@@ -1,8 +1,0 @@
-/home/ubuntu/idbms/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/ubuntu/idbms/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/ubuntu/idbms/cmake-build-debug/src/client/CMakeFiles/client.dir
-/home/ubuntu/idbms/cmake-build-debug/src/client/CMakeFiles/edit_cache.dir
-/home/ubuntu/idbms/cmake-build-debug/src/client/CMakeFiles/rebuild_cache.dir
-/home/ubuntu/idbms/cmake-build-debug/src/server/CMakeFiles/server.dir
-/home/ubuntu/idbms/cmake-build-debug/src/server/CMakeFiles/edit_cache.dir
-/home/ubuntu/idbms/cmake-build-debug/src/server/CMakeFiles/rebuild_cache.dir
