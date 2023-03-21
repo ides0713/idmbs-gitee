@@ -3,8 +3,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
-RE StorageMain::handle(Statement *stmt)
-{
+
+RE StorageMain::handle(Statement *stmt) {
     DIR *bin_dir = findBin();
     if (bin_dir == nullptr)
         printf("get bin dir failed\n");
@@ -12,9 +12,10 @@ RE StorageMain::handle(Statement *stmt)
     closedir(bin_dir);
     return RE::FAIL;
 }
+
 StorageMain::StorageMain() {}
-DIR *StorageMain::findBin()
-{
+
+DIR *StorageMain::findBin() {
     char *parent_str = new char[100];
     getcwd(parent_str, 100);
     parent_str = getParentDir(parent_str);
@@ -27,4 +28,5 @@ DIR *StorageMain::findBin()
     delete[] parent_str;
     return bin_dir;
 }
+
 FILE *StorageMain::findDBFile(DIR *bin_dir) {}

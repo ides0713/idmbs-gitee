@@ -1,13 +1,16 @@
 #pragma once
+
 #include "../common/server_defs.h"
 #include "../common/session.h"
+
 class Query;
 
-class ParseMain
-{
+class ParseMain {
 public:
     ParseMain() : query_(nullptr), parse_session_(nullptr) {}
+
     RE handle(const char *st);
+
     Session *callBack();
 
 private:

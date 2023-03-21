@@ -8,25 +8,20 @@
 #include <string.h>
 #include "../common/common_defs.h"
 
-void recvFunc(int fd)
-{
+void recvFunc(int fd) {
     int n;
     message m;
-    while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0)
-    {
-        if (m.type_ == MSG_TYPE_EXIT)
-        {
+    while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0) {
+        if (m.type_ == MSG_TYPE_EXIT) {
             printf("exit success\n");
             break;
-        }
-        else
+        } else
             printf("recv_message:%s\n", m.message_);
     }
     close(fd);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     int sock_fd, n;
     char buffer[BUFFER_SIZE];
     sockaddr_in server_addr;
@@ -37,24 +32,19 @@ int main(int argc, char **argv)
     server_addr.sin_port = htons(SERVER_PORT);
     if (inet_pton(AF_INET, argv[1], &server_addr.sin_addr) <= 0)
         return EXIT_FAILURE;
-    if (connect(sock_fd, (sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+    if (connect(sock_fd, (sockaddr *) &server_addr, sizeof(server_addr)) < 0)
         return EXIT_FAILURE;
     std::thread recv_thread(recvFunc, sock_fd);
     recv_thread.detach();
-    while (true)
-    {
+    while (true) {
         printf("client:");
         std::cin.getline(buffer, BUFFER_SIZE);
-        if (strcmp(buffer, "") != 0)
-        {
-            if (strcmp(buffer, "exit") == 0 or strcmp(buffer, "EXIT") == 0)
-            {
+        if (strcmp(buffer, "") != 0) {
+            if (strcmp(buffer, "exit") == 0 or strcmp(buffer, "EXIT") == 0) {
                 message m(MSG_TYPE_EXIT, "exit");
                 write(sock_fd, reinterpret_cast<char *>(&m), sizeof(m));
                 break;
-            }
-            else
-            {
+            } else {
                 message m(MSG_TYPE_REQUEST, "");
                 strcpy(m.message_, buffer);
                 write(sock_fd, reinterpret_cast<char *>(&m), sizeof(m));

@@ -7,10 +7,12 @@ const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 
 char *substr(const char *s, int n1, int n2);
-struct message
-{
+
+struct message {
     message() = default;
+
     message(int type, const char *message);
+
     int type_ = MSG_TYPE_TEST;
     char message_[MSG_MSG_LEN];
 };

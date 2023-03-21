@@ -1,4 +1,5 @@
 #pragma once
+
 #include <stdio.h>
 #include <string.h>
 
@@ -11,10 +12,10 @@ const int MAX_MSG_LENGTH = 50;
 
 // add func
 int test_func(int param);
+
 char *strnew(const char *str);
 
-enum SqlCommandFlag
-{
+enum SqlCommandFlag {
     // SCF_ERROR 解析失败
     SCF_ERROR = 0,
     SCF_SELECT,
@@ -37,8 +38,7 @@ enum SqlCommandFlag
     SCF_EXIT
 };
 
-enum AttrType
-{
+enum AttrType {
     UNDEFINED = 0,
     CHARS,
     INTS,
@@ -46,8 +46,7 @@ enum AttrType
     DATES
 };
 
-enum CompOp
-{
+enum CompOp {
     EQUAL_TO = 0, //"="     0
     LESS_EQUAL,   //"<="    1
     NOT_EQUAL,    //"<>"    2
@@ -57,53 +56,48 @@ enum CompOp
     NO_OP
 };
 
-struct Value
-{
+struct Value {
     AttrType type; // 属性类型(数据类型)
     void *data;    // 数据内容(值)
 };
 
-struct RelAttr
-{
+struct RelAttr {
     char *rel_name;  // 关系名(表名)
     char *attr_name; // 属性名
 };
 
-struct AttrInfo
-{
+struct AttrInfo {
     char *attr_name;    // 属性名
     AttrType attr_type; // 属性类型(数据类型)
     size_t attr_len;    // 属性长度(占空间大小)
-    AttrInfo()
-    {
+    AttrInfo() {
         attr_name = nullptr;
     }
-    AttrInfo(const char *name, AttrType type, size_t len = 1)
-    {
+
+    AttrInfo(const char *name, AttrType type, size_t len = 1) {
         attr_name = strnew(name);
         attr_type = type;
         attr_len = len;
     }
-    AttrInfo(const AttrInfo &attr_info)
-    {
+
+    AttrInfo(const AttrInfo &attr_info) {
         attr_name = strnew(attr_info.attr_name);
         attr_type = attr_info.attr_type;
         attr_len = attr_info.attr_len;
     }
-    void destroy()
-    {
+
+    void destroy() {
         delete[] attr_name;
     }
-    AttrInfo &operator=(const AttrInfo &attr_info)
-    {
+
+    AttrInfo &operator=(const AttrInfo &attr_info) {
         attr_name = strnew(attr_info.attr_name);
         attr_type = attr_info.attr_type;
         attr_len = attr_info.attr_len;
     }
 };
 
-struct Condition
-{
+struct Condition {
     // *is_attr 用于标识比较符两侧是否为属性名(可以为具体值)
     int left_is_attr;
     // 显然 *value 与 *attr仅能使用一个 (如 左侧为具体值 则 left_attr 无意义 反之则 left_value 无意义)
@@ -115,84 +109,87 @@ struct Condition
     Value right_value;
 };
 
-class Query
-{
+class Query {
 public:
     Query() : flag_(SCF_ERROR) {}
+
     Query(SqlCommandFlag flag) : flag_(flag) {}
+
     virtual void initialize() = 0;
+
     //~xxxquery()
     virtual void destroy() = 0;
+
     SqlCommandFlag getSCF() { return flag_; }
 
 private:
     SqlCommandFlag flag_;
 };
 
-class SelectQuery : public Query
-{
+class SelectQuery : public Query {
 public:
-    SelectQuery() : Query(SCF_SELECT)
-    {
+    SelectQuery() : Query(SCF_SELECT) {
         rel_name_ = nullptr;
     }
-    void initialize() override
-    {
+
+    void initialize() override {
         rel_name_ = new char[MAX_REL_LENGTH + 1];
     }
-    void destroy() override
-    {
+
+    void destroy() override {
         delete[] rel_name_;
     }
 
 private:
     char *rel_name_;
 };
-class InsertQuery : public Query
-{
+
+class InsertQuery : public Query {
 public:
-    InsertQuery() : Query(SCF_INSERT)
-    {
+    InsertQuery() : Query(SCF_INSERT) {
         rel_name_ = nullptr;
     }
-    void initialize() override
-    {
+
+    void initialize() override {
         rel_name_ = new char[MAX_REL_LENGTH + 1];
     }
-    void destroy() override
-    {
+
+    void destroy() override {
         delete[] rel_name_;
     }
 
 private:
     char *rel_name_;
 };
-class CreateTableQuery : public Query
-{
+
+class CreateTableQuery : public Query {
 public:
     CreateTableQuery() : Query(SCF_CREATE_TABLE) {}
-    void initialize() override
-    {
+
+    void initialize() override {
         rel_name_ = nullptr;
         attr_num_ = 0;
         attrs_ = new AttrInfo[MAX_ATTRS_NUM];
     }
-    void destroy() override
-    {
+
+    void destroy() override {
         delete[] rel_name_;
         for (int i = 0; i < attr_num_; i++)
             attrs_[i].destroy();
     }
-    void setRelName(const char *str)
-    {
+
+    void setRelName(const char *str) {
         rel_name_ = strnew(str);
     }
-    void addAttr(const AttrInfo &attr)
-    {
+
+    void addAttr(const AttrInfo &attr) {
         attrs_[attr_num_++] = attr;
     }
+
     char *getRelName() { return rel_name_; }
+
     size_t getAttrNum() { return attr_num_; }
+
     AttrInfo *getAttrs() { return attrs_; }
 
 private:
@@ -201,17 +198,16 @@ private:
     AttrInfo *attrs_;
 };
 
-class ErrorQuery : public Query
-{
+class ErrorQuery : public Query {
 public:
-    ErrorQuery(const char *str) : Query(SCF_ERROR)
-    {
+    ErrorQuery(const char *str) : Query(SCF_ERROR) {
         error_message_ = new char[MAX_MSG_LENGTH];
         strcpy(error_message_, str);
     }
+
     void initialize() {}
-    void destroy()
-    {
+
+    void destroy() {
         delete[] error_message_;
     }
 

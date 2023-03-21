@@ -1,7 +1,10 @@
 #pragma once
-class Txn{
-    public:
+
+class Txn {
+public:
     Txn();
+
     ~Txn();
-    private:
+
+private:
 };

@@ -2,8 +2,9 @@
 #include "table.h"
 #include "database.h"
 
-class StorageHandler{
-    public:
-        void openDB();
-    private:
+class StorageHandler {
+public:
+    void openDB();
+
+private:
 };

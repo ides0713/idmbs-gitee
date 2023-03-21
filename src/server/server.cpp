@@ -9,11 +9,14 @@
 #include "common/global_managers_initializer.h"
 #include "parse/parse_main.h"
 #include "resolve/resolve_main.h"
+#include "execute/execute_main.h"
 #include "storage/storage_main.h"
+
 void pStart(const char *sql, int sock_fd);
+
 void recvFunc(int fd);
-int main()
-{
+
+int main() {
     GlobalManagersInitializer::getInstance().handle();
     // int listen_fd, conn_fd;
     // sockaddr_in serve_addr;
@@ -42,20 +45,17 @@ int main()
     return 0;
 }
 
-void pStart(const char *sql, int sock_fd)
-{
+void pStart(const char *sql, int sock_fd) {
     ParseMain pm;
     RE re_parse = pm.handle(sql);
-    if (re_parse != RE::SUCCESS)
-    {
+    if (re_parse != RE::SUCCESS) {
         printf("sql parse failed\n");
         return;
     }
     printf("sql parse succeeded\n");
     ResolveMain rm(pm.callBack());
     RE re_resolve = rm.handle();
-    if (re_resolve != RE::SUCCESS)
-    {
+    if (re_resolve != RE::SUCCESS) {
         printf("resolve stmt failed\n");
         return;
     }
@@ -68,24 +68,18 @@ void pStart(const char *sql, int sock_fd)
     // }
 }
 
-void recvFunc(int fd)
-{
+void recvFunc(int fd) {
     int n, ret_val;
     message m;
-    while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0)
-    {
+    while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0) {
         if (n == 0)
             break;
-        else
-        {
-            if (m.type_ == MSG_TYPE_EXIT)
-            {
+        else {
+            if (m.type_ == MSG_TYPE_EXIT) {
                 message m(MSG_TYPE_EXIT, "exit");
                 write(fd, reinterpret_cast<char *>(&m), sizeof(m));
                 break;
-            }
-            else
-            {
+            } else {
                 printf("from client:%s\n", m.message_);
                 // detach a thread to do sql parsing and other work
                 std::thread solve_thread(pStart, m.message_, fd);
