@@ -27,11 +27,14 @@ Session *ExecuteMain::callBack()
 RE ExecuteMain::doSelect(Statement *stmt)
 {
     SelectStatement *s = static_cast<SelectStatement *>(stmt);
+
     return RE::SUCCESS;
 }
 
 RE ExecuteMain::doCreateTable(Statement *stmt)
 {
     CreateTableStatement *s = static_cast<CreateTableStatement *>(stmt);
+    DataBase* db=resolve_session_->getDB();
+    db->res
     return RE::SUCCESS;
 }

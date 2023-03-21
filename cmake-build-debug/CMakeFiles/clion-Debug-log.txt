@@ -1,0 +1,42 @@
+/root/.cache/JetBrains/RemoteDev/dist/9cbfe3b1e0d76_CLion-2022.3.3/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/root/.cache/JetBrains/RemoteDev/dist/9cbfe3b1e0d76_CLion-2022.3.3/bin/ninja/linux/x64/ninja -G Ninja -S /home/ubuntu/idbms -B /home/ubuntu/idbms/cmake-build-debug
+-- The C compiler identification is GNU 9.4.0
+-- The CXX compiler identification is GNU 9.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+Begin to build idbms
+-- This is PROJECT_BINARY_DIR dir /home/ubuntu/idbms/cmake-build-debug
+-- This is PROJECT_SOURCE_DIR dir /home/ubuntu/idbms
+Begin to build client
+-- Found Boost: /usr/local/boost_1_81_0/lib/cmake/Boost-1.81.0/BoostConfig.cmake (found version "1.81.0") found components: regex thread 
+-- Boost_INCLUDE_DIRS = /usr/local/boost_1_81_0/include
+-- Boost_LIBRARIES = Boost::regex;Boost::thread
+CMake Warning (dev) at src/client/CMakeLists.txt:27 (target_sources):
+  Policy CMP0076 is not set: target_sources() command converts relative paths
+  to absolute.  Run "cmake --help-policy CMP0076" for policy details.  Use
+  the cmake_policy command to set the policy and suppress this warning.
+
+  An interface source of target "client" has a relative path.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+Begin to build server
+-- Boost_INCLUDE_DIRS = /usr/local/boost_1_81_0/include
+-- Boost_LIBRARIES = Boost::regex;Boost::thread
+CMake Warning (dev) at src/server/CMakeLists.txt:27 (target_sources):
+  Policy CMP0076 is not set: target_sources() command converts relative paths
+  to absolute.  Run "cmake --help-policy CMP0076" for policy details.  Use
+  the cmake_policy command to set the policy and suppress this warning.
+
+  An interface source of target "server" has a relative path.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/ubuntu/idbms/cmake-build-debug

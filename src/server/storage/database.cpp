@@ -3,8 +3,7 @@
 #include "../storage/storage_defs.h"
 DataBase::DataBase(const char *database_name)
 {
-    database_name_ = strnew(database_name);
-    database_dfile_ = nullptr;
+    database_name_=std::string(database_name);
 }
 RE DataBase::initialize()
 {
@@ -21,26 +20,20 @@ RE DataBase::initialize()
 RE DataBase::create()
 {
     if (isExists())
-    {
         return RE::FAIL;
-    }
     const char *bin_path = GlobalParamsManager::getInstance().getBinPath();
     return RE::SUCCESS;
 }
 
 void DataBase::destroy()
 {
-    delete[] database_name_;
-    if (database_dfile_ != nullptr)
-        ;
-    fclose(database_dfile_);
 }
 
 bool DataBase::isExists()
 {
     dirent *a;
     DIR *const bin_dir = GlobalParamsManager::getInstance().getBinDir();
-    if ((a = findDir(bin_dir, database_name_)) == nullptr)
+    if ((a = findDir(bin_dir, database_name_.c_str())) == nullptr)
         return false;
     return true;
 }
