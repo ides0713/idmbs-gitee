@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 #include <thread>
 #include <strings.h>
-#include <string.h>
+#include <cstring>
 #include "../common/common_defs.h"
 
 void recvFunc(int fd) {

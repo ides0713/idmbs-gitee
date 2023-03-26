@@ -31,6 +31,5 @@ RE ExecuteMain::doSelect(Statement *stmt) {
 RE ExecuteMain::doCreateTable(Statement *stmt) {
     CreateTableStatement *s = static_cast<CreateTableStatement *>(stmt);
     DataBase *db = resolve_session_->getDB();
-    db->res
     return RE::SUCCESS;
 }
