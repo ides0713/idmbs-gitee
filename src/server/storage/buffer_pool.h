@@ -111,7 +111,7 @@ public:
 
     std::list<Frame *> findList(int file_desc);
 
-    size_t getFrameNum() const { return frames_LRU_cache_.count(); }
+    size_t getFrameNum() const { return frames_lru_cache_.count(); }
 
     size_t getTotalFrameNum() const { return memory_pool_allocator_.getSize(); }
 
@@ -125,7 +125,7 @@ private:
 
 private:
     std::mutex lock_;
-    LRUCache<FrameId, Frame *, FrameIdHasher, std::equal_to<FrameId>> frames_LRU_cache_;
+    LRUCache<FrameId, Frame *, FrameIdHasher, std::equal_to<FrameId>> frames_lru_cache_;
     MemoryPool<Frame> memory_pool_allocator_;
 };
 
@@ -207,7 +207,6 @@ public:
     void destroy();
 
 private:
-    BufferPoolManager();
 
     FrameManager frame_manager_{"BufPool"};
     std::unordered_map<std::string, DiskBufferPool *> buffer_pools_;

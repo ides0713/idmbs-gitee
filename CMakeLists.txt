@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-PROJECT(idbms)
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+PROJECT(idbm)
 MESSAGE("Begin to build " ${PROJECT_NAME})
 MESSAGE(STATUS "This is PROJECT_BINARY_DIR dir " ${PROJECT_BINARY_DIR})
 MESSAGE(STATUS "This is PROJECT_SOURCE_DIR dir " ${PROJECT_SOURCE_DIR})
-
+set(PATH1 ${PROJECT_BINARY_DIR})
+set(PATH2 ${PROJECT_SOURCE_DIR})
+CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/src/common/params_deliver.h.in ${PROJECT_SOURCE_DIR}/src/common/params_deliver.h)
 ADD_SUBDIRECTORY(src/client)
-ADD_SUBDIRECTORY(src/server)
+ADD_SUBDIRECTORY(src/server
+	)

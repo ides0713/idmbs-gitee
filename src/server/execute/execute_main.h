@@ -5,7 +5,7 @@
 
 class ExecuteMain {
 public:
-    ExecuteMain(Session *resolve_session) : resolve_session_(resolve_session), execute_session_(nullptr) {}
+    explicit ExecuteMain(Session *resolve_session) : resolve_session_(resolve_session), execute_session_(nullptr) {}
 
     RE handle();
 

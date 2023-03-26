@@ -81,7 +81,6 @@ inline bool MemoryPool<T>::initialize(bool is_dynamic, int pool_num, int item_nu
         }
     }
     is_dynamic_ = is_dynamic;
-
     return true;
 }
 

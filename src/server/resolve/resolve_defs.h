@@ -15,7 +15,7 @@ public:
 
     virtual void initialize(Query *query) = 0;
 
-    virtual void handle(Query *query) = 0;
+    virtual RE handle(Query *query) = 0;
 
     virtual void destroy() = 0;
 
@@ -35,7 +35,7 @@ public:
 
     void initialize(Query *query) override;
 
-    void handle(Query *query) override;
+    RE handle(Query *query) override;
 
     void destroy() override;
 
@@ -50,7 +50,7 @@ public:
 
     void initialize(Query *query) override;
 
-    void handle(Query *query) override;
+    RE handle(Query *query) override;
 
     void destroy() override;
 

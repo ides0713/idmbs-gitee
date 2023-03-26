@@ -3,6 +3,8 @@
 #include "../common/server_defs.h"
 #include "table.h"
 #include <stdio.h>
+#include <cstring>
+#include <string>
 #include <map>
 #include <unordered_map>
 
@@ -21,11 +23,11 @@ public:
     RE createTable();
 
 private:
-    RE create();
+//    RE create();
 
     RE destruction();
 
-    bool isExists();
+//    bool isExists();
 
     std::string database_name_;
     std::string database_path_;
@@ -51,8 +53,6 @@ public:
 
 private:
     DataBaseManager();
-
-    ~DataBaseManager();
 
     std::map<const char *, DataBase *> opened_databases;
 };

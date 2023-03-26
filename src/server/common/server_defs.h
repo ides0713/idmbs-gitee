@@ -18,18 +18,15 @@ public:
 
     void initialize();
 
-    char *getBinPath() { return bin_dir_path_; }
+    char *getProjectPath() { return project_path_; }
 
-    DIR *getBinDir() { return bin_dir_dir_; }
+    char *getProjectBinaryPath() { return project_binary_path_; }
 
     void destroy();
 
 private:
     GlobalParamsManager();
 
-    ~GlobalParamsManager();
-
-    char *bin_dir_path_;
-    DIR *bin_dir_dir_;
+    char *project_path_, *project_binary_path_,*project_bin_path_;
 };
 

@@ -56,9 +56,9 @@ RE FrameManager::initialize(int pool_num) {
 }
 
 RE FrameManager::cleanUp() {
-    if (frames_LRU_cache_.count() > 0)
+    if (frames_lru_cache_.count() > 0)
         return RE::FAIL;
-    frames_LRU_cache_.destroy();
+    frames_lru_cache_.destroy();
     return RE::SUCCESS;
 }
 
@@ -67,7 +67,7 @@ Frame *FrameManager::get(int file_desc, int32_t page_num) {
     std::lock_guard<std::mutex> lock_guard(lock_);
     Frame *frame = nullptr;
     ///@brief 显明丢弃该值
-    (void) frames_LRU_cache_.get(frame_id, frame);
+    (void) frames_lru_cache_.get(frame_id, frame);
     return frame;
 }
 
@@ -75,12 +75,12 @@ Frame *FrameManager::alloc(int file_desc, int32_t page_num) {
     FrameId frame_id(file_desc, page_num);
     std::lock_guard<std::mutex> lock_guard(lock_);
     Frame *frame = nullptr;
-    bool found = frames_LRU_cache_.get(frame_id, frame);
+    bool found = frames_lru_cache_.get(frame_id, frame);
     if (found)
         return nullptr;
     frame = memory_pool_allocator_.alloc();
     if (frame != nullptr)
-        frames_LRU_cache_.put(frame_id, frame);
+        frames_lru_cache_.put(frame_id, frame);
     return frame;
 }
 
@@ -88,13 +88,13 @@ RE FrameManager::free(int file_desc, int32_t page_num, Frame *frame) {
     FrameId frame_id(file_desc, page_num);
     std::lock_guard<std::mutex> lock_guard(lock_);
     Frame *frame_source = nullptr;
-    bool found = frames_LRU_cache_.get(frame_id, frame_source);
+    bool found = frames_lru_cache_.get(frame_id, frame_source);
     if (!found or frame != frame_source) {
         printf("failed to find frame or got frame not match. file_desc=%d, PageNum=%d, frame_source=%p, frame=%p",
                file_desc, page_num, frame_source, frame);
         return RE::FAIL;
     }
-    frames_LRU_cache_.remove(frame_id);
+    frames_lru_cache_.remove(frame_id);
     memory_pool_allocator_.free(frame);
     return RE::SUCCESS;
 }
@@ -109,7 +109,7 @@ Frame *FrameManager::beginPurge() {
         return true; // true continue to look up
     };
     ///@brief LRU淘汰页面 (从cache中)
-    frames_LRU_cache_.foreachReverse(purge_finder);
+    frames_lru_cache_.foreachReverse(purge_finder);
     return purgable_frame;
 }
 
@@ -121,7 +121,7 @@ std::list<Frame *> FrameManager::findList(int file_desc) {
             frames.push_back(frame);
         return true;
     };
-    frames_LRU_cache_.foreach(fetcher);
+    frames_lru_cache_.foreach(fetcher);
     return frames;
 }
 
@@ -492,10 +492,6 @@ int32_t BufferPoolIterator::next() {
 RE BufferPoolIterator::reset() {
     current_page_num_ = 0;
     return RE::SUCCESS;
-}
-
-BufferPoolManager::BufferPoolManager() {
-    frame_manager_.initialize(MEM_POOL_ITEM_NUM);
 }
 
 BufferPoolManager &BufferPoolManager::getInstance() {

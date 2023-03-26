@@ -1,5 +1,5 @@
 #include "execute_main.h"
-#include <assert.h>
+#include <cassert>
 
 RE ExecuteMain::handle() {
     ResolveSession *rs = static_cast<ResolveSession *>(resolve_session_);

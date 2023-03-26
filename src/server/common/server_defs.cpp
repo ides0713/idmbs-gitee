@@ -4,6 +4,9 @@
 #include "../../common/common_defs.h"
 #include "../parse/parse_defs.h"
 #include "../storage/storage_defs.h"
+#include "../../common/params_deliver.h"
+#include <filesystem>
+#include <cstring>
 
 GlobalParamsManager &GlobalParamsManager::getInstance() {
     static GlobalParamsManager instance;
@@ -11,29 +14,19 @@ GlobalParamsManager &GlobalParamsManager::getInstance() {
 }
 
 void GlobalParamsManager::initialize() {
-    char *parent_str = new char[DIR_PATH_LEN];
-    getcwd(parent_str, DIR_PATH_LEN);
-    parent_str = getParentDir(parent_str);
-    DIR *parent_dir = opendir(parent_str);
-    dirent *a = findDir(parent_dir, "bin");
-    strcat(parent_str, "/bin");
-    if (a == nullptr)
-        mkdir(parent_str, 0777);
-    bin_dir_path_ = strnew(parent_str);
-    closedir(parent_dir);
-    bin_dir_dir_ = opendir(bin_dir_path_);
-    delete[] parent_str;
+    project_path_ = strnew(PROJECT_PATH);
+    project_binary_path_ = strnew(PROJECT_BINARY_PATH);
+    project_bin_path_=new char[DIR_PATH_LEN];
+    strcpy(project_bin_path_,project_path_);
+    strcat(project_bin_path_,"/bin");
 }
 
 void GlobalParamsManager::destroy() {
+    delete[]project_path_;
+    delete[]project_binary_path_;
+    delete[]project_bin_path_;
 }
 
 GlobalParamsManager::GlobalParamsManager() {
-    bin_dir_dir_ = nullptr;
-    bin_dir_path_ = nullptr;
-}
-
-GlobalParamsManager::~GlobalParamsManager() {
-    closedir(bin_dir_dir_);
-    delete[] bin_dir_path_;
+    project_path_ = nullptr, project_binary_path_ = nullptr;
 }
