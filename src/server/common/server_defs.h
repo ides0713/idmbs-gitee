@@ -27,6 +27,6 @@ public:
 private:
     GlobalParamsManager();
 
-    char *project_path_, *project_binary_path_,*project_bin_path_;
+    char *project_path_, *project_binary_path_, *project_bin_path_;
 };
 

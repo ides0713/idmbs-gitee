@@ -5,6 +5,8 @@
 class StorageHandler {
 public:
     void openDB();
+
     void getDefaultDB();
+
 private:
 };

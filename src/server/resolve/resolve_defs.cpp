@@ -31,7 +31,7 @@ void CreateTableStatement::initialize(Query *query) {
         attr_infos_[i] = attr_infos[i];
 }
 
-RE CreateTableStatement::handle(Query *query){
+RE CreateTableStatement::handle(Query *query) {
     return RE::SUCCESS;
 }
 
