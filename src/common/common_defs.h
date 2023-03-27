@@ -6,13 +6,13 @@ const int DIR_PATH_LEN = 100, FILE_PATH_LEN = 100;
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 
-char *substr(const char *s, int n1, int n2);
+char *substr(const char *s, int n_1, int n_2);
 
-struct message {
-    message() = default;
+struct Message {
+    Message() = default;
 
-    message(int type, const char *message);
+    Message(int type, const char *message);
 
-    int type_ = MSG_TYPE_TEST;
-    char message_[MSG_MSG_LEN];
+    int type = MSG_TYPE_TEST;
+    char message[MSG_MSG_LEN];
 };

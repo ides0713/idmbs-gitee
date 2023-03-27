@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dirent.h>
-#include <stdio.h>
+#include <cstdio>
 
 char *getParentDir(char *current_dir);
 

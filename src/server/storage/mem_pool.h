@@ -1,13 +1,13 @@
 #pragma once
 
-#include <stdio.h>
+#include <cstdio>
 #include <list>
 #include <set>
 #include <thread>
 #include <mutex>
 #include <string>
 #include <sstream>
-#include <assert.h>
+#include <cassert>
 
 #define MP_NAME_MAX_SIZE 20
 #define DEFAULT_ITEM_NUM_PER_POOL 128
@@ -17,7 +17,7 @@
 template<typename T>
 class MemoryPool {
 public:
-    MemoryPool(const char *name);
+    explicit MemoryPool(const char *name);
 
     ~MemoryPool();
 
@@ -34,11 +34,11 @@ public:
 
     std::string toString();
 
-    const std::string getName() const { return name_; }
+    [[nodiscard]] std::string getName() const { return name_; }
 
-    int getSize() const { return size_; }
+    [[nodiscard]] int getSize() const { return size_; }
 
-    int getUsedSize();
+    [[nodiscard]] int getUsedSize();
 
 private:
     bool is_dynamic_;
@@ -55,11 +55,12 @@ private:
 
 template<class T>
 inline MemoryPool<T>::MemoryPool(const char *name) : name_(name) {
-    size_ = 0;
+    size_ = 0, is_dynamic_ = false, item_num_per_pool_ = 0;
 }
 
 template<class T>
 inline MemoryPool<T>::~MemoryPool() {
+    cleanUp();
 }
 
 template<class T>

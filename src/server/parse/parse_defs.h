@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 const int MAX_ID_LENGTH = 20;
 const int MAX_REL_LENGTH = 20;
@@ -11,49 +11,49 @@ const int MAX_ATTR_LENGTH = 20;
 const int MAX_MSG_LENGTH = 50;
 
 // add func
-int test_func(int param);
+int testFunc(int param);
 
 char *strnew(const char *str);
 
 enum SqlCommandFlag {
     // SCF_ERROR 解析失败
-    SCF_ERROR = 0,
-    SCF_SELECT,
-    SCF_INSERT,
-    SCF_UPDATE,
-    SCF_DELETE,
-    SCF_CREATE_TABLE,
-    SCF_DROP_TABLE,
-    SCF_CREATE_INDEX,
-    SCF_DROP_INDEX,
-    SCF_SYNC,
-    SCF_SHOW_TABLES,
-    SCF_DESC_TABLE,
-    SCF_BEGIN,
-    SCF_COMMIT,
-    SCF_CLOG_SYNC,
-    SCF_ROLLBACK,
-    SCF_LOAD_DATA,
-    SCF_HELP,
-    SCF_EXIT
+    ScfError = 0,
+    ScfSelect,
+    ScfInsert,
+    ScfUpdate,
+    ScfDelete,
+    ScfCreateTable,
+    ScfDropTable,
+    ScfCreateIndex,
+    ScfDropIndex,
+    ScfSync,
+    ScfShowTables,
+    ScfDescTable,
+    ScfBegin,
+    ScfCommit,
+    ScfClogSync,
+    ScfRollback,
+    ScfLoadData,
+    ScfHelp,
+    ScfExit
 };
 
 enum AttrType {
-    UNDEFINED = 0,
-    CHARS,
-    INTS,
-    FLOATS,
-    DATES
+    Undefined = 0,
+    Chars,
+    Ints,
+    Floats,
+    Dates
 };
 
 enum CompOp {
-    EQUAL_TO = 0, //"="     0
-    LESS_EQUAL,   //"<="    1
-    NOT_EQUAL,    //"<>"    2
-    LESS_THAN,    //"<"     3
-    GREAT_EQUAL,  //">="    4
-    GREAT_THAN,   //">"     5
-    NO_OP
+    EqualTo = 0, //"="     0
+    LessEqual,   //"<="    1
+    NotEqual,    //"<>"    2
+    LessThan,    //"<"     3
+    GreatEqual,  //">="    4
+    GreatThan,   //">"     5
+    NoOp
 };
 
 struct Value {
@@ -72,6 +72,8 @@ struct AttrInfo {
     size_t attr_len;    // 属性长度(占空间大小)
     AttrInfo() {
         attr_name = nullptr;
+        attr_type = Undefined;
+        attr_len = 0;
     }
 
     AttrInfo(const char *name, AttrType type, size_t len = 1) {
@@ -86,14 +88,16 @@ struct AttrInfo {
         attr_len = attr_info.attr_len;
     }
 
-    void destroy() {
+    void destroy() const {
         delete[] attr_name;
     }
 
     AttrInfo &operator=(const AttrInfo &attr_info) {
+        if (this == &attr_info) return *this;
         attr_name = strnew(attr_info.attr_name);
         attr_type = attr_info.attr_type;
         attr_len = attr_info.attr_len;
+        return *this;
     }
 };
 
@@ -111,16 +115,16 @@ struct Condition {
 
 class Query {
 public:
-    Query() : flag_(SCF_ERROR) {}
+    Query() : flag_(ScfError) {}
 
-    Query(SqlCommandFlag flag) : flag_(flag) {}
+    explicit Query(SqlCommandFlag flag) : flag_(flag) {}
 
     virtual void initialize() = 0;
 
     //~xxxquery()
     virtual void destroy() = 0;
 
-    SqlCommandFlag getSCF() { return flag_; }
+    SqlCommandFlag getScf() { return flag_; }
 
 private:
     SqlCommandFlag flag_;
@@ -128,7 +132,7 @@ private:
 
 class SelectQuery : public Query {
 public:
-    SelectQuery() : Query(SCF_SELECT) {
+    SelectQuery() : Query(ScfSelect) {
         rel_name_ = nullptr;
     }
 
@@ -146,7 +150,7 @@ private:
 
 class InsertQuery : public Query {
 public:
-    InsertQuery() : Query(SCF_INSERT) {
+    InsertQuery() : Query(ScfInsert) {
         rel_name_ = nullptr;
     }
 
@@ -164,7 +168,7 @@ private:
 
 class CreateTableQuery : public Query {
 public:
-    CreateTableQuery() : Query(SCF_CREATE_TABLE) {}
+    CreateTableQuery() : Query(ScfCreateTable) { rel_name_ = nullptr, attr_num_ = 0, attrs_ = nullptr; }
 
     void initialize() override {
         rel_name_ = nullptr;
@@ -188,7 +192,7 @@ public:
 
     char *getRelName() { return rel_name_; }
 
-    size_t getAttrNum() { return attr_num_; }
+    [[nodiscard]] size_t getAttrNum() const { return attr_num_; }
 
     AttrInfo *getAttrs() { return attrs_; }
 
@@ -200,14 +204,14 @@ private:
 
 class ErrorQuery : public Query {
 public:
-    ErrorQuery(const char *str) : Query(SCF_ERROR) {
+    explicit ErrorQuery(const char *str) : Query(ScfError) {
         error_message_ = new char[MAX_MSG_LENGTH];
         strcpy(error_message_, str);
     }
 
-    void initialize() {}
+    void initialize() override {}
 
-    void destroy() {
+    void destroy() override {
         delete[] error_message_;
     }
 

@@ -2,7 +2,7 @@
 #include "../storage/storage_handler.h"
 #include <cstdio>
 
-RE ResolveMain::handle() {
+Re ResolveMain::handle() {
     ParseSession *ps = static_cast<ParseSession *>(parse_session_);
     Query *q = ps->getQuery();
     //todo:db->getdb check db
@@ -10,13 +10,13 @@ RE ResolveMain::handle() {
     Statement::createStatement(q, stmt_);
     if (stmt_ == nullptr) {
         printf("ResolveMain:create statement failed\n");
-        return RE::FAIL;
+        return Re::Fail;
     }
     stmt_->initialize(q);
     stmt_->handle(q);
     resolve_session_ = new ResolveSession(parse_session_, stmt_);
     q->destroy();
-    return RE::SUCCESS;
+    return Re::Success;
 }
 
 Session *ResolveMain::callBack() {

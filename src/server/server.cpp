@@ -47,27 +47,27 @@ int main() {
 
 void pStart(const char *sql, int sock_fd) {
     ParseMain pm;
-    RE re_parse = pm.handle(sql);
-    if (re_parse != RE::SUCCESS) {
+    Re re_parse = pm.handle(sql);
+    if (re_parse != Re::Success) {
         printf("sql parse failed\n");
         return;
     }
     printf("sql parse succeeded\n");
     ResolveMain rm(pm.callBack());
-    RE re_resolve = rm.handle();
-    if (re_resolve != RE::SUCCESS) {
+    Re re_resolve = rm.handle();
+    if (re_resolve != Re::Success) {
         printf("resolve stmt failed\n");
         return;
     }
     ExecuteMain em(rm.callBack());
-    RE re_execute = em.handle();
-    if (re_execute != RE::SUCCESS) {
+    Re re_execute = em.handle();
+    if (re_execute != Re::Success) {
         printf("execute stmt failed\n");
         return;
     }
     // StorageMain sm();
-    // RE re_storage = sm.handle(rm.getStatement());
-    // if (re_storage != RE::SUCCESS)
+    // Re re_storage = sm.handle(rm.getStatement());
+    // if (re_storage != Re::SUCCESS)
     // {
     //     printf("storage failed\n");
     //     return;
@@ -76,19 +76,19 @@ void pStart(const char *sql, int sock_fd) {
 
 void recvFunc(int fd) {
     int n, ret_val;
-    message m;
+    Message m;
     while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0) {
         if (n == 0)
             break;
         else {
-            if (m.type_ == MSG_TYPE_EXIT) {
-                message m(MSG_TYPE_EXIT, "exit");
+            if (m.type == MSG_TYPE_EXIT) {
+                Message m(MSG_TYPE_EXIT, "exit");
                 write(fd, reinterpret_cast<char *>(&m), sizeof(m));
                 break;
             } else {
-                printf("from client:%s\n", m.message_);
+                printf("from client:%s\n", m.message);
                 // detach a thread to do sql parsing and other work
-                std::thread solve_thread(pStart, m.message_, fd);
+                std::thread solve_thread(pStart, m.message, fd);
                 solve_thread.detach();
             }
         }

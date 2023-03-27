@@ -1,13 +1,13 @@
 #include "bitmap.h"
 
-int find_first_zero(char byte, int start) {
+int findFirstZero(char byte, int start) {
     for (int i = start; i < 8; i++)
         if ((byte & (1 << i)) == 0)
             return i;
     return -1;
 }
 
-int find_first_setted(char byte, int start) {
+int findFirstSetted(char byte, int start) {
     for (int i = start; i < 8; i++)
         if ((byte & (1 << i)) != 0)
             return i;
@@ -40,7 +40,7 @@ int BitMap::nextUnsettedBit(int start) {
     for (int iter = start / 8, end = (size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1); iter <= end; iter++) {
         char byte = bit_map_[iter];
         if (byte != -1) {
-            int index_in_byte = find_first_zero(byte, start_in_byte);
+            int index_in_byte = findFirstZero(byte, start_in_byte);
             if (index_in_byte >= 0) {
                 ret = iter * 8 + index_in_byte;
                 break;
@@ -59,7 +59,7 @@ int BitMap::nextSettedBit(int start) {
     for (int iter = start / 8, end = (size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1); iter <= end; iter++) {
         char byte = bit_map_[iter];
         if (byte != 0x00) {
-            int index_in_byte = find_first_setted(byte, start_in_byte);
+            int index_in_byte = findFirstSetted(byte, start_in_byte);
             if (index_in_byte >= 0) {
                 ret = iter * 8 + index_in_byte;
                 break;

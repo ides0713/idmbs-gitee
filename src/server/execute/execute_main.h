@@ -7,14 +7,14 @@ class ExecuteMain {
 public:
     explicit ExecuteMain(Session *resolve_session) : resolve_session_(resolve_session), execute_session_(nullptr) {}
 
-    RE handle();
+    Re handle();
 
     Session *callBack();
 
 private:
-    RE doSelect(Statement *stmt);
+    Re doSelect(Statement *stmt);
 
-    RE doCreateTable(Statement *stmt);
+    Re doCreateTable(Statement *stmt);
 
     Session *resolve_session_, *execute_session_;
 };

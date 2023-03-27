@@ -4,15 +4,15 @@
 #include <stdio.h>
 #include <assert.h>
 
-RE ParseMain::handle(const char *st) {
+Re ParseMain::handle(const char *st) {
     int rv = parse(st, query_);
     if (!rv) {
         query_->destroy();
         query_ = nullptr;
-        return RE::FAIL;
+        return Re::Fail;
     } else {
         parse_session_ = new ParseSession(nullptr, nullptr, false, query_);
-        return RE::SUCCESS;
+        return Re::Success;
     }
 }
 

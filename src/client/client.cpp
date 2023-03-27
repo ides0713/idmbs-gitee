@@ -10,13 +10,13 @@
 
 void recvFunc(int fd) {
     int n;
-    message m;
+    Message m;
     while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0) {
-        if (m.type_ == MSG_TYPE_EXIT) {
+        if (m.type == MSG_TYPE_EXIT) {
             printf("exit success\n");
             break;
         } else
-            printf("recv_message:%s\n", m.message_);
+            printf("recv_message:%s\n", m.message);
     }
     close(fd);
 }
@@ -41,12 +41,12 @@ int main(int argc, char **argv) {
         std::cin.getline(buffer, BUFFER_SIZE);
         if (strcmp(buffer, "") != 0) {
             if (strcmp(buffer, "exit") == 0 or strcmp(buffer, "EXIT") == 0) {
-                message m(MSG_TYPE_EXIT, "exit");
+                Message m(MSG_TYPE_EXIT, "exit");
                 write(sock_fd, reinterpret_cast<char *>(&m), sizeof(m));
                 break;
             } else {
-                message m(MSG_TYPE_REQUEST, "");
-                strcpy(m.message_, buffer);
+                Message m(MSG_TYPE_REQUEST, "");
+                strcpy(m.message, buffer);
                 write(sock_fd, reinterpret_cast<char *>(&m), sizeof(m));
             }
         }

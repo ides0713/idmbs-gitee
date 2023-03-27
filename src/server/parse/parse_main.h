@@ -9,7 +9,7 @@ class ParseMain {
 public:
     ParseMain() : query_(nullptr), parse_session_(nullptr) {}
 
-    RE handle(const char *st);
+    Re handle(const char *st);
 
     Session *callBack();
 

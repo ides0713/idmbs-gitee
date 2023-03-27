@@ -1,14 +1,6 @@
 #include "server_defs.h"
-#include <sys/stat.h>
-#include <sys/types.h>
-#include "../../common/common_defs.h"
-#include "../parse/parse_defs.h"
 #include "../storage/storage_defs.h"
 #include "../../common/params_deliver.h"
-#include <filesystem>
-#include <cstring>
-
-namespace fs = std::filesystem;
 
 GlobalParamsManager &GlobalParamsManager::getInstance() {
     static GlobalParamsManager instance;
@@ -16,11 +8,11 @@ GlobalParamsManager &GlobalParamsManager::getInstance() {
 }
 
 void GlobalParamsManager::initialize() {
-    project_path_ = strnew(PROJECT_PATH);
-    project_binary_path_ = strnew(PROJECT_BINARY_PATH);
-    project_bin_path_ = strnew(project_path_);
-    strcat(project_bin_path_, "/bin");
-    printf("%s\n%s\n%s\n", project_path_, project_binary_path_, project_bin_path_);
+    using path = std::filesystem::path;
+    project_path_ = new path(PROJECT_PATH);
+    project_binary_path_ = new path(PROJECT_BINARY_PATH);
+    project_bin_path_ = new path(std::string(PROJECT_PATH) + "/bin");
+    printf("%s\n%s\n%s\n", project_path_->c_str(), project_binary_path_->c_str(), project_bin_path_->c_str());
 }
 
 void GlobalParamsManager::destroy() {
@@ -30,5 +22,5 @@ void GlobalParamsManager::destroy() {
 }
 
 GlobalParamsManager::GlobalParamsManager() {
-    project_path_ = nullptr, project_binary_path_ = nullptr;
+    project_path_ = nullptr, project_binary_path_ = nullptr, project_bin_path_ = nullptr;
 }

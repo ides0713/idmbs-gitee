@@ -1,6 +1,6 @@
 project(server)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 MESSAGE("Begin to build " server)
 file(GLOB_RECURSE ALL_SOURCE ../common/*.cpp *.cpp)
 file(GLOB_RECURSE ALL_HEAD "*.hpp" "*.h")

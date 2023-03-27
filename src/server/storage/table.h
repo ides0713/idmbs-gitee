@@ -7,7 +7,7 @@ class Table {
 public:
     Table();
 
-    Table(const char *name);
+    explicit Table(const char *name);
 
     void initialize(const char *name);
 

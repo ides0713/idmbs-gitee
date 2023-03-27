@@ -11,12 +11,12 @@ class StorageMain {
 public:
     StorageMain();
 
-    RE handle(Statement *stmt);
+    Re handle(Statement *stmt);
 
 private:
     DIR *findBin();
 
-    DIR *findDBDir();
+    DIR *findDbDir();
 
-    FILE *findDBFile(DIR *bin_dir);
+    FILE *findDbFile(DIR *bin_dir);
 };

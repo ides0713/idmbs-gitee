@@ -1,19 +1,17 @@
 #include "storage_main.h"
 #include "storage_defs.h"
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <assert.h>
 
-RE StorageMain::handle(Statement *stmt) {
+Re StorageMain::handle(Statement *stmt) {
     DIR *bin_dir = findBin();
     if (bin_dir == nullptr)
         printf("get bin dir failed\n");
     printf("N N N N N N \n");
     closedir(bin_dir);
-    return RE::FAIL;
+    return Re::Fail;
 }
 
-StorageMain::StorageMain() {}
+StorageMain::StorageMain() = default;
 
 DIR *StorageMain::findBin() {
     char *parent_str = new char[100];
@@ -29,4 +27,4 @@ DIR *StorageMain::findBin() {
     return bin_dir;
 }
 
-FILE *StorageMain::findDBFile(DIR *bin_dir) {}
+FILE *StorageMain::findDbFile(DIR *bin_dir) { return nullptr; }

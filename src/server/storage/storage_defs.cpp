@@ -1,12 +1,10 @@
 #include "storage_defs.h"
-#include <string.h>
+#include <cstring>
 #include "../../common/common_defs.h"
 #include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 char *getParentDir(char *current_dir) {
-    int len = strlen(current_dir);
+    int len = int(strlen(current_dir));
     if (len == 1)
         return current_dir;
     int i;

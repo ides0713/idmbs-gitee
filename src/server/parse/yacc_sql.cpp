@@ -1345,7 +1345,7 @@ yyreduce:
   case 23: /* sync: SYNC SEMICOLON  */
 #line 132 "yacc_sql.y"
                    {
-    //   CONTEXT->query_info->SCF_Flag = SCF_SYNC;
+    //   CONTEXT->query_info->SCF_Flag = ScfSync;
     }
 #line 1351 "yacc_sql.cpp"
     break;
@@ -1353,7 +1353,7 @@ yyreduce:
   case 24: /* begin: TRX_BEGIN SEMICOLON  */
 #line 138 "yacc_sql.y"
                         {
-    //   CONTEXT->query_info->SCF_Flag = SCF_BEGIN;
+    //   CONTEXT->query_info->SCF_Flag = ScfBegin;
     }
 #line 1359 "yacc_sql.cpp"
     break;
@@ -1361,7 +1361,7 @@ yyreduce:
   case 25: /* commit: TRX_COMMIT SEMICOLON  */
 #line 144 "yacc_sql.y"
                          {
-    //   CONTEXT->query_info->SCF_Flag = SCF_COMMIT;
+    //   CONTEXT->query_info->SCF_Flag = ScfCommit;
     }
 #line 1367 "yacc_sql.cpp"
     break;
@@ -1369,7 +1369,7 @@ yyreduce:
   case 26: /* rollback: TRX_ROLLBACK SEMICOLON  */
 #line 150 "yacc_sql.y"
                            {
-    //   CONTEXT->query_info->SCF_Flag = SCF_ROLLBACK;
+    //   CONTEXT->query_info->SCF_Flag = ScfRollback;
     }
 #line 1375 "yacc_sql.cpp"
     break;
@@ -1377,7 +1377,7 @@ yyreduce:
   case 27: /* drop_table: DROP TABLE ID SEMICOLON  */
 #line 156 "yacc_sql.y"
                             {
-        // CONTEXT->query_info->SCF_Flag = SCF_DROP_TABLE;//"drop_table";
+        // CONTEXT->query_info->SCF_Flag = ScfDropTable;//"drop_table";
         // drop_table_init(&CONTEXT->ssql->sstr.drop_table, $3);
     }
 #line 1384 "yacc_sql.cpp"
@@ -1386,7 +1386,7 @@ yyreduce:
   case 28: /* show_tables: SHOW TABLES SEMICOLON  */
 #line 162 "yacc_sql.y"
                           {
-    //   CONTEXT->query_info->SCF_Flag = SCF_SHOW_TABLES;
+    //   CONTEXT->query_info->SCF_Flag = ScfShowTables;
     }
 #line 1392 "yacc_sql.cpp"
     break;
@@ -1394,7 +1394,7 @@ yyreduce:
   case 29: /* desc_table: DESC ID SEMICOLON  */
 #line 168 "yacc_sql.y"
                       {
-    //   CONTEXT->query_info->SCF_Flag = SCF_DESC_TABLE;
+    //   CONTEXT->query_info->SCF_Flag = ScfDescTable;
     //   desc_table_init(&CONTEXT->ssql->sstr.desc_table, $2);
     }
 #line 1401 "yacc_sql.cpp"
@@ -1403,7 +1403,7 @@ yyreduce:
   case 30: /* create_index: CREATE INDEX ID ON ID LBRACE ID RBRACE SEMICOLON  */
 #line 176 "yacc_sql.y"
                 {
-			// CONTEXT->query_info->SCF_Flag = SCF_CREATE_INDEX;//"create_index";
+			// CONTEXT->query_info->SCF_Flag = ScfCreateIndex;//"create_index";
 			// create_index_init(&CONTEXT->ssql->sstr.create_index, $3, $5, $7);
 		}
 #line 1410 "yacc_sql.cpp"
@@ -1412,7 +1412,7 @@ yyreduce:
   case 31: /* drop_index: DROP INDEX ID SEMICOLON  */
 #line 184 "yacc_sql.y"
                 {
-			// CONTEXT->query_info->SCF_Flag=SCF_DROP_INDEX;//"drop_index";
+			// CONTEXT->query_info->SCF_Flag=ScfDropIndex;//"drop_index";
 			// drop_index_init(&CONTEXT->ssql->sstr.drop_index, $3);
 		}
 #line 1419 "yacc_sql.cpp"
@@ -1477,7 +1477,7 @@ yyreduce:
   case 38: /* type: INT_T  */
 #line 231 "yacc_sql.y"
              {
-		(yyval.number)=INTS; 
+		(yyval.number)=Ints;
 		}
 #line 1483 "yacc_sql.cpp"
     break;
@@ -1485,7 +1485,7 @@ yyreduce:
   case 39: /* type: DATE_T  */
 #line 234 "yacc_sql.y"
                {
-		(yyval.number)=DATES;
+		(yyval.number)=Dates;
 		}
 #line 1491 "yacc_sql.cpp"
     break;
@@ -1493,7 +1493,7 @@ yyreduce:
   case 40: /* type: STRING_T  */
 #line 237 "yacc_sql.y"
              {
-		(yyval.number)=CHARS;
+		(yyval.number)=Chars;
 		}
 #line 1499 "yacc_sql.cpp"
     break;
@@ -1501,7 +1501,7 @@ yyreduce:
   case 41: /* type: FLOAT_T  */
 #line 240 "yacc_sql.y"
             { 
-		(yyval.number)=FLOATS; 
+		(yyval.number)=Floats;
 		}
 #line 1507 "yacc_sql.cpp"
     break;
@@ -1522,7 +1522,7 @@ yyreduce:
 		// CONTEXT->query->initialize();
 
 
-		// CONTEXT->query_info->SCF_Flag=SCF_INSERT;//"insert";
+		// CONTEXT->query_info->SCF_Flag=ScfInsert;//"insert";
 		// CONTEXT->value_tuple_num++;
 		// inserts_init(&CONTEXT->ssql->sstr.insertion,$3,CONTEXT->values,CONTEXT->value_tuple_num,CONTEXT->value_length);
         // //临时变量清零
@@ -1585,7 +1585,7 @@ yyreduce:
   case 52: /* delete: DELETE FROM ID where SEMICOLON  */
 #line 297 "yacc_sql.y"
                 {
-			// CONTEXT->query_info->SCF_Flag = SCF_DELETE;//"delete";
+			// CONTEXT->query_info->SCF_Flag = ScfDelete;//"delete";
 			// deletes_init_relation(&CONTEXT->ssql->sstr.deletion, $3);
 			// deletes_set_conditions(&CONTEXT->ssql->sstr.deletion, 
 			// 		CONTEXT->conditions, CONTEXT->condition_length);
@@ -1597,7 +1597,7 @@ yyreduce:
   case 53: /* update: UPDATE ID SET ID EQ value where SEMICOLON  */
 #line 307 "yacc_sql.y"
                 {
-			// CONTEXT->query_info->SCF_Flag = SCF_UPDATE;//"update";
+			// CONTEXT->query_info->SCF_Flag = ScfUpdate;//"update";
 			// Value *value = &CONTEXT->values[0];
 			// updates_init(&CONTEXT->ssql->sstr.update, $2, $4, value, 
 			// CONTEXT->conditions, CONTEXT->condition_length);
@@ -1803,7 +1803,7 @@ yyreduce:
   case 74: /* comOp: EQ  */
 #line 459 "yacc_sql.y"
              { 
-		// CONTEXT->comp = EQUAL_TO; 
+		// CONTEXT->comp = EqualTo;
 		}
 #line 1809 "yacc_sql.cpp"
     break;
@@ -1811,7 +1811,7 @@ yyreduce:
   case 75: /* comOp: LT  */
 #line 462 "yacc_sql.y"
          { 
-		// CONTEXT->comp = LESS_THAN; 
+		// CONTEXT->comp = LessThan;
 		}
 #line 1817 "yacc_sql.cpp"
     break;
@@ -1819,7 +1819,7 @@ yyreduce:
   case 76: /* comOp: GT  */
 #line 465 "yacc_sql.y"
          {
-		//  CONTEXT->comp = GREAT_THAN; 
+		//  CONTEXT->comp = GreatThan;
 	}
 #line 1825 "yacc_sql.cpp"
     break;
@@ -1827,7 +1827,7 @@ yyreduce:
   case 77: /* comOp: LE  */
 #line 468 "yacc_sql.y"
          {
-		//  CONTEXT->comp = LESS_EQUAL;
+		//  CONTEXT->comp = LessEqual;
 		  }
 #line 1833 "yacc_sql.cpp"
     break;
@@ -1835,7 +1835,7 @@ yyreduce:
   case 78: /* comOp: GE  */
 #line 471 "yacc_sql.y"
          {
-		//  CONTEXT->comp = GREAT_EQUAL; 
+		//  CONTEXT->comp = GreatEqual;
 		 }
 #line 1841 "yacc_sql.cpp"
     break;
@@ -1843,7 +1843,7 @@ yyreduce:
   case 79: /* comOp: NE  */
 #line 474 "yacc_sql.y"
          {
-		//  CONTEXT->comp = NOT_EQUAL; 
+		//  CONTEXT->comp = NotEqual;
 		 }
 #line 1849 "yacc_sql.cpp"
     break;
@@ -1851,7 +1851,7 @@ yyreduce:
   case 80: /* load_data: LOAD DATA INFILE SSS INTO TABLE ID SEMICOLON  */
 #line 481 "yacc_sql.y"
                 {
-		//   CONTEXT->query_info->SCF_Flag = SCF_LOAD_DATA;
+		//   CONTEXT->query_info->SCF_Flag = ScfLoadData;
 		// 	load_data_init(&CONTEXT->ssql->sstr.load_data, $7, $4);
 		}
 #line 1858 "yacc_sql.cpp"
@@ -2057,7 +2057,7 @@ yyreturnlab:
 //_____________________________________________________________________
 extern void scan_string(const char *str, yyscan_t scanner);
 // int sql_parse(const char *s, Query *sqls)
-int sql_parse(const char *s,Query* & res){
+int sqlParse(const char *s,Query* & res){
 	printf("sql parse begin\n");
 	ParserContext context;
 	memset(&context, 0, sizeof(context));

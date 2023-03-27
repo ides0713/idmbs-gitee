@@ -6,9 +6,10 @@
 
 class ResolveMain {
 public:
-    ResolveMain(Session *parse_session) : stmt_(nullptr), parse_session_(parse_session), resolve_session_(nullptr) {}
+    explicit ResolveMain(Session *parse_session) : stmt_(nullptr), parse_session_(parse_session),
+                                                   resolve_session_(nullptr) {}
 
-    RE handle();
+    Re handle();
 
     Session *callBack();
 

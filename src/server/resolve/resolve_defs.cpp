@@ -1,9 +1,9 @@
 #include "resolve_defs.h"
-#include <assert.h>
+#include <cassert>
 
 void Statement::createStatement(Query *const query, Statement *&stmt) {
-    switch (query->getSCF()) {
-        case SCF_CREATE_TABLE:
+    switch (query->getScf()) {
+        case ScfCreateTable:
             stmt = new CreateTableStatement(query);
             break;
         default:
@@ -14,15 +14,16 @@ void Statement::createStatement(Query *const query, Statement *&stmt) {
 
 void SelectStatement::initialize(Query *query) {}
 
-RE SelectStatement::handle(Query *query) {}
+Re SelectStatement::handle(Query *query) { return Re::Success; }
 
 void SelectStatement::destroy() {}
 
-CreateTableStatement::CreateTableStatement(Query *query) : Statement(query->getSCF()) {}
+CreateTableStatement::CreateTableStatement(Query *query) :
+        Statement(query->getScf()) { table_name_ = nullptr, attr_infos_num_ = 0, attr_infos_ = nullptr; }
 
 void CreateTableStatement::initialize(Query *query) {
     CreateTableQuery *ctq = static_cast<CreateTableQuery *>(query);
-    assert(this->getSCF() == SCF_CREATE_TABLE);
+    assert(this->getScf() == ScfCreateTable);
     attr_infos_num_ = ctq->getAttrNum();
     table_name_ = strnew(ctq->getRelName());
     attr_infos_ = new AttrInfo[attr_infos_num_];
@@ -31,8 +32,8 @@ void CreateTableStatement::initialize(Query *query) {
         attr_infos_[i] = attr_infos[i];
 }
 
-RE CreateTableStatement::handle(Query *query) {
-    return RE::SUCCESS;
+Re CreateTableStatement::handle(Query *query) {
+    return Re::Success;
 }
 
 void CreateTableStatement::destroy() {

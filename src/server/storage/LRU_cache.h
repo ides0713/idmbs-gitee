@@ -5,7 +5,7 @@
 
 ///@brief Hash= Pred= 是默认值的用法 不是using=那种
 template<typename Key, typename Value, typename Hash = std::hash<Key>, typename Pred = std::equal_to<Key>>
-class LRUCache {
+class LruCache {
 private:
     class ListNode {
     public:
@@ -18,7 +18,7 @@ private:
         ListNode *next_ = nullptr;
 
     private:
-        friend class LRUCache;
+        friend class LruCache;
     };
 
     class PListNodeHasher {
@@ -31,20 +31,20 @@ private:
 
     class PListNodePredicator {
     public:
-        bool operator()(ListNode *const node1, ListNode *const node2) const;
+        bool operator()(ListNode *const node_1, ListNode *const node_2) const;
 
     private:
         Pred pred_;
     };
 
 public:
-    LRUCache(size_t reserve = 0);
+    explicit LruCache(size_t reserve = 0);
 
-    ~LRUCache() { destroy(); }
+    ~LruCache() { destroy(); }
 
     void destroy();
 
-    size_t count() const { return searcher_.size(); }
+    const size_t count() const { return searcher_.size(); }
 
     bool get(const Key &key, Value &value);
 
@@ -58,13 +58,13 @@ public:
 
 private:
     /// @brief 对该node进行了访问 需要移动其位置
-    void LRUTouch(ListNode *node);
+    void lruTouch(ListNode *node);
 
     /// @brief 进入链表头
-    void LRUPush(ListNode *node);
+    void lruPush(ListNode *node);
 
     /// @brief 移出
-    void LRURemove(ListNode *node);
+    void lruRemove(ListNode *node);
 
 private:
     std::unordered_set<ListNode *, PListNodeHasher, PListNodePredicator> searcher_;
@@ -73,7 +73,7 @@ private:
 };
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline size_t LRUCache<Key, Value, Hash, Pred>::PListNodeHasher::operator()(ListNode *node) const {
+inline size_t LruCache<Key, Value, Hash, Pred>::PListNodeHasher::operator()(ListNode *node) const {
     if (node == nullptr)
         return 0;
     return hasher_(node->key_);
@@ -81,22 +81,23 @@ inline size_t LRUCache<Key, Value, Hash, Pred>::PListNodeHasher::operator()(List
 
 template<typename Key, typename Value, typename Hash, typename Pred>
 inline bool
-LRUCache<Key, Value, Hash, Pred>::PListNodePredicator::operator()(ListNode *const node1, ListNode *const node2) const {
-    if (node1 == node2)
+LruCache<Key, Value, Hash, Pred>::PListNodePredicator::operator()(ListNode *const node_1,
+                                                                  ListNode *const node_2) const {
+    if (node_1 == node_2)
         return true;
-    if (node1 == nullptr || node2 == nullptr)
+    if (node_1 == nullptr || node_2 == nullptr)
         return false;
-    return pred_(node1->key_, node2->key_);
+    return pred_(node_1->key_, node_2->key_);
 }
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline LRUCache<Key, Value, Hash, Pred>::LRUCache(size_t reserve = 0) {
+inline LruCache<Key, Value, Hash, Pred>::LruCache(size_t reserve) {
     if (reserve > 0)
         searcher_.reserve(reserve);
 }
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LRUCache<Key, Value, Hash, Pred>::destroy() {
+inline void LruCache<Key, Value, Hash, Pred>::destroy() {
     for (ListNode *node: searcher_)
         delete node;
     searcher_.clear();
@@ -105,37 +106,37 @@ inline void LRUCache<Key, Value, Hash, Pred>::destroy() {
 }
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline bool LRUCache<Key, Value, Hash, Pred>::get(const Key &key, Value &value) {
+inline bool LruCache<Key, Value, Hash, Pred>::get(const Key &key, Value &value) {
     auto iter = searcher_.find((ListNode *) &key);
     if (iter == searcher_.end())
         return false;
-    LRUTouch(*iter);
+    lruTouch(*iter);
     value = (*iter)->value_;
     return true;
 }
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LRUCache<Key, Value, Hash, Pred>::put(const Key &key, const Value &value) {
+inline void LruCache<Key, Value, Hash, Pred>::put(const Key &key, const Value &value) {
     auto iter = searcher_.find((ListNode *) &key);
     if (iter != searcher_.end()) {
         ListNode *ln = *iter;
         ln->value_ = value;
-        LRUTouch(ln);
+        lruTouch(ln);
         return;
     }
     ListNode *ln = new ListNode(key, value);
-    LRUPush(ln);
+    lruPush(ln);
 }
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LRUCache<Key, Value, Hash, Pred>::remove(const Key &key) {
+inline void LruCache<Key, Value, Hash, Pred>::remove(const Key &key) {
     auto iter = searcher_.find((ListNode *) &key);
     if (iter != searcher_.end())
-        LRURemove(*iter);
+        lruRemove(*iter);
 }
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LRUCache<Key, Value, Hash, Pred>::foreach(std::function<bool(const Key &, const Value &)> func) {
+inline void LruCache<Key, Value, Hash, Pred>::foreach(std::function<bool(const Key &, const Value &)> func) {
     for (ListNode *node = lru_front_; node != nullptr; node = node->next_) {
         bool ret = func(node->key_, node->value_);
         if (!ret)
@@ -144,7 +145,7 @@ inline void LRUCache<Key, Value, Hash, Pred>::foreach(std::function<bool(const K
 }
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LRUCache<Key, Value, Hash, Pred>::foreachReverse(std::function<bool(const Key &, const Value &)> func) {
+inline void LruCache<Key, Value, Hash, Pred>::foreachReverse(std::function<bool(const Key &, const Value &)> func) {
     for (ListNode *node = lru_tail_; node != nullptr; node = node->prev_) {
         bool ret = func(node->key_, node->value_);
         if (!ret)
@@ -153,7 +154,7 @@ inline void LRUCache<Key, Value, Hash, Pred>::foreachReverse(std::function<bool(
 }
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LRUCache<Key, Value, Hash, Pred>::LRUTouch(ListNode *node) {
+inline void LruCache<Key, Value, Hash, Pred>::lruTouch(ListNode *node) {
     if (nullptr == node->prev_)
         return;
     node->prev_->next_ = node->next_;
@@ -169,7 +170,7 @@ inline void LRUCache<Key, Value, Hash, Pred>::LRUTouch(ListNode *node) {
 }
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LRUCache<Key, Value, Hash, Pred>::LRUPush(ListNode *node) {
+inline void LruCache<Key, Value, Hash, Pred>::lruPush(ListNode *node) {
     if (nullptr == lru_tail_)
         lru_tail_ = node;
     node->prev_ = nullptr;
@@ -181,7 +182,7 @@ inline void LRUCache<Key, Value, Hash, Pred>::LRUPush(ListNode *node) {
 }
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LRUCache<Key, Value, Hash, Pred>::LRURemove(ListNode *node) {
+inline void LruCache<Key, Value, Hash, Pred>::lruRemove(ListNode *node) {
     if (node->prev_ != nullptr)
         node->prev_->next_ = node->next_;
     if (node->next_ != nullptr)

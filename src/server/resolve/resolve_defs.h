@@ -4,24 +4,24 @@
 #include "../parse/parse_defs.h"
 #include <vector>
 
-enum STMT {
+enum StatementFlag {
     Select = 0,
     CreateTable,
 };
 
 class Statement {
 public:
-    Statement(SqlCommandFlag flag) : flag_(flag) {}
+    explicit Statement(SqlCommandFlag flag) : flag_(flag) {}
 
     virtual void initialize(Query *query) = 0;
 
-    virtual RE handle(Query *query) = 0;
+    virtual Re handle(Query *query) = 0;
 
     virtual void destroy() = 0;
 
-    virtual STMT getType() = 0;
+    virtual StatementFlag getType() = 0;
 
-    SqlCommandFlag getSCF() { return flag_; }
+    SqlCommandFlag getScf() { return flag_; }
 
     static void createStatement(Query *const query, Statement *&stmt);
 
@@ -31,30 +31,30 @@ private:
 
 class SelectStatement : public Statement {
 public:
-    SelectStatement(Query *query);
+    explicit SelectStatement(Query *query);
 
     void initialize(Query *query) override;
 
-    RE handle(Query *query) override;
+    Re handle(Query *query) override;
 
     void destroy() override;
 
-    STMT getType() { return STMT::Select; }
+    StatementFlag getType() override { return StatementFlag::Select; }
 
 private:
 };
 
 class CreateTableStatement : public Statement {
 public:
-    CreateTableStatement(Query *query);
+    explicit CreateTableStatement(Query *query);
 
     void initialize(Query *query) override;
 
-    RE handle(Query *query) override;
+    Re handle(Query *query) override;
 
     void destroy() override;
 
-    STMT getType() { return STMT::CreateTable; }
+    StatementFlag getType() override { return StatementFlag::CreateTable; }
 
 private:
     char *table_name_;

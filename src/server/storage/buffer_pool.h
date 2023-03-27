@@ -1,10 +1,10 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include "LRU_cache.h"
 #include "mem_pool.h"
 #include "bitmap.h"
-#include <string.h>
+#include <cstring>
 #include <unordered_map>
 #include "../common/server_defs.h"
 
@@ -28,7 +28,7 @@ private:
 };
 
 // first page of bpfile
-struct BPFileHeader {
+struct BufferPoolFileHeader {
     int32_t page_count;      //! 当前文件一共有多少个页面
     int32_t allocated_pages; //! 已经分配了多少个页面
     // 指向数据后一位 (新鲜的用法)
@@ -38,7 +38,7 @@ struct BPFileHeader {
      * 能够分配的最大的页面个数，即bitmap的字节数 乘以8
      */
     // file header是一页 使用该页存储 字节*8个 bit
-    static const int MAX_PAGE_NUM = (BP_PAGE_DATA_SIZE - sizeof(page_count) - sizeof(allocated_pages)) * 8;
+    static const int max_page_num = (BP_PAGE_DATA_SIZE - sizeof(page_count) - sizeof(allocated_pages)) * 8;
 };
 
 class Frame {
@@ -49,18 +49,18 @@ public:
 
     void dirtyMark() { dirty_ = true; };
 
-    int32_t getPageId() const { return page_.page_id_; };
+    [[nodiscard]] int32_t getPageId() const { return page_.page_id_; };
 
     void setPageId(int32_t id) { page_.page_id_ = id; }
 
     char *getPageData() { return page_.page_data_; };
 
     // void setPageData(const char * data);
-    int getFileDesc() const { return file_desc_; };
+    [[nodiscard]] int getFileDesc() const { return file_desc_; };
 
     void setFileDesc(int file_desc) { file_desc_ = file_desc; }
 
-    bool isPurgable() { return pin_count_ <= 0; }
+    [[nodiscard]] bool isPurgable() const { return pin_count_ <= 0; }
 
 private:
     bool dirty_;
@@ -78,15 +78,17 @@ class FrameId {
 public:
     FrameId(int file_desc, int32_t page_num) : file_desc_(file_desc), page_id_(page_num) {}
 
-    bool equal_to(const FrameId &other) const { return file_desc_ == other.file_desc_ && page_id_ == other.page_id_; }
+    [[nodiscard]] bool equalTo(const FrameId &other) const {
+        return file_desc_ == other.file_desc_ && page_id_ == other.page_id_;
+    }
 
-    bool operator==(const FrameId &other) const { return this->equal_to(other); }
+    bool operator==(const FrameId &other) const { return this->equalTo(other); }
 
-    size_t hash() const { return static_cast<size_t>(file_desc_) << 32L | page_id_; }
+    [[nodiscard]] size_t hash() const { return static_cast<size_t>(file_desc_) << 32L | page_id_; }
 
-    int getFileDesc() const { return file_desc_; }
+    [[nodiscard]] int getFileDesc() const { return file_desc_; }
 
-    int32_t getPageId() const { return page_id_; }
+    [[nodiscard]] int32_t getPageId() const { return page_id_; }
 
 private:
     int file_desc_;
@@ -95,17 +97,17 @@ private:
 
 class FrameManager {
 public:
-    FrameManager(const char *tag) : memory_pool_allocator_(tag) {}
+    explicit FrameManager(const char *tag) : memory_pool_allocator_(tag) {}
 
-    RE initialize(int pool_num);
+    Re initialize(int pool_num);
 
-    RE cleanUp();
+    Re cleanUp();
 
     Frame *get(int file_desc, int32_t page_num);
 
     Frame *alloc(int file_desc, int32_t page_num);
 
-    RE free(int file_desc, int32_t page_num, Frame *frame);
+    Re free(int file_desc, int32_t page_num, Frame *frame);
 
     Frame *beginPurge();
 
@@ -125,7 +127,7 @@ private:
 
 private:
     std::mutex lock_;
-    LRUCache<FrameId, Frame *, FrameIdHasher, std::equal_to<FrameId>> frames_lru_cache_;
+    LruCache<FrameId, Frame *, FrameIdHasher, std::equal_to<FrameId>> frames_lru_cache_;
     MemoryPool<Frame> memory_pool_allocator_;
 };
 
@@ -139,43 +141,43 @@ public:
 
     ~DiskBufferPool();
 
-    // RE create_file(const char *file_name);
-    RE openFile(const char *file_name);
+    // Re create_file(const char *file_name);
+    Re openFile(const char *file_name);
 
-    RE closeFile();
+    Re closeFile();
 
-    RE getThisPage(int32_t page_num, Frame **frame);
+    Re getThisPage(int32_t page_num, Frame **frame);
 
-    RE allocatePage(Frame **frame);
+    Re allocatePage(Frame **frame);
 
-    RE disposePage(int32_t page_num);
+    Re disposePage(int32_t page_num);
 
-    RE purgePage(int32_t page_num);
+    Re purgePage(int32_t page_num);
 
-    RE purgeAllPages();
+    Re purgeAllPages();
 
-    RE unpinPage(Frame *frame);
+    Re unpinPage(Frame *frame);
 
-    RE getPageCount(int *page_count);
+    Re getPageCount(int *page_count);
 
-    RE checkAllPagesUnpinned();
+    Re checkAllPagesUnpinned();
 
-    int getFileDesc() const;
+    [[nodiscard]] int getFileDesc() const;
 
-    RE flushPage(Frame &frame);
+    Re flushPage(Frame &frame);
 
-    RE flushAllPages();
+    Re flushAllPages();
 
-    RE recoverPage(int32_t page_num);
+    Re recoverPage(int32_t page_num);
 
 protected:
-    RE allocateFrame(int32_t page_num, Frame **buf);
+    Re allocateFrame(int32_t page_num, Frame **buf);
 
-    RE purgeFrame(int32_t page_num, Frame *used_frame);
+    Re purgeFrame(int32_t page_num, Frame *used_frame);
 
-    RE checkPageNum(int32_t page_num);
+    Re checkPageNum(int32_t page_num);
 
-    RE loadPage(int32_t page_num, Frame *frame);
+    Re loadPage(int32_t page_num, Frame *frame);
 
 private:
     BufferPoolManager &bp_manager_;
@@ -183,8 +185,8 @@ private:
     std::string file_name_;
     int file_desc_ = -1;
     Frame *header_frame_ = nullptr;
-    BPFileHeader *file_header_ = nullptr;
-    std::set<int32_t> disposed_pages;
+    BufferPoolFileHeader *file_header_ = nullptr;
+    std::set<int32_t> disposed_pages_;
 
 private:
     friend class BufferPoolIterator;
@@ -196,13 +198,13 @@ public:
 
     void initialize();
 
-    RE createFile(const char *file_name);
+    Re createFile(const char *file_name);
 
-    RE openFile(const char *file_name, DiskBufferPool *&bp);
+    Re openFile(const char *file_name, DiskBufferPool *&bp);
 
-    RE closeFile(const char *file_name);
+    Re closeFile(const char *file_name);
 
-    RE flushPage(Frame &frame);
+    Re flushPage(Frame &frame);
 
     void destroy();
 
@@ -219,13 +221,13 @@ public:
 
     ~BufferPoolIterator() {}
 
-    RE initialize(DiskBufferPool &bp, int32_t start_page = 0);
+    Re initialize(DiskBufferPool &bp, int32_t start_page = 0);
 
     bool hasNext();
 
     int32_t next();
 
-    RE reset();
+    Re reset();
 
 private:
     BitMap bit_map_;

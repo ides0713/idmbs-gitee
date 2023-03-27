@@ -130,43 +130,43 @@ help:
 
 sync:
     SYNC SEMICOLON {
-    //   CONTEXT->query_info->SCF_Flag = SCF_SYNC;
+    //   CONTEXT->query_info->SCF_Flag = ScfSync;
     }
     ;
 
 begin:
     TRX_BEGIN SEMICOLON {
-    //   CONTEXT->query_info->SCF_Flag = SCF_BEGIN;
+    //   CONTEXT->query_info->SCF_Flag = ScfBegin;
     }
     ;
 
 commit:
     TRX_COMMIT SEMICOLON {
-    //   CONTEXT->query_info->SCF_Flag = SCF_COMMIT;
+    //   CONTEXT->query_info->SCF_Flag = ScfCommit;
     }
     ;
 
 rollback:
     TRX_ROLLBACK SEMICOLON {
-    //   CONTEXT->query_info->SCF_Flag = SCF_ROLLBACK;
+    //   CONTEXT->query_info->SCF_Flag = ScfRollback;
     }
     ;
 
 drop_table:		/*drop table 语句的语法解析树*/
     DROP TABLE ID SEMICOLON {
-        // CONTEXT->query_info->SCF_Flag = SCF_DROP_TABLE;//"drop_table";
+        // CONTEXT->query_info->SCF_Flag = ScfDropTable;//"drop_table";
         // drop_table_init(&CONTEXT->ssql->sstr.drop_table, $3);
     };
 
 show_tables:
     SHOW TABLES SEMICOLON {
-    //   CONTEXT->query_info->SCF_Flag = SCF_SHOW_TABLES;
+    //   CONTEXT->query_info->SCF_Flag = ScfShowTables;
     }
     ;
 
 desc_table:
     DESC ID SEMICOLON {
-    //   CONTEXT->query_info->SCF_Flag = SCF_DESC_TABLE;
+    //   CONTEXT->query_info->SCF_Flag = ScfDescTable;
     //   desc_table_init(&CONTEXT->ssql->sstr.desc_table, $2);
     }
     ;
@@ -174,7 +174,7 @@ desc_table:
 create_index:		/*create index 语句的语法解析树*/
     CREATE INDEX ID ON ID LBRACE ID RBRACE SEMICOLON 
 		{
-			// CONTEXT->query_info->SCF_Flag = SCF_CREATE_INDEX;//"create_index";
+			// CONTEXT->query_info->SCF_Flag = ScfCreateIndex;//"create_index";
 			// create_index_init(&CONTEXT->ssql->sstr.create_index, $3, $5, $7);
 		}
     ;
@@ -182,7 +182,7 @@ create_index:		/*create index 语句的语法解析树*/
 drop_index:			/*drop index 语句的语法解析树*/
     DROP INDEX ID  SEMICOLON 
 		{
-			// CONTEXT->query_info->SCF_Flag=SCF_DROP_INDEX;//"drop_index";
+			// CONTEXT->query_info->SCF_Flag=ScfDropIndex;//"drop_index";
 			// drop_index_init(&CONTEXT->ssql->sstr.drop_index, $3);
 		}
     ;
@@ -229,16 +229,16 @@ number:
 	;
 type:
 	INT_T{
-		$$=INTS; 
+		$$=Ints;
 		}
 	|DATE_T{
-		$$=DATES;
+		$$=Dates;
 		}
     |STRING_T{
-		$$=CHARS;
+		$$=Chars;
 		}
     |FLOAT_T{ 
-		$$=FLOATS; 
+		$$=Floats;
 		}
     ;
 ID_get:
@@ -256,7 +256,7 @@ insert:				/*insert   语句的语法解析树*/
 		// CONTEXT->query->initialize();
 
 
-		// CONTEXT->query_info->SCF_Flag=SCF_INSERT;//"insert";
+		// CONTEXT->query_info->SCF_Flag=ScfInsert;//"insert";
 		// CONTEXT->value_tuple_num++;
 		// inserts_init(&CONTEXT->ssql->sstr.insertion,$3,CONTEXT->values,CONTEXT->value_tuple_num,CONTEXT->value_length);
         // //临时变量清零
@@ -295,7 +295,7 @@ value:
 delete:		/*  delete 语句的语法解析树*/
     DELETE FROM ID where SEMICOLON 
 		{
-			// CONTEXT->query_info->SCF_Flag = SCF_DELETE;//"delete";
+			// CONTEXT->query_info->SCF_Flag = ScfDelete;//"delete";
 			// deletes_init_relation(&CONTEXT->ssql->sstr.deletion, $3);
 			// deletes_set_conditions(&CONTEXT->ssql->sstr.deletion, 
 			// 		CONTEXT->conditions, CONTEXT->condition_length);
@@ -305,7 +305,7 @@ delete:		/*  delete 语句的语法解析树*/
 update:			/*  update 语句的语法解析树*/
     UPDATE ID SET ID EQ value where SEMICOLON
 		{
-			// CONTEXT->query_info->SCF_Flag = SCF_UPDATE;//"update";
+			// CONTEXT->query_info->SCF_Flag = ScfUpdate;//"update";
 			// Value *value = &CONTEXT->values[0];
 			// updates_init(&CONTEXT->ssql->sstr.update, $2, $4, value, 
 			// CONTEXT->conditions, CONTEXT->condition_length);
@@ -457,29 +457,29 @@ condition:
 
 comOp:
   	  EQ { 
-		// CONTEXT->comp = EQUAL_TO; 
+		// CONTEXT->comp = EqualTo;
 		}
     | LT { 
-		// CONTEXT->comp = LESS_THAN; 
+		// CONTEXT->comp = LessThan;
 		}
     | GT {
-		//  CONTEXT->comp = GREAT_THAN; 
+		//  CONTEXT->comp = GreatThan;
 	}
     | LE {
-		//  CONTEXT->comp = LESS_EQUAL;
+		//  CONTEXT->comp = LessEqual;
 		  }
     | GE {
-		//  CONTEXT->comp = GREAT_EQUAL; 
+		//  CONTEXT->comp = GreatEqual;
 		 }
     | NE {
-		//  CONTEXT->comp = NOT_EQUAL; 
+		//  CONTEXT->comp = NotEqual;
 		 }
     ;
 
 load_data:
 		LOAD DATA INFILE SSS INTO TABLE ID SEMICOLON
 		{
-		//   CONTEXT->query_info->SCF_Flag = SCF_LOAD_DATA;
+		//   CONTEXT->query_info->SCF_Flag = ScfLoadData;
 		// 	load_data_init(&CONTEXT->ssql->sstr.load_data, $7, $4);
 		}
 		;
@@ -488,7 +488,7 @@ load_data:
 //_____________________________________________________________________
 extern void scan_string(const char *str, yyscan_t scanner);
 // int sql_parse(const char *s, Query *sqls)
-int sql_parse(const char *s,Query* & res){
+int sqlParse(const char *s,Query* & res){
 	printf("sql parse begin\n");
 	ParserContext context;
 	memset(&context, 0, sizeof(context));
