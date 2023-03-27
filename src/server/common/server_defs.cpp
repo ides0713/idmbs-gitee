@@ -7,7 +7,7 @@
 #include "../../common/params_deliver.h"
 #include <filesystem>
 #include <cstring>
-
+namespace fs=std::filesystem;
 GlobalParamsManager &GlobalParamsManager::getInstance() {
     static GlobalParamsManager instance;
     return instance;
@@ -16,9 +16,9 @@ GlobalParamsManager &GlobalParamsManager::getInstance() {
 void GlobalParamsManager::initialize() {
     project_path_ = strnew(PROJECT_PATH);
     project_binary_path_ = strnew(PROJECT_BINARY_PATH);
-    project_bin_path_=new char[DIR_PATH_LEN];
-    strcpy(project_bin_path_,project_path_);
+    project_bin_path_=strnew(project_path_);
     strcat(project_bin_path_,"/bin");
+    printf("%s\n%s\n%s\n",project_path_,project_binary_path_,project_bin_path_);
 }
 
 void GlobalParamsManager::destroy() {
