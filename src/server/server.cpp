@@ -1,9 +1,10 @@
 #include <sys/socket.h>
-#include <string.h>
+#include <cstring>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <thread>
+#include <cstdio>
 #include "../common/common_defs.h"
 #include "common/server_defs.h"
 #include "common/global_managers_initializer.h"
@@ -17,7 +18,7 @@ void pStart(const char *sql, int sock_fd);
 void recvFunc(int fd);
 
 int main() {
-    GlobalManagersInitializer::getInstance().handle();
+    GlobalManagersManager::getInstance().handle();
     // int listen_fd, conn_fd;
     // sockaddr_in serve_addr;
     // listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -39,9 +40,9 @@ int main() {
 
     char buffer[100];
     strcpy(buffer, "create table t_basic(id int, age int, name char, score float);");
-    printf("buffer content:\n--\n%s\n--\n", buffer);
+    debugPrint("Main:buffer content:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);
-    GlobalManagersInitializer::getInstance().destroy();
+    GlobalManagersManager::getInstance().destroy();
     return 0;
 }
 
@@ -49,22 +50,24 @@ void pStart(const char *sql, int sock_fd) {
     ParseMain pm;
     Re re_parse = pm.handle(sql);
     if (re_parse != Re::Success) {
-        printf("sql parse failed\n");
+        debugPrint("Main:parse failed\n");
         return;
     }
-    printf("sql parse succeeded\n");
+    debugPrint("Main:sql parse succeeded\n");
     ResolveMain rm(pm.callBack());
     Re re_resolve = rm.handle();
     if (re_resolve != Re::Success) {
-        printf("resolve stmt failed\n");
+        debugPrint("Main:resolve stmt failed\n");
         return;
     }
+    debugPrint("Main:resolve stmt succeeded\n");
     ExecuteMain em(rm.callBack());
     Re re_execute = em.handle();
     if (re_execute != Re::Success) {
-        printf("execute stmt failed\n");
+        debugPrint("Main:execute stmt failed\n");
         return;
     }
+    debugPrint("Main:execute stmt succeeded\n");
     // StorageMain sm();
     // Re re_storage = sm.handle(rm.getStatement());
     // if (re_storage != Re::SUCCESS)

@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include <cassert>
+#include "../../common/common_defs.h"
 
 #define MP_NAME_MAX_SIZE 20
 #define DEFAULT_ITEM_NUM_PER_POOL 128
@@ -66,11 +67,11 @@ inline MemoryPool<T>::~MemoryPool() {
 template<class T>
 inline bool MemoryPool<T>::initialize(bool is_dynamic, int pool_num, int item_num_per_pool) {
     if (!pools_.empty()) {
-        printf("MemoryPool:pool is not empty,the memory pool is already initialized\n");
+        debugPrint("MemoryPool:pool is not empty,the memory pool is already initialized\n");
         return true;
     }
     if (pool_num <= 0 or item_num_per_pool <= 0) {
-        printf("MemoryPool:invalid args:pool_num:%d item_num_per_pool%d\n", pool_num, item_num_per_pool);
+        debugPrint("MemoryPool:invalid args:pool_num:%d item_num_per_pool%d\n", pool_num, item_num_per_pool);
         return false;
     }
     item_num_per_pool_ = item_num_per_pool;
@@ -101,13 +102,13 @@ inline void MemoryPool<T>::cleanUp() {
 template<class T>
 inline bool MemoryPool<T>::extend() {
     if (!is_dynamic_) {
-        printf("MemoryPool:not a dynamic pool\n");
+        debugPrint("MemoryPool:not a dynamic pool\n");
         return false;
     }
     lock_.lock();
     T *new_items = new T[item_num_per_pool_];
     if (new_items == nullptr) {
-        printf("MemoryPool:extend failed;number of items is %d\n", item_num_per_pool_);
+        debugPrint("MemoryPool:extend failed;number of items is %d\n", item_num_per_pool_);
         return false;
     }
     pools_.push_back(new_items);

@@ -1,5 +1,6 @@
 #include "resolve_defs.h"
 #include <cassert>
+#include "../../common/common_defs.h"
 
 void Statement::createStatement(Query *const query, Statement *&stmt) {
     switch (query->getScf()) {
@@ -7,7 +8,7 @@ void Statement::createStatement(Query *const query, Statement *&stmt) {
             stmt = new CreateTableStatement(query);
             break;
         default:
-            printf("Statement:unrecognized query SCF\n");
+            debugPrint("Statement:unrecognized query SCF\n");
             break;
     }
 }

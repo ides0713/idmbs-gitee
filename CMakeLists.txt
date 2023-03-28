@@ -7,5 +7,10 @@ MESSAGE(STATUS "This is PROJECT_SOURCE_DIR dir " ${PROJECT_SOURCE_DIR})
 set(PATH1 ${PROJECT_BINARY_DIR})
 set(PATH2 ${PROJECT_SOURCE_DIR})
 CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/src/common/params_deliver.h.in ${PROJECT_SOURCE_DIR}/src/common/params_deliver.h)
+
+if (DEBUG)
+    add_definitions(-DDEBUG)
+ENDIF ()
+
 ADD_SUBDIRECTORY(src/client)
 ADD_SUBDIRECTORY(src/server)

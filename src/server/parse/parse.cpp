@@ -1,5 +1,6 @@
 #include "parse.h"
 #include <cstdio>
+#include "../../common/common_defs.h"
 
 int sqlParse(const char *st, Query *&res);
 
@@ -14,7 +15,7 @@ int parse(const char *st, Query *&res) {
 // parse_defs
 //----------------------------------------------------
 [[maybe_unused]] int testFunc(int param) {
-    printf("param of the func is %d\n", param);
+    debugPrint("param of the func is %d\n", param);
     return 0;
 }
 

@@ -1,12 +1,12 @@
 #include "storage_main.h"
 #include "storage_defs.h"
 #include <sys/stat.h>
+#include "../../common/common_defs.h"
 
 Re StorageMain::handle(Statement *stmt) {
     DIR *bin_dir = findBin();
     if (bin_dir == nullptr)
-        printf("get bin dir failed\n");
-    printf("N N N N N N \n");
+        debugPrint("StorageMain:get bin dir failed\n");
     closedir(bin_dir);
     return Re::Fail;
 }

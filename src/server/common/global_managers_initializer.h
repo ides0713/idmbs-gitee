@@ -2,9 +2,9 @@
 #include "../storage/database.h"
 #include "../storage/buffer_pool.h"
 
-class GlobalManagersInitializer {
+class GlobalManagersManager {
 public:
-    static GlobalManagersInitializer &getInstance();
+    static GlobalManagersManager &getInstance();
 
     void handle();
 
