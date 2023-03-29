@@ -5,7 +5,7 @@
 DataBase::DataBase(const char *database_name) {
     namespace fs = std::filesystem;
     database_name_ = std::string(database_name);
-    GlobalParamsManager gpm = GlobalManagers::getGlobalPramsManager();
+    GlobalParamsManager gpm = GlobalManagers::globalParamsManager();
     database_path_ = fs::path(gpm.getProjectBinPath()).append(database_name);
 }
 
@@ -20,7 +20,7 @@ Re DataBase::createTable(const char *table_name, const size_t attr_infos_num, co
                    table_name);
         return Re::Fail;
     }
-    DataBaseManager dbm=GlobalManagers::getDataBaseManager();
+    DataBaseManager dbm= GlobalManagers::dataBaseManager();
     fs::path table_file_path(dbm.getProjectBinPath());
 //    table_file_path.append("/%s/%s",);
     return Fail;
@@ -32,8 +32,7 @@ Re DataBase::createTable(std::string table_name, const size_t attr_infos_num, co
 
 void DataBaseManager::initialize() {
     namespace fs = std::filesystem;
-    GlobalParamsManager gpm = GlobalManagers::getGlobalPramsManager();
-    debugPrint("12345\n");
+    GlobalParamsManager gpm = GlobalManagers::globalParamsManager();
     project_default_database_path_ = fs::path(
             gpm.getProjectBinPath()).append("sys");
     if (!std::filesystem::is_directory(project_default_database_path_))
@@ -87,10 +86,6 @@ void DataBaseManager::destroy() {
     }
 }
 
-DataBaseManager::DataBaseManager() {
-    project_default_database_path_ = nullptr;
-    project_bin_path_ = nullptr;
-}
 
 DataBase *DataBaseManager::getDb(const char *database_name) {
     std::string th_database_name = std::string(database_name);

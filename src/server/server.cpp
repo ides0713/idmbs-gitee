@@ -18,11 +18,7 @@ void pStart(const char *sql, int sock_fd);
 void recvFunc(int fd);
 
 int main() {
-    printf("1\n");
-    debugPrint("12345\n");
-    printf("2\n");
     GlobalManagers::initialize();
-    printf("3\n");
     // int listen_fd, conn_fd;
     // sockaddr_in serve_addr;
     // listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -41,10 +37,9 @@ int main() {
     //     std::thread recv_thread(recvFunc, conn_fd);
     //     recv_thread.detach();
     // }
-    printf("12314135\n");
     char buffer[100];
     strcpy(buffer, "create table t_basic(id int, age int, name char, score float);");
-    debugPrint("Main:buffer content:\n--\n%s\n--\n", buffer);
+    debugPrint("Main:sql_buffer:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);
     GlobalManagers::destroy();
     return 0;
@@ -54,24 +49,24 @@ void pStart(const char *sql, int sock_fd) {
     ParseMain pm;
     Re re_parse = pm.handle(sql);
     if (re_parse != Re::Success) {
-        debugPrint("Main:parse failed\n");
+        debugPrint("\nMain:parse failed\n");
         return;
     }
-    debugPrint("Main:sql parse succeeded\n");
+    debugPrint("\nMain:sql parse succeeded\n");
     ResolveMain rm(pm.callBack());
     Re re_resolve = rm.handle();
     if (re_resolve != Re::Success) {
-        debugPrint("Main:resolve stmt failed\n");
+        debugPrint("\nMain:resolve stmt failed\n");
         return;
     }
-    debugPrint("Main:resolve stmt succeeded\n");
+    debugPrint("\nMain:resolve stmt succeeded\n");
     ExecuteMain em(rm.callBack());
     Re re_execute = em.handle();
     if (re_execute != Re::Success) {
-        debugPrint("Main:execute stmt failed\n");
+        debugPrint("\nMain:execute stmt failed\n");
         return;
     }
-    debugPrint("Main:execute stmt succeeded\n");
+    debugPrint("\nMain:execute stmt succeeded\n");
     // StorageMain sm();
     // Re re_storage = sm.handle(rm.getStatement());
     // if (re_storage != Re::SUCCESS)

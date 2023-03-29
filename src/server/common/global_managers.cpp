@@ -1,29 +1,28 @@
 #include "global_managers.h"
 
 void GlobalManagers::initialize() {
-    debugPrint("GlobalManagers:initialize begin\n");
-    getGlobalPramsManager().initialize();
-    getDataBaseManager().initialize();
-    getBufferPoolManager().initialize();
+    globalParamsManager().initialize();
+    dataBaseManager().initialize();
+    bufferPoolManager().initialize();
 }
 
 void GlobalManagers::destroy() {
-    getGlobalPramsManager().destroy();
-    getDataBaseManager().destroy();
-    getBufferPoolManager().destroy();
+    globalParamsManager().destroy();
+    dataBaseManager().destroy();
+    bufferPoolManager().destroy();
 }
 
-GlobalParamsManager &GlobalManagers::getGlobalPramsManager() {
+GlobalParamsManager &GlobalManagers::globalParamsManager() {
     static GlobalParamsManager instance;
     return instance;
 }
 
-DataBaseManager &GlobalManagers::getDataBaseManager() {
+DataBaseManager &GlobalManagers::dataBaseManager() {
     static DataBaseManager instance;
     return instance;
 }
 
-BufferPoolManager &GlobalManagers::getBufferPoolManager() {
+BufferPoolManager &GlobalManagers::bufferPoolManager() {
     static BufferPoolManager instance;
     return instance;
 }

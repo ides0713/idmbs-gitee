@@ -7,7 +7,7 @@
 Re ResolveMain::handle() {
     ParseSession *ps = static_cast<ParseSession *>(parse_session_);
     Query *q = ps->getQuery();
-    DataBaseManager dbm=GlobalManagers::getDataBaseManager();
+    DataBaseManager dbm= GlobalManagers::dataBaseManager();
     DataBase *default_db = dbm.getDb(dbm.getProjectDefaultDatabasePath());
     if (default_db == nullptr) {
         debugPrint("ResolveMain:open default db failed,default db not exists\n");

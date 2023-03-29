@@ -4,12 +4,10 @@
 
 void GlobalParamsManager::initialize() {
     using path = std::filesystem::path;
-    debugPrint("te1\n");
     project_path_ = path(PROJECT_PATH);
-    debugPrint("te2\n");
     project_binary_path_ = path(PROJECT_BINARY_PATH);
     project_bin_path_ = path(PROJECT_PATH).append("bin");
-    debugPrint("GlobalParamsManager:\n%s\n%s\n%s\n",
+    debugPrint("GlobalParamsManager:\nproject_path:%s\nbinary_path:%s\nbin_path:%s\n",
                project_path_.c_str(), project_binary_path_.c_str(), project_bin_path_.c_str());
     if (!std::filesystem::is_directory(project_bin_path_))
         std::filesystem::create_directory(project_bin_path_);

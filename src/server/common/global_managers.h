@@ -7,11 +7,11 @@ class GlobalManagers {
 public:
     static void initialize();
 
-    static GlobalParamsManager &getGlobalPramsManager();
+    static GlobalParamsManager &globalParamsManager();
 
-    static DataBaseManager &getDataBaseManager();
+    static DataBaseManager &dataBaseManager();
 
-    static BufferPoolManager &getBufferPoolManager();
+    static BufferPoolManager &bufferPoolManager();
 
     static void destroy();
 private:

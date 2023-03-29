@@ -2058,7 +2058,6 @@ yyreturnlab:
 extern void scan_string(const char *str, yyscan_t scanner);
 // int sql_parse(const char *s, Query *sqls)
 int sqlParse(const char *s,Query* & res){
-	printf("sql parse begin\n");
 	ParserContext context;
 	memset(&context, 0, sizeof(context));
 	yyscan_t scanner;
@@ -2067,6 +2066,5 @@ int sqlParse(const char *s,Query* & res){
 	int result = yyparse(scanner);
 	res=context.query;
 	yylex_destroy(scanner);
-	printf("sql parse end\n");
 	return result;
 }

@@ -43,7 +43,7 @@ private:
 
 class DataBaseManager {
 public:
-    DataBaseManager();
+    DataBaseManager()= default;
 
     void initialize();
 
