@@ -1,6 +1,6 @@
 #include "execute_main.h"
 #include <cassert>
-
+#include "../../common/common_defs.h"
 Re ExecuteMain::handle() {
     ResolveSession *rs = static_cast<ResolveSession *>(resolve_session_);
     Statement *stmt = rs->getStmt();
@@ -31,5 +31,10 @@ Re ExecuteMain::doSelect(Statement *stmt) {
 Re ExecuteMain::doCreateTable(Statement *stmt) {
     CreateTableStatement *s = static_cast<CreateTableStatement *>(stmt);
     DataBase *db = resolve_session_->getDb();
+    if(db==nullptr) {
+        debugPrint("ExecuteMain:getDb failed,no db was set\n");
+        return Re::Fail;
+    }
+    db->createTable(s->getTableName(), 0, nullptr);
     return Re::Success;
 }

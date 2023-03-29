@@ -56,6 +56,12 @@ public:
 
     StatementFlag getType() override { return StatementFlag::CreateTable; }
 
+    const char *getTableName() { return table_name_; }
+
+    const AttrInfo *getAttrInfos() { return attr_infos_; }
+
+    [[nodiscard]] const size_t getAttrInfosNum() const { return attr_infos_num_; }
+
 private:
     char *table_name_;
     AttrInfo *attr_infos_;

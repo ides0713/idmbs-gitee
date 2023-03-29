@@ -7,7 +7,7 @@
 #include <cstdio>
 #include "../common/common_defs.h"
 #include "common/server_defs.h"
-#include "common/global_managers_initializer.h"
+#include "common/global_managers.h"
 #include "parse/parse_main.h"
 #include "resolve/resolve_main.h"
 #include "execute/execute_main.h"
@@ -18,7 +18,11 @@ void pStart(const char *sql, int sock_fd);
 void recvFunc(int fd);
 
 int main() {
-    GlobalManagersManager::getInstance().handle();
+    printf("1\n");
+    debugPrint("12345\n");
+    printf("2\n");
+    GlobalManagers::initialize();
+    printf("3\n");
     // int listen_fd, conn_fd;
     // sockaddr_in serve_addr;
     // listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -37,12 +41,12 @@ int main() {
     //     std::thread recv_thread(recvFunc, conn_fd);
     //     recv_thread.detach();
     // }
-
+    printf("12314135\n");
     char buffer[100];
     strcpy(buffer, "create table t_basic(id int, age int, name char, score float);");
     debugPrint("Main:buffer content:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);
-    GlobalManagersManager::getInstance().destroy();
+    GlobalManagers::destroy();
     return 0;
 }
 

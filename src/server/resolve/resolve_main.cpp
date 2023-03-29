@@ -1,13 +1,19 @@
 #include "resolve_main.h"
 #include "../storage/storage_handler.h"
-#include <cstdio>
 #include "../../common/common_defs.h"
+#include <filesystem>
+#include "../common/global_managers.h"
 
 Re ResolveMain::handle() {
     ParseSession *ps = static_cast<ParseSession *>(parse_session_);
     Query *q = ps->getQuery();
-    //todo:db->getdb check db
-//    DataBase* current_db=
+    DataBaseManager dbm=GlobalManagers::getDataBaseManager();
+    DataBase *default_db = dbm.getDb(dbm.getProjectDefaultDatabasePath());
+    if (default_db == nullptr) {
+        debugPrint("ResolveMain:open default db failed,default db not exists\n");
+        return Re::Fail;
+    }
+    parse_session_->setDb(default_db);
     Statement::createStatement(q, stmt_);
     if (stmt_ == nullptr) {
         debugPrint("ResolveMain:create statement failed\n");

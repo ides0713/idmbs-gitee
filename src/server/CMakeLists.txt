@@ -5,7 +5,7 @@ MESSAGE("Begin to build " server)
 file(GLOB_RECURSE ALL_SOURCE ../common/*.cpp *.cpp)
 file(GLOB_RECURSE ALL_HEAD "*.hpp" "*.h")
 
-add_executable(server server.cpp ${ALL_SOURCE} ${ALL_HEAD})
+add_executable(server server.cpp ${ALL_HEAD} ${ALL_SOURCE})
 
 target_include_directories(server
         PRIVATE

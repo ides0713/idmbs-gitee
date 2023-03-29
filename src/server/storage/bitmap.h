@@ -17,9 +17,9 @@ public:
     /**
      * @param start 从哪个位开始查找，start是包含在内的
      */
-    int nextUnsettedBit(int start);
+    int nextUnsetBit(int start);
 
-    int nextSettedBit(int start);
+    int nextSetBit(int start);
 
 private:
     char *bit_map_;

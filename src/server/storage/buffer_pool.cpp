@@ -486,11 +486,11 @@ Re BufferPoolIterator::initialize(DiskBufferPool &bp, int32_t start_page /* = 0 
 }
 
 bool BufferPoolIterator::hasNext() {
-    return bit_map_.nextSettedBit(current_page_num_ + 1) != -1;
+    return bit_map_.nextSetBit(current_page_num_ + 1) != -1;
 }
 
 int32_t BufferPoolIterator::next() {
-    int32_t next_page = bit_map_.nextSettedBit(current_page_num_ + 1);
+    int32_t next_page = bit_map_.nextSetBit(current_page_num_ + 1);
     if (next_page != -1)
         current_page_num_ = next_page;
     return next_page;
@@ -501,13 +501,10 @@ Re BufferPoolIterator::reset() {
     return Re::Success;
 }
 
-BufferPoolManager &BufferPoolManager::getInstance() {
-    static BufferPoolManager instance;
-    return instance;
-}
 
 void BufferPoolManager::initialize() {
     frame_manager_.initialize(DEFAULT_ITEM_NUM_PER_POOL);
+    debugPrint("BufferPoolManager:initialized done\n");
 }
 
 Re BufferPoolManager::createFile(const char *file_name) {

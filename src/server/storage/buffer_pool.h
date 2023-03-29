@@ -194,7 +194,7 @@ private:
 
 class BufferPoolManager {
 public:
-    static BufferPoolManager &getInstance();
+    BufferPoolManager()= default;
 
     void initialize();
 

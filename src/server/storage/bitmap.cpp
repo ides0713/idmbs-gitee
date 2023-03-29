@@ -34,7 +34,7 @@ void BitMap::clearBit(int index) {
     bits &= ~(1 << (index % 8));
 }
 
-int BitMap::nextUnsettedBit(int start) {
+int BitMap::nextUnsetBit(int start) {
     int ret = -1;
     int start_in_byte = start % 8;
     for (int iter = start / 8, end = (size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1); iter <= end; iter++) {
@@ -53,7 +53,7 @@ int BitMap::nextUnsettedBit(int start) {
     return ret;
 }
 
-int BitMap::nextSettedBit(int start) {
+int BitMap::nextSetBit(int start) {
     int ret = -1;
     int start_in_byte = start % 8;
     for (int iter = start / 8, end = (size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1); iter <= end; iter++) {
