@@ -7,6 +7,7 @@ DataBase::DataBase(const char *database_name) {
     database_name_ = std::string(database_name);
     GlobalParamsManager gpm = GlobalManagers::globalParamsManager();
     database_path_ = fs::path(gpm.getProjectBinPath()).append(database_name);
+    clog_manager_ = nullptr;
 }
 
 void DataBase::destroy() {
@@ -20,17 +21,22 @@ Re DataBase::createTable(const char *table_name, const size_t attr_infos_num, co
                    table_name);
         return Re::Fail;
     }
-    DataBaseManager dbm= GlobalManagers::dataBaseManager();
+    GlobalDataBaseManager dbm = GlobalManagers::globalDataBaseManager();
     fs::path table_file_path(dbm.getProjectBinPath());
 //    table_file_path.append("/%s/%s",);
     return Fail;
 }
 
-Re DataBase::createTable(std::string table_name, const size_t attr_infos_num, const AttrInfo *attr_infos) {
+Re DataBase::createTable(const std::string &table_name, const size_t attr_infos_num, const AttrInfo *attr_infos) {
     return createTable(table_name.c_str(), attr_infos_num, attr_infos);
 }
 
-void DataBaseManager::initialize() {
+Re DataBase::initialize() {
+    //todo:initialize clog_manager of the database(not implement)
+    return Re::Success;
+}
+
+void GlobalDataBaseManager::initialize() {
     namespace fs = std::filesystem;
     GlobalParamsManager gpm = GlobalManagers::globalParamsManager();
     project_default_database_path_ = fs::path(
@@ -40,10 +46,10 @@ void DataBaseManager::initialize() {
     debugPrint("default database path is %s\n", project_default_database_path_.c_str());
     project_bin_path_ = fs::path(project_default_database_path_.parent_path());
     debugPrint("bin path is %s\n", project_bin_path_.c_str());
-    debugPrint("DataBaseManager:initialized done\n");
+    debugPrint("GlobalDataBaseManager:initialized done\n");
 }
 
-Re DataBaseManager::createDb(const char *database_name) {
+Re GlobalDataBaseManager::createDb(const char *database_name) {
     namespace fs = std::filesystem;
     fs::path directory_path = fs::path(project_bin_path_.c_str()).append(database_name);
     if (!fs::is_directory(directory_path)) {
@@ -61,7 +67,7 @@ Re DataBaseManager::createDb(const char *database_name) {
     }
 }
 
-Re DataBaseManager::createDb(const std::filesystem::path database_path) {
+Re GlobalDataBaseManager::createDb(const std::filesystem::path database_path) {
     namespace fs = std::filesystem;
     std::string database_name = std::string(database_path.filename().c_str());
     if (!fs::is_directory(database_path)) {
@@ -79,7 +85,7 @@ Re DataBaseManager::createDb(const std::filesystem::path database_path) {
     }
 }
 
-void DataBaseManager::destroy() {
+void GlobalDataBaseManager::destroy() {
     for (auto it: opened_databases_) {
         opened_databases_.erase(it.first);
         delete it.second;
@@ -87,42 +93,33 @@ void DataBaseManager::destroy() {
 }
 
 
-DataBase *DataBaseManager::getDb(const char *database_name) {
+DataBase *GlobalDataBaseManager::getDb(const char *database_name) {
     std::string th_database_name = std::string(database_name);
     if (opened_databases_.count(th_database_name)) {
-        debugPrint("DataBaseManager:getDb from opened_databases,database_name:%s\n", database_name);
+        debugPrint("GlobalDataBaseManager:getDb from opened_databases,database_name:%s\n", database_name);
         return opened_databases_[th_database_name];
     } else {
         namespace fs = std::filesystem;
         fs::path th_database_path = project_bin_path_.append(database_name);
         if (fs::is_directory(th_database_path)) {
             DataBase *th_new_db = new DataBase(database_name);
-            opened_databases_.emplace(std::string(database_name), th_new_db);
-            debugPrint("DataBaseManager:getDb succeeded,database_name:%s\n", database_name);
-            return th_new_db;
+            Re r = th_new_db->initialize();
+            if (r == Re::Success) {
+                opened_databases_.emplace(std::string(database_name), th_new_db);
+                debugPrint("GlobalDataBaseManager:getDb succeeded,database_name:%s\n", database_name);
+                return th_new_db;
+            } else {
+                debugPrint("GlobalDataBaseManager:getDb failed,create failed,database_name:%s\n", database_name);
+                return nullptr;
+            }
         } else {
-            debugPrint("DataBaseManager:getDb failed,database %s not exists\n", database_name);
+            debugPrint("GlobalDataBaseManager:getDb failed,database %s not exists\n", database_name);
             return nullptr;
         }
     }
 }
 
-DataBase *DataBaseManager::getDb(const std::filesystem::path database_path) {
+DataBase *GlobalDataBaseManager::getDb(const std::filesystem::path database_path) {
     std::string th_database_name = std::string(database_path.filename());
-    if (opened_databases_.count(th_database_name)) {
-        debugPrint("DataBaseManager:getDb from opened_databases,database_name:%s\n", th_database_name.c_str());
-        return opened_databases_[th_database_name];
-    } else {
-        namespace fs = std::filesystem;
-        fs::path th_database_path = project_bin_path_.append(th_database_name.c_str());
-        if (fs::is_directory(th_database_path)) {
-            DataBase *th_new_db = new DataBase(th_database_name.c_str());
-            opened_databases_.emplace(std::string(th_database_name.c_str()), th_new_db);
-            debugPrint("DataBaseManager:getDb succeeded,database_name:%s\n", th_database_name.c_str());
-            return th_new_db;
-        } else {
-            debugPrint("DataBaseManager:getDb failed,database %s not exists\n", th_database_name.c_str());
-            return nullptr;
-        }
-    }
+    return getDb(th_database_name.c_str());
 }

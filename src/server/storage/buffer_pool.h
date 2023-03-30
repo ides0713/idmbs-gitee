@@ -24,7 +24,7 @@ private:
 
     friend class DiskBufferPool;
 
-    friend class BufferPoolManager;
+    friend class GlobalBufferPoolManager;
 };
 
 // first page of bpfile
@@ -131,13 +131,13 @@ private:
     MemoryPool<Frame> memory_pool_allocator_;
 };
 
-class BufferPoolManager;
+class GlobalBufferPoolManager;
 ///@brief class above does not make on-disk change
 
 class DiskBufferPool {
 public:
-    DiskBufferPool(BufferPoolManager &bp_manager, FrameManager &frame_manager) : bp_manager_(bp_manager),
-                                                                                 frame_manager_(frame_manager) {}
+    DiskBufferPool(GlobalBufferPoolManager &bp_manager, FrameManager &frame_manager) : bp_manager_(bp_manager),
+                                                                                       frame_manager_(frame_manager) {}
 
     ~DiskBufferPool();
 
@@ -180,7 +180,7 @@ protected:
     Re loadPage(int32_t page_num, Frame *frame);
 
 private:
-    BufferPoolManager &bp_manager_;
+    GlobalBufferPoolManager &bp_manager_;
     FrameManager &frame_manager_;
     std::string file_name_;
     int file_desc_ = -1;
@@ -192,9 +192,9 @@ private:
     friend class BufferPoolIterator;
 };
 
-class BufferPoolManager {
+class GlobalBufferPoolManager {
 public:
-    BufferPoolManager()= default;
+    GlobalBufferPoolManager() = default;
 
     void initialize();
 

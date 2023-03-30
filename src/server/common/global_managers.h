@@ -1,4 +1,5 @@
 #pragma once
+
 #include "server_defs.h"
 #include "../storage/database.h"
 #include "../storage/buffer_pool.h"
@@ -9,13 +10,11 @@ public:
 
     static GlobalParamsManager &globalParamsManager();
 
-    static DataBaseManager &dataBaseManager();
+    static GlobalDataBaseManager &globalDataBaseManager();
 
-    static BufferPoolManager &bufferPoolManager();
+    static GlobalBufferPoolManager &globalBufferPoolManager();
 
     static void destroy();
+
 private:
-//    static GlobalParamsManager gpm_;
-//    static DataBaseManager dbm_;
-//    static BufferPoolManager bpm_;
 };

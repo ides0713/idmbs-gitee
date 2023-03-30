@@ -15,7 +15,8 @@ enum Re {
 
 class GlobalParamsManager {
 public:
-    GlobalParamsManager()= default;
+    GlobalParamsManager() = default;
+
     void initialize();
 
     std::filesystem::path const getProjectPath() { return project_path_; }
@@ -27,6 +28,6 @@ public:
     void destroy();
 
 private:
-    std::filesystem::path project_path_,project_binary_path_,project_bin_path_;
+    std::filesystem::path project_path_, project_binary_path_, project_bin_path_;
 };
 

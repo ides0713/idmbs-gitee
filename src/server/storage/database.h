@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <filesystem>
 #include "../parse/parse_defs.h"
+#include "ClogManager.h"
 
 class DataBase {
 public:
@@ -24,7 +25,7 @@ public:
 
     Re createTable(const char *table_name, const size_t attr_infos_num, const AttrInfo *attr_infos);
 
-    Re createTable(std::string table_name, const size_t attr_infos_num, const AttrInfo *attr_infos);
+    Re createTable(const std::string &table_name, const size_t attr_infos_num, const AttrInfo *attr_infos);
 
     const Table *getTable();
 
@@ -34,16 +35,16 @@ private:
     Re destruction();
 
 //    bool isExists();
-
+    ClogManager *clog_manager_;
     std::string database_name_;
     std::filesystem::path database_path_;
     std::unordered_map<std::string, Table *> opened_tables_;
 };
 
 
-class DataBaseManager {
+class GlobalDataBaseManager {
 public:
-    DataBaseManager()= default;
+    GlobalDataBaseManager() = default;
 
     void initialize();
 
@@ -68,6 +69,7 @@ public:
     std::filesystem::path const getProjectBinPath() { return project_bin_path_; }
 
 private:
+
     std::filesystem::path project_default_database_path_, project_bin_path_;
     std::map<std::string, DataBase *> opened_databases_;
 };

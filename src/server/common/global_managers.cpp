@@ -2,14 +2,14 @@
 
 void GlobalManagers::initialize() {
     globalParamsManager().initialize();
-    dataBaseManager().initialize();
-    bufferPoolManager().initialize();
+    globalDataBaseManager().initialize();
+    globalBufferPoolManager().initialize();
 }
 
 void GlobalManagers::destroy() {
     globalParamsManager().destroy();
-    dataBaseManager().destroy();
-    bufferPoolManager().destroy();
+    globalDataBaseManager().destroy();
+    globalBufferPoolManager().destroy();
 }
 
 GlobalParamsManager &GlobalManagers::globalParamsManager() {
@@ -17,12 +17,12 @@ GlobalParamsManager &GlobalManagers::globalParamsManager() {
     return instance;
 }
 
-DataBaseManager &GlobalManagers::dataBaseManager() {
-    static DataBaseManager instance;
+GlobalDataBaseManager &GlobalManagers::globalDataBaseManager() {
+    static GlobalDataBaseManager instance;
     return instance;
 }
 
-BufferPoolManager &GlobalManagers::bufferPoolManager() {
-    static BufferPoolManager instance;
+GlobalBufferPoolManager &GlobalManagers::globalBufferPoolManager() {
+    static GlobalBufferPoolManager instance;
     return instance;
 }

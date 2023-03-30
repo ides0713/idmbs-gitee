@@ -502,21 +502,21 @@ Re BufferPoolIterator::reset() {
 }
 
 
-void BufferPoolManager::initialize() {
+void GlobalBufferPoolManager::initialize() {
     frame_manager_.initialize(DEFAULT_ITEM_NUM_PER_POOL);
-    debugPrint("BufferPoolManager:initialized done\n");
+    debugPrint("GlobalBufferPoolManager:initialized done\n");
 }
 
-Re BufferPoolManager::createFile(const char *file_name) {
+Re GlobalBufferPoolManager::createFile(const char *file_name) {
     int fd = open(file_name, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
     if (fd < 0) {
-        debugPrint("BufferPoolManager:Failed to create %s, due to %s.\n", file_name, strerror(errno));
+        debugPrint("GlobalBufferPoolManager:Failed to create %s, due to %s.\n", file_name, strerror(errno));
         return Re::Fail;
     }
     close(fd);
     fd = open(file_name, O_RDWR);
     if (fd < 0) {
-        debugPrint("BufferPoolManager:Failed to open for readwrite %s, due to %s.\n", file_name, strerror(errno));
+        debugPrint("GlobalBufferPoolManager:Failed to open for readwrite %s, due to %s.\n", file_name, strerror(errno));
         return Re::Fail;
     }
     Page page;
@@ -527,30 +527,32 @@ Re BufferPoolManager::createFile(const char *file_name) {
     char *bitmap = file_header->bitmap;
     bitmap[0] |= 0x01;
     if (lseek(fd, 0, SEEK_SET) == -1) {
-        debugPrint("BufferPoolManager:Failed to seek file %s to position 0, due to %s .\n", file_name, strerror(errno));
+        debugPrint("GlobalBufferPoolManager:Failed to seek file %s to position 0, due to %s .\n", file_name,
+                   strerror(errno));
         close(fd);
         return Re::Fail;
     }
     if (writen(fd, (char *) &page, sizeof(Page)) != 0) {
-        debugPrint("BufferPoolManager:Failed to write header to file %s, due to %s.\n", file_name, strerror(errno));
+        debugPrint("GlobalBufferPoolManager:Failed to write header to file %s, due to %s.\n", file_name,
+                   strerror(errno));
         close(fd);
         return Re::Fail;
     }
     close(fd);
-    debugPrint("BufferPoolManager:Successfully create %s.\n", file_name);
+    debugPrint("GlobalBufferPoolManager:Successfully create %s.\n", file_name);
     return Re::Success;
 }
 
-Re BufferPoolManager::openFile(const char *file_name, DiskBufferPool *&bp) {
+Re GlobalBufferPoolManager::openFile(const char *file_name, DiskBufferPool *&bp) {
     std::string x(file_name);
     if (buffer_pools_.find(x) != buffer_pools_.end()) {
-        debugPrint("BufferPoolManager:file already opened. file name=%s", file_name);
+        debugPrint("GlobalBufferPoolManager:file already opened. file name=%s", file_name);
         return Re::Fail;
     }
     DiskBufferPool *buffer_pool = new DiskBufferPool(*this, frame_manager_);
     Re re = buffer_pool->openFile(file_name);
     if (re != Re::Success) {
-        debugPrint("BufferPoolManager:failed to open file name\n");
+        debugPrint("GlobalBufferPoolManager:failed to open file name\n");
         delete buffer_pool;
         return re;
     }
@@ -560,11 +562,11 @@ Re BufferPoolManager::openFile(const char *file_name, DiskBufferPool *&bp) {
     return Re::Success;
 }
 
-Re BufferPoolManager::closeFile(const char *file_name) {
+Re GlobalBufferPoolManager::closeFile(const char *file_name) {
     std::string fname(file_name);
     auto iter = buffer_pools_.find(fname);
     if (iter == buffer_pools_.end()) {
-        debugPrint("BufferPoolManager:file has not opened: %s", file_name);
+        debugPrint("GlobalBufferPoolManager:file has not opened: %s", file_name);
         return Re::Fail;
     }
     int fd = iter->second->getFileDesc();
@@ -575,18 +577,18 @@ Re BufferPoolManager::closeFile(const char *file_name) {
     return Re::Success;
 }
 
-Re BufferPoolManager::flushPage(Frame &frame) {
+Re GlobalBufferPoolManager::flushPage(Frame &frame) {
     int fd = frame.getFileDesc();
     auto iter = fd_buffer_pools_.find(fd);
     if (iter == fd_buffer_pools_.end()) {
-        debugPrint("BufferPoolManager:unknown buffer pool of fd %d\n", fd);
+        debugPrint("GlobalBufferPoolManager:unknown buffer pool of fd %d\n", fd);
         return Re::Fail;
     }
     DiskBufferPool *bp = iter->second;
     return bp->flushPage(frame);
 }
 
-void BufferPoolManager::destroy() {
+void GlobalBufferPoolManager::destroy() {
     std::unordered_map<std::string, DiskBufferPool *> tmp_bps;
     tmp_bps.swap(buffer_pools_);
     for (auto &iter: tmp_bps)
