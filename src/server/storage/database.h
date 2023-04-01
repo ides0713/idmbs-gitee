@@ -11,6 +11,8 @@
 #include "../parse/parse_defs.h"
 #include "ClogManager.h"
 
+#define DATABASE_NAME_MAX_LEN 20
+
 class DataBase {
 public:
     explicit DataBase(const char *database_name);
@@ -31,6 +33,7 @@ public:
 
 private:
 //    Re create();
+    Re openAllTables();
 
     Re destruction();
 

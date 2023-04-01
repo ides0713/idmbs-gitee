@@ -17,5 +17,6 @@ target_include_directories(server
 target_link_libraries(server
         -lpthread
         -lstdc++fs
+        -ljsoncpp
         )
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../../bin)

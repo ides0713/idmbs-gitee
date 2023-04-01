@@ -90,10 +90,10 @@ ParserContext *get_context(yyscan_t scanner)
 %token <string> STRING_V
 
 //non
-%type <number> type;
-%type <condition1> condition;
-%type <value1> value;
-%type <number> number;
+%getType <number> getType;
+%getType <condition1> condition;
+%getType <value1> value;
+%getType <number> number;
 %%
 commands:
     /* empty */
@@ -202,7 +202,7 @@ attr_def_list:
     ;
     
 attr_def:
-    ID_get type LBRACE number RBRACE {
+    ID_get getType LBRACE number RBRACE {
 		if(CONTEXT->query==nullptr){
 			CONTEXT->query=new CreateTableQuery();
 			CONTEXT->query->initialize();
@@ -211,7 +211,7 @@ attr_def:
 		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);
 		CONTEXT->value_length++;
 		}
-    |ID_get type{
+    |ID_get getType{
 		//attr with default length
 		if(CONTEXT->query==nullptr){
 			CONTEXT->query=new CreateTableQuery();
@@ -227,7 +227,7 @@ number:
 		$$ = $1;
 		}
 	;
-type:
+getType:
 	INT_T{
 		$$=Ints;
 		}

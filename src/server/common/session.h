@@ -16,7 +16,7 @@ public:
 
     void setDb(DataBase *database) { database_ = database; }
 
-    [[nodiscard]] Txn *getTxn() const { return txn_; }
+    [[nodiscard]] Txn *getTxn();
 
     void setTxn(Txn *txn) { txn_ = txn; }
 
@@ -64,6 +64,8 @@ class ExecuteSession : public Session {
 public:
     explicit ExecuteSession(DataBase *database = nullptr, Txn *txn = nullptr, bool txn_multi_operation = false)
             : Session(database, txn, txn_multi_operation) {}
+
+    ExecuteSession(Session *resolve_session) : Session(*resolve_session) {}
 
 private:
 };

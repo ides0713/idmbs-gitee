@@ -22,9 +22,11 @@ Re DataBase::createTable(const char *table_name, const size_t attr_infos_num, co
         return Re::Fail;
     }
     GlobalDataBaseManager dbm = GlobalManagers::globalDataBaseManager();
-    fs::path table_file_path(dbm.getProjectBinPath());
-//    table_file_path.append("/%s/%s",);
-    return Fail;
+    std::string table_file_name = std::string(table_name).append(".table");
+    fs::path table_file_path = fs::path(database_path_).append(table_file_name);
+    Table *new_table = new Table();
+    new_table->initialize(database_path_, table_name, attr_infos_num, attr_infos);
+    return Re::Fail;
 }
 
 Re DataBase::createTable(const std::string &table_name, const size_t attr_infos_num, const AttrInfo *attr_infos) {

@@ -267,7 +267,7 @@ Re DiskBufferPool::allocatePage(Frame **frame) {
     allocated_frame->pin_count_ = 1;
     allocated_frame->acc_time_ = getCurrentTime();
     allocated_frame->resetPage();
-    allocated_frame->page_.page_id_ = file_header_->page_count - 1;
+    allocated_frame->page_.page_id = file_header_->page_count - 1;
 
     // Use flush operation to extension file
     if ((re = flushPage(*allocated_frame)) != Re::Success) {
@@ -306,7 +306,7 @@ Re DiskBufferPool::purgeAllPages() {
     for (auto frame: used) {
         if (frame->pin_count_ > 0) {
             debugPrint("DiskBufferPool:The page has been pinned, file_desc:%d, pagenum:%d, pin_count=%d\n",
-                       frame->file_desc_, frame->page_.page_id_, frame->pin_count_);
+                       frame->file_desc_, frame->page_.page_id, frame->pin_count_);
             continue;
         }
         if (frame->dirty_) {
@@ -316,7 +316,7 @@ Re DiskBufferPool::purgeAllPages() {
                 return re;
             }
         }
-        frame_manager_.free(file_desc_, frame->page_.page_id_, frame);
+        frame_manager_.free(file_desc_, frame->page_.page_id, frame);
     }
     return Re::Success;
 }
@@ -360,7 +360,7 @@ int DiskBufferPool::getFileDesc() const {
 
 Re DiskBufferPool::flushPage(Frame &frame) {
     Page &page = frame.page_;
-    long long offset = ((long long) page.page_id_) * sizeof(Page);
+    long long offset = ((long long) page.page_id) * sizeof(Page);
     if (lseek(file_desc_, offset, SEEK_SET) == offset - 1) {
         debugPrint("DiskBufferPool:Failed to flush page %lld of %d due to failed to seek %s.\n", offset, file_desc_,
                    strerror(errno));
@@ -371,7 +371,7 @@ Re DiskBufferPool::flushPage(Frame &frame) {
         return Re::Fail;
     }
     frame.dirty_ = false;
-    debugPrint("DiskBufferPool:Flush block. file desc=%d, page num=%d", file_desc_, page.page_id_);
+    debugPrint("DiskBufferPool:Flush block. file desc=%d, page num=%d", file_desc_, page.page_id);
 
     return Re::Success;
 }
@@ -521,7 +521,7 @@ Re GlobalBufferPoolManager::createFile(const char *file_name) {
     }
     Page page;
     memset(&page, 0, sizeof(Page));
-    BufferPoolFileHeader *file_header = (BufferPoolFileHeader *) page.page_data_;
+    BufferPoolFileHeader *file_header = (BufferPoolFileHeader *) page.page_data;
     file_header->allocated_pages = 1;
     file_header->page_count = 1;
     char *bitmap = file_header->bitmap;

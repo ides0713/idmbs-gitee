@@ -1,7 +1,7 @@
 #!/bin/bash
-cd src/server/parse/
+cd src/server/parse/ || exit
 bash gen_parser.sh
-cd ../../../build
+cd ../../../build || exit
 cmake .. -D DEBUG=1 ..
-make
+make -j 4
 cd ../

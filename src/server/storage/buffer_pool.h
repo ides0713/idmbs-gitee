@@ -15,16 +15,8 @@
 
 class Page {
 public:
-private:
-    int32_t page_id_;
-    char page_data_[BP_PAGE_SIZE];
-
-private:
-    friend class Frame;
-
-    friend class DiskBufferPool;
-
-    friend class GlobalBufferPoolManager;
+    int32_t page_id;
+    char page_data[BP_PAGE_SIZE];
 };
 
 // first page of bpfile
@@ -49,11 +41,11 @@ public:
 
     void dirtyMark() { dirty_ = true; };
 
-    [[nodiscard]] int32_t getPageId() const { return page_.page_id_; };
+    [[nodiscard]] int32_t getPageId() const { return page_.page_id; };
 
-    void setPageId(int32_t id) { page_.page_id_ = id; }
+    void setPageId(int32_t id) { page_.page_id = id; }
 
-    char *getPageData() { return page_.page_data_; };
+    char *getPageData() { return page_.page_data; };
 
     // void setPageData(const char * data);
     [[nodiscard]] int getFileDesc() const { return file_desc_; };
@@ -73,7 +65,7 @@ private:
     friend class DiskBufferPool;
 };
 
-///@brief get frameid by hash file_desc and page_num
+///@brief get frame_id by hash file_desc and getPageId
 class FrameId {
 public:
     FrameId(int file_desc, int32_t page_num) : file_desc_(file_desc), page_id_(page_num) {}

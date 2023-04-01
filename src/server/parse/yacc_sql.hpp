@@ -48,8 +48,7 @@ extern int yydebug;
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
-  enum yytokentype
-  {
+enum yytokentype {
     YYEMPTY = -2,
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
@@ -104,23 +103,22 @@ extern int yydebug;
     SSS = 305,                     /* SSS  */
     STAR = 306,                    /* STAR  */
     STRING_V = 307                 /* STRING_V  */
-  };
-  typedef enum yytokentype yytoken_kind_t;
+};
+typedef enum yytokentype yytoken_kind_t;
 #endif
 
-/* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-union YYSTYPE
-{
+/* Value getType.  */
+#if !defined YYSTYPE && !defined YYSTYPE_IS_DECLARED
+union YYSTYPE {
 #line 73 "yacc_sql.y"
 
-	struct RelAttr* attr;
-	struct Condition* condition1;
-	struct Value* value1;
-	char* string;
-	int number;
-	float floats;
-	char* position;
+    struct RelAttr *attr;
+    struct Condition *condition1;
+    struct Value *value1;
+    char *string;
+    int number;
+    float floats;
+    char *position;
 
 #line 126 "yacc_sql.hpp"
 
@@ -131,9 +129,7 @@ typedef union YYSTYPE YYSTYPE;
 #endif
 
 
-
-
-int yyparse (void *scanner);
+int yyparse(void *scanner);
 
 
 #endif /* !YY_YY_YACC_SQL_HPP_INCLUDED  */

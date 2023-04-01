@@ -5,6 +5,7 @@
 Re ExecuteMain::handle() {
     ResolveSession *rs = static_cast<ResolveSession *>(resolve_session_);
     Statement *stmt = rs->getStmt();
+    (void) resolve_session_->getTxn();
     assert(stmt != nullptr);
     switch (stmt->getType()) {
         case StatementFlag::Select:
@@ -30,12 +31,12 @@ Re ExecuteMain::doSelect(Statement *stmt) {
 }
 
 Re ExecuteMain::doCreateTable(Statement *stmt) {
+    Re r;
     CreateTableStatement *s = static_cast<CreateTableStatement *>(stmt);
     DataBase *db = resolve_session_->getDb();
     if (db == nullptr) {
         debugPrint("ExecuteMain:getDb failed,no db was set\n");
         return Re::Fail;
     }
-    db->createTable(s->getTableName(), s->getAttrInfosNum(), s->getAttrInfos());
-    return Re::Success;
+    return db->createTable(s->getTableName(), s->getAttrInfosNum(), s->getAttrInfos());
 }

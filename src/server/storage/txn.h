@@ -1,10 +1,72 @@
 #pragma once
 
-class Txn {
-public:
-    Txn();
+#include <atomic>
+#include "record.h"
+#include <unordered_set>
+#include <unordered_map>
+#include <cstddef>
 
-    ~Txn();
+class Table;
+
+
+class Operation {
+public:
+    enum class Type : int {
+        Insert,
+        Update,
+        Delete,
+        Undefined
+    };
+public:
+    Operation(Type type, const RecordId &rid) : type_(type), page_id_(rid.page_id), slot_id_(rid.slot_id) {}
+
+    [[nodiscard]]Type getType() const { return type_; }
+
+    [[nodiscard]]int32_t getPageId() const { return page_id_; }
+
+    [[nodiscard]]int32_t getSlotId() const { return slot_id_; }
 
 private:
+    Type type_;
+    int32_t page_id_, slot_id_;
+};
+
+class OperationHash {
+public:
+    size_t operator()(const Operation &op) const {
+        return (((size_t) op.getPageId()) << 32) | (op.getSlotId());
+    }
+};
+
+class OperationPred {
+public:
+    bool operator()(const Operation &op_1, const Operation &op_2) const {
+        return op_1.getPageId() == op_2.getPageId() && op_1.getSlotId() == op_2.getSlotId();
+    }
+};
+
+class Txn {
+public:
+    static std::atomic<int32_t> txn_id;
+public:
+    Txn() : txn_id_(0) { start(); }
+
+    static int32_t getDefaultTxnId();
+
+    static int32_t getNextTxnId();
+
+    static void setTxnId(int32_t id);
+
+    static const char *getTxnFieldName();
+
+    static AttrType getTxnFieldType();
+
+    static int getTxnFieldLen();
+
+private:
+    using OperationSet = std::unordered_set<Operation, OperationHash, OperationPred>;
+    int32_t txn_id_;
+    std::unordered_map<Table *, OperationSet> operations_;
+private:
+    void start();
 };
