@@ -16,6 +16,8 @@ class TableMeta {
 public:
     TableMeta() : record_size_(0) {}
 
+    TableMeta(const TableMeta &other);
+
     Re initialize(const char *table_name, int32_t attr_infos_num, const AttrInfo *attr_infos);
 
 private:

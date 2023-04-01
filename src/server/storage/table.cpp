@@ -11,6 +11,10 @@ static const Json::StaticString FIELD_INDEXES("indexes");
 
 std::vector<FieldMeta> TableMeta::sys_fields_;
 
+TableMeta::TableMeta(const TableMeta &other)
+        : table_name_(other.table_name_), fields_(other.fields_), indexes_(other.indexes_),
+          record_size_(other.record_size_) {}
+
 Re TableMeta::initialize(const char *table_name, int32_t attr_infos_num, const AttrInfo *attr_infos) {
     if (strlen(table_name) == 0 or strlen(table_name) > TABLE_NAME_MAX_LEN) {
         debugPrint("TableMeta:initialize table_meta:%s failed,table name:%s is not valid\n", table_name, table_name);
