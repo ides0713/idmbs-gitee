@@ -29,7 +29,7 @@ public:
 
 class DefaultConditionFilter : public ConditionFilter {
 public:
-    DefaultConditionFilter():attr_type_(AttrType::Undefined),comp_op_(CompOp::NoOp){}
+    DefaultConditionFilter() : attr_type_(AttrType::Undefined), comp_op_(CompOp::NoOp) {}
 
     virtual ~DefaultConditionFilter();
 
@@ -56,7 +56,7 @@ private:
 
 class CompositeConditionFilter : public ConditionFilter {
 public:
-    CompositeConditionFilter():filters_(nullptr),filter_num_(0),memory_owner_(false){}
+    CompositeConditionFilter() : filters_(nullptr), filter_num_(0), memory_owner_(false) {}
 
     virtual ~CompositeConditionFilter();
 
@@ -67,9 +67,9 @@ public:
     virtual bool filter(const class Record &rec) const;
 
 public:
-    int getFilterNum() const {return filter_num_;}
+    int getFilterNum() const { return filter_num_; }
 
-    const ConditionFilter &filter(int index) const {return *filters_[index];}
+    const ConditionFilter &filter(int index) const { return *filters_[index]; }
 
 private:
     Re init(const ConditionFilter *filters[], int filter_num, bool own_memory);

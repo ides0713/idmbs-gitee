@@ -215,7 +215,9 @@ private:
     ConditionFilter *condition_filter_;
     RecordPageHandler record_page_handler_;
     RecordPageIterator record_page_iterator_;
+
     class Record next_record_;
+
 private:
     Re fetchNextRecord();
 

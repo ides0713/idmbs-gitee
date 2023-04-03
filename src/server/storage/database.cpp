@@ -53,15 +53,15 @@ Re DataBase::createTable(const std::string &table_name, const size_t attr_infos_
 
 Re DataBase::openAllTables() {
     std::vector<std::string> table_meta_files;
-    std::string regx_table_meta_file_name="^\\w*\\.(table)$";
-    int ret = listFile(database_path_,regx_table_meta_file_name.c_str(), table_meta_files);
+    std::string regx_table_meta_file_name = "^\\w*\\.(table)$";
+    int ret = listFile(database_path_, regx_table_meta_file_name.c_str(), table_meta_files);
     if (ret < 0) {
-        debugPrint("DataBase:failed to list table meta files under %s.\n",database_path_.c_str());
+        debugPrint("DataBase:failed to list table meta files under %s.\n", database_path_.c_str());
         return Re::IoErr;
     }
-    for (const std::string &file_name : table_meta_files) {
+    for (const std::string &file_name: table_meta_files) {
         Table *table = new Table();
-        Re r= table->init(database_path_, file_name.c_str(), clog_manager_);
+        Re r = table->init(database_path_, file_name.c_str(), clog_manager_);
         if (r != Re::Success) {
             delete table;
             debugPrint("DataBase:failed to open table. file_name=%s\n", file_name.c_str());
@@ -70,15 +70,15 @@ Re DataBase::openAllTables() {
         if (opened_tables_.count(table->getTableName())) {
             delete table;
             debugPrint("DataBase:duplicate table with difference file name. table=%s, the other file_name=%s\n",
-                      table->getTableName().c_str(),
-                      file_name.c_str());
+                       table->getTableName().c_str(),
+                       file_name.c_str());
             return Re::GenericError;
         }
         opened_tables_[table->getTableName()] = table;
         debugPrint("DataBase:open table: %s, file: %s\n", table->getTableName().c_str(), file_name.c_str());
     }
     debugPrint("DataBase:all table have been opened. num=%d\n", opened_tables_.size());
-    return Re ::Success;
+    return Re::Success;
 }
 
 void GlobalDataBaseManager::initialize() {
@@ -119,7 +119,7 @@ Re GlobalDataBaseManager::createDb(const std::filesystem::path database_path) {
 }
 
 void GlobalDataBaseManager::destroy() {
-    for (const auto& it: opened_databases_) {
+    for (const auto &it: opened_databases_) {
         opened_databases_.erase(it.first);
         delete it.second;
     }

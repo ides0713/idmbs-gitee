@@ -39,7 +39,7 @@ int main() {
     //     recv_thread.detach();
     // }
     char buffer[100];
-    strcpy(buffer, "create table t_basic(id int, age int, name char, score float);");
+    strcpy(buffer, "create table t_basic(id int(2), age int, name char, score float);");
     debugPrint("Main:sql_buffer:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);
     GlobalManagers::destroy();

@@ -15,7 +15,7 @@
 
 class DataBase {
 public:
-    DataBase()= default;
+    DataBase() = default;
 
     Re initialize(const char *database_name, const std::filesystem::path &database_path);
 
@@ -71,6 +71,7 @@ public:
 
 public:
     static Re createDb(const std::filesystem::path database_path);
+
 private:
 
     std::filesystem::path project_default_database_path_, project_bin_path_;

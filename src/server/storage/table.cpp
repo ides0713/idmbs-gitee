@@ -200,7 +200,7 @@ Re Table::init(std::filesystem::path database_path, const char *table_name, cons
         return Re::InvalidArgument;
     }
     namespace fs = std::filesystem;
-    fs::path table_meta_file_path=getTableMetaFilePath(database_path, table_name);
+    fs::path table_meta_file_path = getTableMetaFilePath(database_path, table_name);
     FILE *f = fopen(table_meta_file_path.c_str(), "r");
     if (f != nullptr) {
         debugPrint("Table:init failed,table:%s already exists\n", table_name);
@@ -283,11 +283,11 @@ Re Table::init(std::filesystem::path database_path, const char *table_name, Clog
     record_handler_ = new RecordFileHandler();
     r = record_handler_->init(data_buffer_pool_);
     if (r != Re::Success) {
-        debugPrint("Table:failed to init record handler.re=%d:%s.\n",r,strRe(r));
+        debugPrint("Table:failed to init record handler.re=%d:%s.\n", r, strRe(r));
         data_buffer_pool_->closeFile();
-        data_buffer_pool_=nullptr;
+        data_buffer_pool_ = nullptr;
         delete record_handler_;
-        record_handler_= nullptr;
+        record_handler_ = nullptr;
         return r;
     }
     return Re::Success;

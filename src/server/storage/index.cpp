@@ -1,6 +1,6 @@
-#include "Index.h"
+#include "index.h"
 #include "../../common/common_defs.h"
-#include "Field.h"
+#include "field.h"
 #include <jsoncpp/json/json.h>
 #include "table.h"
 

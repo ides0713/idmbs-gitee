@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "LRU_cache.h"
+#include "lru_cache.h"
 #include "mem_pool.h"
 #include "bitmap.h"
 #include <cstring>
@@ -198,8 +198,10 @@ public:
     Re flushPage(Frame &frame);
 
     void destroy();
+
 public:
     static Re createFile(const char *file_name);
+
 private:
 
     FrameManager frame_manager_{"BufPool"};

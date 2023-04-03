@@ -8,8 +8,8 @@
 #include "buffer_pool.h"
 #include "../parse/parse_defs.h"
 #include "record.h"
-#include "Field.h"
-#include "Index.h"
+#include "field.h"
+#include "index.h"
 
 #define TABLE_NAME_MAX_LEN 20
 

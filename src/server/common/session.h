@@ -10,7 +10,7 @@ public:
     explicit Session(DataBase *database = nullptr, Txn *txn = nullptr, bool txn_multi_operation = false)
             : database_(database), txn_(txn), txn_multi_operation_(txn_multi_operation) {}
 
-    ~Session()= default;
+    ~Session() = default;
 
     [[nodiscard]] DataBase *getDb() const { return database_; }
 
