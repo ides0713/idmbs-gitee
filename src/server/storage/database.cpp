@@ -1,41 +1,84 @@
 #include "database.h"
-#include "../../common/common_defs.h"
 #include "../common/global_managers.h"
-
-DataBase::DataBase(const char *database_name) {
-    namespace fs = std::filesystem;
-    database_name_ = std::string(database_name);
-    GlobalParamsManager gpm = GlobalManagers::globalParamsManager();
-    database_path_ = fs::path(gpm.getProjectBinPath()).append(database_name);
-    clog_manager_ = nullptr;
-}
+#include "storage_defs.h"
+#include "storage_handler.h"
 
 void DataBase::destroy() {
 }
 
+Re DataBase::initialize(const char *database_name, const std::filesystem::path &database_path) {
+    //todo:init clog_manager of the database(not implement)
+    namespace fs = std::filesystem;
+    if (strlen(database_name) == 0) {
+        debugPrint("DataBase:failed to init DB, name invalid:%s.\n", database_name);
+        return Re::InvalidArgument;
+    }
+    if (!fs::is_directory(database_path)) {
+        debugPrint("DataBase:failed to init DB, path is not a directory: %s\n", database_path.c_str());
+        return Re::GenericError;
+    }
+    clog_manager_ = new ClogManager(database_path);
+    if (clog_manager_ == nullptr) {
+        debugPrint("DataBase:failed to init CLogManager.\n");
+        return Re::GenericError;
+    }
+    database_name_ = std::string(database_name);
+    database_path_ = database_path;
+    return openAllTables();
+}
+
 Re DataBase::createTable(const char *table_name, const size_t attr_infos_num, const AttrInfo *attr_infos) {
     namespace fs = std::filesystem;
-    //todo:open all existed tables when DataBase was constructed
     if (opened_tables_.count(std::string(table_name))) {
         debugPrint("DataBase::create table %s in database %s failed,already exists\n", database_name_.c_str(),
                    table_name);
-        return Re::Fail;
+        return Re::SchemaTableExist;
     }
-    GlobalDataBaseManager dbm = GlobalManagers::globalDataBaseManager();
-    std::string table_file_name = std::string(table_name).append(".table");
-    fs::path table_file_path = fs::path(database_path_).append(table_file_name);
     Table *new_table = new Table();
-    new_table->initialize(database_path_, table_name, attr_infos_num, attr_infos);
-    return Re::Fail;
+    //todo:table.init causes segmentation fault
+    Re r = new_table->init(database_path_, table_name, attr_infos_num, attr_infos, clog_manager_);
+    if (r != Re::Success) {
+        debugPrint("DataBase:failed to create table %s.\n", table_name);
+        delete new_table;
+        return r;
+    }
+    opened_tables_[table_name] = new_table;
+    debugPrint("DataBase:create table success. table name=%s\n", table_name);
+    return Re::Success;
 }
 
 Re DataBase::createTable(const std::string &table_name, const size_t attr_infos_num, const AttrInfo *attr_infos) {
     return createTable(table_name.c_str(), attr_infos_num, attr_infos);
 }
 
-Re DataBase::initialize() {
-    //todo:initialize clog_manager of the database(not implement)
-    return Re::Success;
+Re DataBase::openAllTables() {
+    std::vector<std::string> table_meta_files;
+    std::string regx_table_meta_file_name="^\\w*\\.(table)$";
+    int ret = listFile(database_path_,regx_table_meta_file_name.c_str(), table_meta_files);
+    if (ret < 0) {
+        debugPrint("DataBase:failed to list table meta files under %s.\n",database_path_.c_str());
+        return Re::IoErr;
+    }
+    for (const std::string &file_name : table_meta_files) {
+        Table *table = new Table();
+        Re r= table->init(database_path_, file_name.c_str(), clog_manager_);
+        if (r != Re::Success) {
+            delete table;
+            debugPrint("DataBase:failed to open table. file_name=%s\n", file_name.c_str());
+            return r;
+        }
+        if (opened_tables_.count(table->getTableName())) {
+            delete table;
+            debugPrint("DataBase:duplicate table with difference file name. table=%s, the other file_name=%s\n",
+                      table->getTableName().c_str(),
+                      file_name.c_str());
+            return Re::GenericError;
+        }
+        opened_tables_[table->getTableName()] = table;
+        debugPrint("DataBase:open table: %s, file: %s\n", table->getTableName().c_str(), file_name.c_str());
+    }
+    debugPrint("DataBase:all table have been opened. num=%d\n", opened_tables_.size());
+    return Re ::Success;
 }
 
 void GlobalDataBaseManager::initialize() {
@@ -54,19 +97,7 @@ void GlobalDataBaseManager::initialize() {
 Re GlobalDataBaseManager::createDb(const char *database_name) {
     namespace fs = std::filesystem;
     fs::path directory_path = fs::path(project_bin_path_.c_str()).append(database_name);
-    if (!fs::is_directory(directory_path)) {
-        bool res = fs::create_directory(directory_path);
-        if (res) {
-            debugPrint("DatabaseManager:created database %s\n", database_name);
-            return Re::Success;
-        } else {
-            debugPrint("DatabaseManager:create database %s failed,unknown error\n", database_name);
-            return Re::Fail;
-        }
-    } else {
-        debugPrint("DatabaseManager:create database %s failed,already exists\n", database_name);
-        return Re::Fail;
-    }
+    return createDb(directory_path);
 }
 
 Re GlobalDataBaseManager::createDb(const std::filesystem::path database_path) {
@@ -79,16 +110,16 @@ Re GlobalDataBaseManager::createDb(const std::filesystem::path database_path) {
             return Re::Success;
         } else {
             debugPrint("DatabaseManager:create database %s failed,unknown error\n", database_name.c_str());
-            return Re::Fail;
+            return Re::GenericError;
         }
     } else {
         debugPrint("DatabaseManager:create database %s failed,already exists\n", database_name.c_str());
-        return Re::Fail;
+        return Re::SchemaDbExist;
     }
 }
 
 void GlobalDataBaseManager::destroy() {
-    for (auto it: opened_databases_) {
+    for (const auto& it: opened_databases_) {
         opened_databases_.erase(it.first);
         delete it.second;
     }
@@ -104,8 +135,8 @@ DataBase *GlobalDataBaseManager::getDb(const char *database_name) {
         namespace fs = std::filesystem;
         fs::path th_database_path = project_bin_path_.append(database_name);
         if (fs::is_directory(th_database_path)) {
-            DataBase *th_new_db = new DataBase(database_name);
-            Re r = th_new_db->initialize();
+            DataBase *th_new_db = new DataBase();
+            Re r = th_new_db->initialize(database_name, th_database_path);
             if (r == Re::Success) {
                 opened_databases_.emplace(std::string(database_name), th_new_db);
                 debugPrint("GlobalDataBaseManager:getDb succeeded,database_name:%s\n", database_name);

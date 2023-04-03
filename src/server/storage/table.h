@@ -2,13 +2,14 @@
 
 #include <cstring>
 #include <string>
-#include "ClogManager.h"
-#include "buffer_pool.h"
 #include <filesystem>
+#include <jsoncpp/json/json.h>
+#include "clog_manager.h"
+#include "buffer_pool.h"
 #include "../parse/parse_defs.h"
+#include "record.h"
 #include "Field.h"
 #include "Index.h"
-#include <jsoncpp/json/json.h>
 
 #define TABLE_NAME_MAX_LEN 20
 
@@ -18,7 +19,21 @@ public:
 
     TableMeta(const TableMeta &other);
 
-    Re initialize(const char *table_name, int32_t attr_infos_num, const AttrInfo *attr_infos);
+    Re init(const char *table_name, int32_t attr_infos_num, const AttrInfo *attr_infos);
+
+    int serialize(std::ostream &ostream) const;
+
+    int deserialize(std::istream &istream);
+
+    [[nodiscard]] int getSerialSize() const;
+
+    const FieldMeta *getField(int index) const;
+
+    const FieldMeta *getField(const char *field_name) const;
+
+    const FieldMeta *getField(std::string field_name) const;
+
+    std::string getTableName() const { return table_name_; }
 
 private:
     std::string table_name_;
@@ -27,23 +42,36 @@ private:
     int record_size_;
     //todo: why use static variable?
 private:
+private:
     static std::vector<FieldMeta> sys_fields_;
 private:
+
     static Re initializeSysFields();
 };
 
 class Table {
 public:
-    Table() = default;
+    Table() : data_buffer_pool_(nullptr), record_handler_(nullptr), clog_manager_(nullptr) {}
 
-    Re initialize(std::filesystem::path database_path, const char *table_name, const size_t attr_infos_num,
-                  const AttrInfo *attr_infos);
+    /// @brief create a not existed table within params
+    Re init(std::filesystem::path database_path, const char *table_name, const size_t attr_infos_num,
+            const AttrInfo *attr_infos, ClogManager *clog_manager);
 
-    std::string getTableName() { return table_name_; }
+    /// @brief open an exist table from existed table meta file(open table)
+    Re init(std::filesystem::path database_path, const char *table_name, ClogManager *clog_manager);
+
+    /// @brief get table name from table(table meta)
+    std::string getTableName() { return table_meta_.getTableName(); }
 
 private:
     std::filesystem::path database_path_;
-    std::string table_name_;
     TableMeta table_meta_;
+    DiskBufferPool *data_buffer_pool_;  /// 数据文件关联的buffer pool
+    RecordFileHandler *record_handler_; /// 记录操作
+    std::vector<Index *> indexes_;
     ClogManager *clog_manager_;
+private:
+    Re initRecordHandler(const char *base_dir);
+
+    Re initRecordHandler(std::filesystem::path base_dir);
 };

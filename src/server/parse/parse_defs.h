@@ -13,7 +13,7 @@ const int MAX_MSG_LENGTH = 50;
 // add func
 int testFunc(int param);
 
-char *strnew(const char *str);
+char *strNew(const char *str);
 
 enum SqlCommandFlag {
     // SCF_ERROR 解析失败
@@ -77,13 +77,13 @@ struct AttrInfo {
     }
 
     AttrInfo(const char *name, AttrType type, size_t len = 1) {
-        attr_name = strnew(name);
+        attr_name = strNew(name);
         attr_type = type;
         attr_len = len;
     }
 
     AttrInfo(const AttrInfo &attr_info) {
-        attr_name = strnew(attr_info.attr_name);
+        attr_name = strNew(attr_info.attr_name);
         attr_type = attr_info.attr_type;
         attr_len = attr_info.attr_len;
     }
@@ -94,7 +94,7 @@ struct AttrInfo {
 
     AttrInfo &operator=(const AttrInfo &attr_info) {
         if (this == &attr_info) return *this;
-        attr_name = strnew(attr_info.attr_name);
+        attr_name = strNew(attr_info.attr_name);
         attr_type = attr_info.attr_type;
         attr_len = attr_info.attr_len;
         return *this;
@@ -183,7 +183,7 @@ public:
     }
 
     void setRelName(const char *str) {
-        rel_name_ = strnew(str);
+        rel_name_ = strNew(str);
     }
 
     void addAttr(const AttrInfo &attr) {

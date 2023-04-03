@@ -90,10 +90,10 @@ ParserContext *get_context(yyscan_t scanner)
 %token <string> STRING_V
 
 //non
-%getType <number> getType;
-%getType <condition1> condition;
-%getType <value1> value;
-%getType <number> number;
+%type <number> type;
+%type <condition1> condition;
+%type <value1> value;
+%type <number> number;
 %%
 commands:
     /* empty */
@@ -189,7 +189,7 @@ drop_index:			/*drop index 语句的语法解析树*/
 create_table:		/*create table 语句的语法解析树*/
     CREATE TABLE ID LBRACE attr_def attr_def_list RBRACE SEMICOLON {
 		// CONTEXT->query=new CreateTableQuery();
-		// CONTEXT->query->initialize();
+		// CONTEXT->query->init();
 		(static_cast<CreateTableQuery*>(CONTEXT->query))->setRelName($3);
 		// //临时变量清零
 		// CONTEXT->value_tuple_num=0;	
@@ -202,7 +202,7 @@ attr_def_list:
     ;
     
 attr_def:
-    ID_get getType LBRACE number RBRACE {
+    ID_get type LBRACE number RBRACE {
 		if(CONTEXT->query==nullptr){
 			CONTEXT->query=new CreateTableQuery();
 			CONTEXT->query->initialize();
@@ -210,8 +210,8 @@ attr_def:
 		AttrInfo attribute(CONTEXT->id,(AttrType)$2,$4);
 		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);
 		CONTEXT->value_length++;
-		}
-    |ID_get getType{
+	}
+    |ID_get type{
 		//attr with default length
 		if(CONTEXT->query==nullptr){
 			CONTEXT->query=new CreateTableQuery();
@@ -220,14 +220,14 @@ attr_def:
 		AttrInfo attribute(CONTEXT->id,(AttrType)$2,1);
 		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);
 		CONTEXT->value_length++;
-		}
+	}
     ;
 number:
 	NUMBER{
 		$$ = $1;
 		}
 	;
-getType:
+type:
 	INT_T{
 		$$=Ints;
 		}
@@ -253,7 +253,7 @@ ID_get:
 insert:				/*insert   语句的语法解析树*/
     INSERT INTO ID VALUES LBRACE value value_list RBRACE value_unit SEMICOLON {
 		// CONTEXT->query=new InsertQuery();
-		// CONTEXT->query->initialize();
+		// CONTEXT->query->init();
 
 
 		// CONTEXT->query_info->SCF_Flag=ScfInsert;//"insert";

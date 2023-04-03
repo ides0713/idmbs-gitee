@@ -6,7 +6,7 @@ public:
 
     BitMap(char *bitmap, int size) : bit_map_(bitmap), size_(size) {}
 
-    void initialize(char *bitmap, int size);
+    void init(char *bitmap, int size);
 
     bool getBit(int index);
 

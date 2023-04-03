@@ -8,7 +8,6 @@
 
 class Table;
 
-
 class Operation {
 public:
     enum class Type : int {

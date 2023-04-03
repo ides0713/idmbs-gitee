@@ -7,14 +7,14 @@ int findFirstZero(char byte, int start) {
     return -1;
 }
 
-int findFirstSetted(char byte, int start) {
+int findFirstSet(char byte, int start) {
     for (int i = start; i < 8; i++)
         if ((byte & (1 << i)) != 0)
             return i;
     return -1;
 }
 
-void BitMap::initialize(char *bitmap, int size) {
+void BitMap::init(char *bitmap, int size) {
     bit_map_ = bitmap;
     size_ = size;
 }
@@ -59,7 +59,7 @@ int BitMap::nextSetBit(int start) {
     for (int iter = start / 8, end = (size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1); iter <= end; iter++) {
         char byte = bit_map_[iter];
         if (byte != 0x00) {
-            int index_in_byte = findFirstSetted(byte, start_in_byte);
+            int index_in_byte = findFirstSet(byte, start_in_byte);
             if (index_in_byte >= 0) {
                 ret = iter * 8 + index_in_byte;
                 break;

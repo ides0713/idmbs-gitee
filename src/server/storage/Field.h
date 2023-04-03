@@ -3,7 +3,8 @@
 #include "../common/server_defs.h"
 #include "../parse/parse_defs.h"
 #include <cstring>
-#include <string.h>
+#include <string>
+#include "../common/re.h"
 
 namespace Json {
     class Value;

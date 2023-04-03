@@ -9,15 +9,15 @@
 #include <unordered_map>
 #include <filesystem>
 #include "../parse/parse_defs.h"
-#include "ClogManager.h"
+#include "clog_manager.h"
 
 #define DATABASE_NAME_MAX_LEN 20
 
 class DataBase {
 public:
-    explicit DataBase(const char *database_name);
+    DataBase()= default;
 
-    Re initialize();
+    Re initialize(const char *database_name, const std::filesystem::path &database_path);
 
     void destroy();
 
@@ -53,8 +53,6 @@ public:
 
     Re createDb(const char *database_name);
 
-    Re createDb(const std::filesystem::path database_path);
-
     DataBase *getDb(const char *database_name);
 
     DataBase *getDb(const std::filesystem::path database_path);
@@ -71,6 +69,8 @@ public:
 
     std::filesystem::path const getProjectBinPath() { return project_bin_path_; }
 
+public:
+    static Re createDb(const std::filesystem::path database_path);
 private:
 
     std::filesystem::path project_default_database_path_, project_bin_path_;

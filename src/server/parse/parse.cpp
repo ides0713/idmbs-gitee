@@ -1,5 +1,4 @@
 #include "parse.h"
-#include <cstdio>
 #include "../../common/common_defs.h"
 
 int sqlParse(const char *st, Query *&res);
@@ -19,7 +18,7 @@ int parse(const char *st, Query *&res) {
     return 0;
 }
 
-char *strnew(const char *str) {
+char *strNew(const char *str) {
     int len = int(strlen(str));
     char *res = new char[len + 1];
     strcpy(res, str);

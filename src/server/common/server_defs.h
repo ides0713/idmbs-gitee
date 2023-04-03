@@ -7,12 +7,6 @@
 
 const int MAX_CONNECTS = 10;
 
-enum Re {
-    Success = 0,
-    Fail,
-    Error
-};
-
 class GlobalParamsManager {
 public:
     GlobalParamsManager() = default;

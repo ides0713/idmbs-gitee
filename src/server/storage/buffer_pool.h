@@ -7,6 +7,7 @@
 #include <cstring>
 #include <unordered_map>
 #include "../common/server_defs.h"
+#include "../common/re.h"
 
 #define BP_INVALID_PAGE_NUM (-1)
 #define BP_PAGE_SIZE (1 << 14)
@@ -95,11 +96,11 @@ public:
 
     Re cleanUp();
 
-    Frame *get(int file_desc, int32_t page_num);
+    Frame *get(int file_desc, int32_t page_id);
 
-    Frame *alloc(int file_desc, int32_t page_num);
+    Frame *alloc(int file_desc, int32_t page_id);
 
-    Re free(int file_desc, int32_t page_num, Frame *frame);
+    Re free(int file_desc, int32_t page_id, Frame *frame);
 
     Frame *beginPurge();
 
@@ -138,11 +139,11 @@ public:
 
     Re closeFile();
 
-    Re getThisPage(int32_t page_num, Frame **frame);
+    Re getThisPage(int32_t page_id, Frame **frame);
 
     Re allocatePage(Frame **frame);
 
-    Re disposePage(int32_t page_num);
+    Re disposePage(int32_t page_id);
 
     Re purgePage(int32_t page_num);
 
@@ -160,16 +161,16 @@ public:
 
     Re flushAllPages();
 
-    Re recoverPage(int32_t page_num);
+    Re recoverPage(int32_t page_id);
 
 protected:
-    Re allocateFrame(int32_t page_num, Frame **buf);
+    Re allocateFrame(int32_t page_id, Frame **buf);
 
-    Re purgeFrame(int32_t page_num, Frame *used_frame);
+    Re purgeFrame(int32_t page_id, Frame *used_frame);
 
-    Re checkPageNum(int32_t page_num);
+    Re checkPageId(int32_t page_id);
 
-    Re loadPage(int32_t page_num, Frame *frame);
+    Re loadPage(int32_t page_id, Frame *frame);
 
 private:
     GlobalBufferPoolManager &bp_manager_;
@@ -190,8 +191,6 @@ public:
 
     void initialize();
 
-    Re createFile(const char *file_name);
-
     Re openFile(const char *file_name, DiskBufferPool *&bp);
 
     Re closeFile(const char *file_name);
@@ -199,7 +198,8 @@ public:
     Re flushPage(Frame &frame);
 
     void destroy();
-
+public:
+    static Re createFile(const char *file_name);
 private:
 
     FrameManager frame_manager_{"BufPool"};
@@ -211,9 +211,7 @@ class BufferPoolIterator {
 public:
     BufferPoolIterator() : current_page_num_(-1) {}
 
-    ~BufferPoolIterator() {}
-
-    Re initialize(DiskBufferPool &bp, int32_t start_page = 0);
+    Re init(DiskBufferPool &bp, int32_t start_page = 0);
 
     bool hasNext();
 

@@ -44,7 +44,7 @@ public:
 
     void destroy();
 
-    const size_t count() const { return searcher_.size(); }
+    [[nodiscard]] const size_t count() const { return searcher_.size(); }
 
     bool get(const Key &key, Value &value);
 

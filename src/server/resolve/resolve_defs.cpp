@@ -26,7 +26,7 @@ void CreateTableStatement::initialize(Query *query) {
     CreateTableQuery *ctq = static_cast<CreateTableQuery *>(query);
     assert(this->getScf() == ScfCreateTable);
     attr_infos_num_ = ctq->getAttrNum();
-    table_name_ = strnew(ctq->getRelName());
+    table_name_ = strNew(ctq->getRelName());
     attr_infos_ = new AttrInfo[attr_infos_num_];
     AttrInfo *attr_infos = ctq->getAttrs();
     for (int i = 0; i < attr_infos_num_; i++)

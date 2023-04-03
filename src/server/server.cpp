@@ -12,6 +12,7 @@
 #include "resolve/resolve_main.h"
 #include "execute/execute_main.h"
 #include "storage/storage_main.h"
+#include "common/re.h"
 
 void pStart(const char *sql, int sock_fd);
 
@@ -48,6 +49,7 @@ int main() {
 void pStart(const char *sql, int sock_fd) {
     ParseMain pm;
     Re re_parse = pm.handle(sql);
+    strRe(Re::Success);
     if (re_parse != Re::Success) {
         debugPrint("\nMain:parse failed\n");
         return;
@@ -67,13 +69,12 @@ void pStart(const char *sql, int sock_fd) {
         return;
     }
     debugPrint("\nMain:execute stmt succeeded\n");
-    // StorageMain sm();
-    // Re re_storage = sm.handle(rm.getStatement());
-    // if (re_storage != Re::SUCCESS)
-    // {
-    //     printf("storage failed\n");
-    //     return;
-    // }
+    StorageMain sm(em.callBack());
+    Re re_storage = sm.handle();
+    if (re_storage != Re::Success) {
+        debugPrint("\nMain:storage failed\n");
+        return;
+    }
 }
 
 void recvFunc(int fd) {

@@ -1,6 +1,5 @@
 #include "resolve_main.h"
 #include "../storage/storage_handler.h"
-#include "../../common/common_defs.h"
 #include <filesystem>
 #include "../common/global_managers.h"
 
@@ -11,13 +10,13 @@ Re ResolveMain::handle() {
     DataBase *default_db = dbm.getDb(dbm.getProjectDefaultDatabasePath());
     if (default_db == nullptr) {
         debugPrint("ResolveMain:open default db failed,get nullptr,get default db failed\n");
-        return Re::Fail;
+        return Re::GenericError;
     }
     parse_session_->setDb(default_db);
     Statement::createStatement(q, stmt_);
     if (stmt_ == nullptr) {
         debugPrint("ResolveMain:create statement failed\n");
-        return Re::Fail;
+        return Re::GenericError;
     }
     stmt_->initialize(q);
     stmt_->handle(q);

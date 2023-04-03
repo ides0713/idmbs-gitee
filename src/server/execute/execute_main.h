@@ -2,6 +2,7 @@
 
 #include "../common/server_defs.h"
 #include "../common/session.h"
+#include "../common/re.h"
 
 class ExecuteMain {
 public:

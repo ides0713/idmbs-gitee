@@ -3,6 +3,7 @@
 #include "../common/server_defs.h"
 #include "../parse/parse_defs.h"
 #include <vector>
+#include "../common/re.h"
 
 enum StatementFlag {
     Select = 0,
