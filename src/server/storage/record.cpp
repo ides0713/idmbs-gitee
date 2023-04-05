@@ -80,9 +80,9 @@ Re RecordPageHandler::init(DiskBufferPool &buffer_pool, int32_t page_id) {
         debugPrint("RecordPageHandler:disk buffer pool has been opened for page_id %d.\n", page_id);
         return Re::RecordOpened;
     }
-    Re r = buffer_pool.getThisPage(page_id, &frame_);
+    Re r = buffer_pool.getPage(page_id, &frame_);
     if (r != Re::Success) {
-        debugPrint("RecordPageHandler:failed to get page handle from disk buffer pool. ret=%d\n", r);
+        debugPrint("RecordPageHandler:failed to getFrame page handle from disk buffer pool. ret=%d\n", r);
         return r;
     }
     char *data = frame_->getPageData();
@@ -98,9 +98,9 @@ Re RecordPageHandler::recoverInit(DiskBufferPool &buffer_pool, int32_t page_id) 
         debugPrint("RecordPageHandler:disk buffer pool has been opened for page_id %d.\n", page_id);
         return Re::RecordOpened;
     }
-    Re r = buffer_pool.getThisPage(page_id, &frame_);
+    Re r = buffer_pool.getPage(page_id, &frame_);
     if (r != Re::Success) {
-        debugPrint("RecordPageHandler:failed to get page handle from disk buffer pool. re=%d\n", r);
+        debugPrint("RecordPageHandler:failed to getFrame page handle from disk buffer pool. re=%d\n", r);
         return r;
     }
     char *data = frame_->getPageData();

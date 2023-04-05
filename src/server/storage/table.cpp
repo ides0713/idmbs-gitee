@@ -176,7 +176,7 @@ const FieldMeta *TableMeta::getField(int index) const {
 
 const FieldMeta *TableMeta::getField(const char *field_name) const {
     if (strlen(field_name) == 0) {
-        debugPrint("TableMeta:get field:%s failed,field_name invalid\n", field_name);
+        debugPrint("TableMeta:getFrame field:%s failed,field_name invalid\n", field_name);
         return nullptr;
     }
     for (const FieldMeta &field: fields_)

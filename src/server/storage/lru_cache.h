@@ -21,12 +21,12 @@ private:
         friend class LruCache;
     };
 
-    class PListNodeHasher {
+    class PListNodeHash {
     public:
         size_t operator()(ListNode *node) const;
 
     private:
-        Hash hasher_;
+        Hash hash_;
     };
 
     class PListNodePredicator {
@@ -67,16 +67,16 @@ private:
     void lruRemove(ListNode *node);
 
 private:
-    std::unordered_set<ListNode *, PListNodeHasher, PListNodePredicator> searcher_;
+    std::unordered_set<ListNode *, PListNodeHash, PListNodePredicator> searcher_;
     ListNode *lru_front_ = nullptr;
     ListNode *lru_tail_ = nullptr;
 };
 
 template<typename Key, typename Value, typename Hash, typename Pred>
-inline size_t LruCache<Key, Value, Hash, Pred>::PListNodeHasher::operator()(ListNode *node) const {
+inline size_t LruCache<Key, Value, Hash, Pred>::PListNodeHash::operator()(ListNode *node) const {
     if (node == nullptr)
         return 0;
-    return hasher_(node->key_);
+    return hash_(node->key_);
 }
 
 template<typename Key, typename Value, typename Hash, typename Pred>

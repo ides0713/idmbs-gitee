@@ -9,7 +9,7 @@ Re ResolveMain::handle() {
     GlobalDataBaseManager dbm = GlobalManagers::globalDataBaseManager();
     DataBase *default_db = dbm.getDb(dbm.getProjectDefaultDatabasePath());
     if (default_db == nullptr) {
-        debugPrint("ResolveMain:open default db failed,get nullptr,get default db failed\n");
+        debugPrint("ResolveMain:open default db failed,get nullptr,getFrame default db failed\n");
         return Re::GenericError;
     }
     parse_session_->setDb(default_db);

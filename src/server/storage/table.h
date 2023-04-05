@@ -60,7 +60,7 @@ public:
     /// @brief open an exist table from existed table meta file(open table)
     Re init(std::filesystem::path database_path, const char *table_name, ClogManager *clog_manager);
 
-    /// @brief get table name from table(table meta)
+    /// @brief getFrame table name from table(table meta)
     std::string getTableName() { return table_meta_.getTableName(); }
 
 private:

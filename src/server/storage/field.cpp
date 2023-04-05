@@ -87,7 +87,7 @@ Re FieldMeta::fromJson(const Json::Value &json_value, FieldMeta &field) {
 
     AttrType type = castStringAttrType(type_value.asCString());
     if (type == AttrType::Undefined) {
-        debugPrint("FieldMeta:get invalid getFieldName type. type=%d\n", type);
+        debugPrint("FieldMeta:getFrame invalid getFieldName type. type=%d\n", type);
         return Re::GenericError;
     }
 
