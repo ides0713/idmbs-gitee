@@ -38,7 +38,7 @@ int readN(int fd, void *buf, int size) {
             size -= ret;
             continue;
         }
-        if (0 == ret)
+        if (ret == 0)
             return -1; // end of file
         const int err = errno;
         if (EAGAIN != err && EINTR != err)
@@ -200,7 +200,7 @@ Re DiskBufferPool::getPage(int32_t page_id, Frame **frame) {
     Frame *allocated_frame = nullptr;
     Re r = allocateFrame(page_id, &allocated_frame);
     if (r != Re::Success) {
-        debugPrint("DiskBufferPool:Failed to alloc frame %s:%d, due to failed to alloc page.\n", file_name_.c_str(),
+        debugPrint("DiskBufferPool:failed to alloc frame %s:%d, due to failed to alloc page.\n", file_name_.c_str(),
                    page_id);
         return r;
     }
@@ -211,7 +211,7 @@ Re DiskBufferPool::getPage(int32_t page_id, Frame **frame) {
     //put target page's page_data from file to the allocated frame
     r = loadPage(page_id, allocated_frame);
     if (r != Re::Success) {
-        debugPrint("DiskBufferPool:Failed to load page %s:%d\n", file_name_.c_str(), page_id);
+        debugPrint("DiskBufferPool:failed to load page %s:%d\n", file_name_.c_str(), page_id);
         allocated_frame->pin_count_ = 0;
         purgeFrame(page_id, allocated_frame);
         return r;
@@ -222,9 +222,10 @@ Re DiskBufferPool::getPage(int32_t page_id, Frame **frame) {
 }
 
 Re DiskBufferPool::allocatePage(Frame **frame) {
-    int byte = 0, bit = 0;
-    //judge if there's need to allocate new frame
+    int byte, bit;
     if (file_header_->allocated_pages < file_header_->page_count) {
+        // some page was unlinked with the frame and because we do not free the frame,
+        // so frame represented by the first 0 bit was 'empty',we can just set page there
         for (int i = 0; i < file_header_->page_count; i++) {
             byte = i / 8, bit = i % 8;
             if (((file_header_->bitmap[byte]) & (1 << bit)) == 0) {
@@ -242,6 +243,7 @@ Re DiskBufferPool::allocatePage(Frame **frame) {
         return Re::BufferPoolNoBuf;
     }
     int32_t page_id = file_header_->page_count;
+
     Frame *allocated_frame = nullptr;
     Re r = allocateFrame(page_id, &allocated_frame);
     if (r != Re::Success) {
@@ -252,8 +254,7 @@ Re DiskBufferPool::allocatePage(Frame **frame) {
     file_header_->allocated_pages++;
     file_header_->page_count++;
 
-    byte = page_id / 8;
-    bit = page_id % 8;
+    byte = page_id / 8, bit = page_id % 8;
     file_header_->bitmap[byte] |= (1 << bit);
     header_frame_->dirtyMark();
 
