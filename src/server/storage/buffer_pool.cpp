@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <bitset>
+#include <cmath>
 
 static const int32_t BP_HEADER_PAGE = 0;
 static const int MEM_POOL_ITEM_NUM = 128;
@@ -123,18 +124,19 @@ std::list<Frame *> FrameManager::findFrames(int file_desc) {
     return frames;
 }
 
-DiskBufferPool::~DiskBufferPool() {
-    closeFile();
-    debugPrint("DiskBufferPool:disk buffer pool destructed\n");
-}
+//DiskBufferPool::~DiskBufferPool() {
+//    debugPrint("!!!!!!!!!!! enter close file in destruction function\n");
+//    closeFile();
+//    debugPrint("DiskBufferPool:disk buffer pool destructed\n");
+//}
 
-Re DiskBufferPool::openFile(const char *file_name) {
-    int fd = open(file_name, O_RDWR);
+Re DiskBufferPool::openFile(std::string file_name) {
+    int fd = open(file_name.c_str(), O_RDWR);
     if (fd < 0) {
-        debugPrint("DiskBufferPool:failed to open file %s, because %s.\n", file_name, strerror(errno));
+        debugPrint("DiskBufferPool:failed to open file %s, because %s.\n", file_name.c_str(), strerror(errno));
         return Re::IoErrAccess;
     }
-    debugPrint("DiskBufferPool:successfully open file %s.\n", file_name);
+    debugPrint("DiskBufferPool:successfully open file %s.\n", file_name.c_str());
     file_name_ = file_name, file_desc_ = fd;
     Re r = allocateFrame(BP_HEADER_PAGE, &header_frame_);
     if (r != Re::Success) {
@@ -149,7 +151,7 @@ Re DiskBufferPool::openFile(const char *file_name) {
     header_frame_->acc_time_ = getCurrentTime();
     r = loadPage(BP_HEADER_PAGE, header_frame_);
     if (r != Re::Success) {
-        debugPrint("DiskBufferPool:failed to load first page of %s, due to %s.\n", file_name, strerror(errno));
+        debugPrint("DiskBufferPool:failed to load first page of %s, due to %s.\n", file_name.c_str(), strerror(errno));
         header_frame_->pin_count_ = 0;
         purgeFrame(BP_HEADER_PAGE, header_frame_);
         close(fd);
@@ -157,7 +159,7 @@ Re DiskBufferPool::openFile(const char *file_name) {
         return r;
     }
     file_header_ = (BufferPoolFileHeader *) header_frame_->getPageData();
-    debugPrint("DiskBufferPool:successfully open %s. file_desc=%d, hdr_frame=%p\n", file_name, file_desc_,
+    debugPrint("DiskBufferPool:successfully open %s. file_desc=%d, hdr_frame=%p\n", file_name.c_str(), file_desc_,
                header_frame_);
     return Re::Success;
 }
@@ -181,7 +183,6 @@ Re DiskBufferPool::closeFile() {
     }
     debugPrint("DiskBufferPool:successfully close file %d:%s.\n", file_desc_, file_name_.c_str());
     file_desc_ = -1;
-    bp_manager_.closeFile(file_name_.c_str());
     return Re::Success;
 }
 
@@ -223,13 +224,13 @@ Re DiskBufferPool::getPage(int32_t page_id, Frame **frame) {
 
 Re DiskBufferPool::allocatePage(Frame **frame) {
     int byte, bit;
-    if (file_header_->allocated_pages < file_header_->page_count) {
+    if (file_header_->allocated_pages_num < file_header_->pages_num) {
         // some page was unlinked with the frame and because we do not free the frame,
         // so frame represented by the first 0 bit was 'empty',we can just set page there
-        for (int i = 0; i < file_header_->page_count; i++) {
+        for (int i = 0; i < file_header_->pages_num; i++) {
             byte = i / 8, bit = i % 8;
-            if (((file_header_->bitmap[byte]) & (1 << bit)) == 0) {
-                (file_header_->allocated_pages)++;
+            if ((file_header_->bitmap[byte] & (1 << bit)) == 0) {
+                file_header_->allocated_pages_num++;
                 file_header_->bitmap[byte] |= (1 << bit);
                 // TODO:do we need clean the loaded page's data?
                 header_frame_->dirtyMark();
@@ -237,12 +238,12 @@ Re DiskBufferPool::allocatePage(Frame **frame) {
             }
         }
     }
-    if (file_header_->page_count >= BufferPoolFileHeader::max_page_num) {
+    if (file_header_->pages_num >= BufferPoolFileHeader::max_page_num) {
         debugPrint("DiskBufferPool:file buffer pool is full. page count %d, max page count %d\n",
-                   file_header_->page_count, BufferPoolFileHeader::max_page_num);
+                   file_header_->pages_num, BufferPoolFileHeader::max_page_num);
         return Re::BufferPoolNoBuf;
     }
-    int32_t page_id = file_header_->page_count;
+    int32_t page_id = file_header_->pages_num;
 
     Frame *allocated_frame = nullptr;
     Re r = allocateFrame(page_id, &allocated_frame);
@@ -251,8 +252,8 @@ Re DiskBufferPool::allocatePage(Frame **frame) {
         return r;
     }
 
-    file_header_->allocated_pages++;
-    file_header_->page_count++;
+    file_header_->allocated_pages_num++;
+    file_header_->pages_num++;
 
     byte = page_id / 8, bit = page_id % 8;
     file_header_->bitmap[byte] |= (1 << bit);
@@ -263,7 +264,7 @@ Re DiskBufferPool::allocatePage(Frame **frame) {
     allocated_frame->pin_count_ = 1;
     allocated_frame->acc_time_ = getCurrentTime();
     allocated_frame->resetPage();
-    allocated_frame->page_.page_id = file_header_->page_count - 1;
+    allocated_frame->page_.page_id = file_header_->pages_num - 1;
 
     // Use flush operation to extension file
     r = flushPage(*allocated_frame);
@@ -285,16 +286,17 @@ Re DiskBufferPool::disposePage(int32_t page_id) {
         return r;
     }
     header_frame_->dirty_ = true;
-    file_header_->allocated_pages--;
+    file_header_->allocated_pages_num--;
     char tmp = 1 << (page_id % 8);
+    //set corresponding bit to 0
     file_header_->bitmap[page_id / 8] &= ~tmp;
     return Re::Success;
 }
 
-Re DiskBufferPool::purgePage(int32_t page_num) {
-    Frame *used_frame = frame_manager_.getFrame(file_desc_, page_num);
+Re DiskBufferPool::purgePage(int32_t page_id) {
+    Frame *used_frame = frame_manager_.getFrame(file_desc_, page_id);
     if (used_frame != nullptr)
-        return purgeFrame(page_num, used_frame);
+        return purgeFrame(page_id, used_frame);
     return Re::Success;
 }
 
@@ -302,14 +304,14 @@ Re DiskBufferPool::purgeAllPages() {
     std::list<Frame *> used = frame_manager_.findFrames(file_desc_);
     for (auto frame: used) {
         if (frame->pin_count_ > 0) {
-            debugPrint("DiskBufferPool:The page has been pinned, file_desc:%d, page id:%d, pin_count=%d\n",
+            debugPrint("DiskBufferPool:the page has been pinned, file_desc:%d, page id:%d, pin_count=%d\n",
                        frame->file_desc_, frame->page_.page_id, frame->pin_count_);
             continue;
         }
         if (frame->dirty_) {
             Re r = flushPage(*frame);
             if (r != Re::Success) {
-                debugPrint("DiskBufferPool:Failed to flush all pages' of %s.\n", file_name_.c_str());
+                debugPrint("DiskBufferPool:failed to flush all pages' of %s.\n", file_name_.c_str());
                 return r;
             }
         }
@@ -324,7 +326,7 @@ Re DiskBufferPool::unpinPage(Frame *frame) {
         int32_t page_num = frame->getPageId();
         auto pages_it = disposed_pages_.find(page_num);
         if (pages_it != disposed_pages_.end()) {
-            debugPrint("DiskBufferPool:Dispose file_desc:%d, page:%d\n", file_desc_, page_num);
+            debugPrint("DiskBufferPool:dispose file_desc:%d, page:%d\n", file_desc_, page_num);
             disposePage(page_num);
             disposed_pages_.erase(pages_it);
         }
@@ -332,8 +334,8 @@ Re DiskBufferPool::unpinPage(Frame *frame) {
     return Re::Success;
 }
 
-Re DiskBufferPool::getPageCount(int *page_count) {
-    *page_count = file_header_->allocated_pages;
+Re DiskBufferPool::getAllocatedPagesNum(int *page_count) {
+    *page_count = file_header_->allocated_pages_num;
     return Re::Success;
 }
 
@@ -341,10 +343,10 @@ Re DiskBufferPool::checkAllPagesUnpinned() {
     std::list<Frame *> frames = frame_manager_.findFrames(file_desc_);
     for (auto &frame: frames) {
         if (frame->getPageId() == BP_HEADER_PAGE && frame->pin_count_ > 1)
-            debugPrint("DiskBufferPool:This page has been pinned. file desc=%d, page num:%d, pin count=%d\n",
+            debugPrint("DiskBufferPool:this page has been pinned. file desc=%d, page id:%d, pin count=%d\n",
                        file_desc_, frame->getPageId(), frame->pin_count_);
         else if (frame->getPageId() != BP_HEADER_PAGE && frame->pin_count_ > 0)
-            debugPrint("DiskBufferPool:This page has been pinned. file desc=%d, page num:%d, pin count=%d\n",
+            debugPrint("DiskBufferPool:this page has been pinned. file desc=%d, page id:%d, pin count=%d\n",
                        file_desc_, frame->getPageId(), frame->pin_count_);
     }
     debugPrint("DiskBufferPool:all pages have been checked of file desc %d\n", file_desc_);
@@ -384,14 +386,12 @@ Re DiskBufferPool::flushAllPages() {
     return Re::Success;
 }
 
-Re DiskBufferPool::recoverPage(int32_t page_id) {
-    int byte = 0, bit = 0;
-    byte = page_id / 8;
-    bit = page_id % 8;
+Re DiskBufferPool::recoverPageInHdr(int32_t page_id) {
+    int byte = page_id / 8, bit = page_id % 8;
     if (!(file_header_->bitmap[byte] & (1 << bit))) {
         file_header_->bitmap[byte] |= (1 << bit);
-        file_header_->allocated_pages++;
-        file_header_->page_count++;
+        file_header_->allocated_pages_num++;
+        file_header_->pages_num++;
         header_frame_->dirtyMark();
     }
     return Re::Success;
@@ -410,7 +410,7 @@ Re DiskBufferPool::allocateFrame(int32_t page_id, Frame **buf) {
             return Re::NoMem;
         }
         if (frame->dirty_) {
-            Re r = bp_manager_.flushPage(*frame);
+            Re r = buffer_pool_manager_.flushPage(*frame);
             if (r != Re::Success) {
                 debugPrint("DiskBufferPool:failed to allocate block due to failed to flush old block.\n");
                 return r;
@@ -444,12 +444,13 @@ Re DiskBufferPool::purgeFrame(int32_t page_id, Frame *used_frame) {
 }
 
 Re DiskBufferPool::checkPageId(int32_t page_id) {
-    if (page_id >= file_header_->page_count) {
+    if (page_id >= file_header_->pages_num) {
         debugPrint("DiskBufferPool:invalid page_id:%d, file's name:%s\n", page_id, file_name_.c_str());
         return Re::BufferPoolInvalidPageId;
     }
+    //page in buffer must be set in bitmap
     if ((file_header_->bitmap[page_id / 8] & (1 << (page_id % 8))) == 0) {
-        debugPrint("DiskBufferPool:invalid pageNum:%d, file's name:%s\n", page_id, file_name_.c_str());
+        debugPrint("DiskBufferPool:invalid page_id:%d, file's name:%s\n", page_id, file_name_.c_str());
         return Re::BufferPoolInvalidPageId;
     }
     return Re::Success;
@@ -465,37 +466,16 @@ Re DiskBufferPool::loadPage(int32_t page_id, Frame *frame) {
     int ret = readN(file_desc_, &(frame->page_), sizeof(Page));
     if (ret != 0) {
         debugPrint("DiskBufferPool:failed to load page %s:%d, due to failed to read data:%s, ret=%d, page count=%d\n",
-                   file_name_.c_str(), page_id, strerror(errno), ret, file_header_->allocated_pages);
+                   file_name_.c_str(), page_id, strerror(errno), ret, file_header_->allocated_pages_num);
         return Re::IoErrRead;
     }
     return Re::Success;
 }
 
-Re BufferPoolIterator::init(DiskBufferPool &bp, int32_t start_page /* = 0 */) {
-    bit_map_.init(bp.file_header_->bitmap, bp.file_header_->page_count);
-    if (start_page <= 0)
-        current_page_num_ = 0;
-    else
-        current_page_num_ = start_page;
-    return Re::Success;
+void DiskBufferPool::destroy() {
+    closeFile();
+    debugPrint("DiskBufferPool:disk buffer pool destructed\n");
 }
-
-bool BufferPoolIterator::hasNext() {
-    return bit_map_.nextSetBit(current_page_num_ + 1) != -1;
-}
-
-int32_t BufferPoolIterator::next() {
-    int32_t next_page = bit_map_.nextSetBit(current_page_num_ + 1);
-    if (next_page != -1)
-        current_page_num_ = next_page;
-    return next_page;
-}
-
-Re BufferPoolIterator::reset() {
-    current_page_num_ = 0;
-    return Re::Success;
-}
-
 
 void GlobalBufferPoolManager::initialize() {
     frame_manager_.initialize(MEM_POOL_ITEM_NUM);
@@ -517,11 +497,11 @@ Re GlobalBufferPoolManager::createFile(const char *file_name) {
     Page page;
     memset(&page, 0, sizeof(Page));
     //use page.page_data to represent the file header,
-    //i.e. &page.page_data[0] equal to &file_header.page_count,
-    //&page_data[4] equal to &file_header.allocated_pages,
+    //i.e. &page.page_data[0] equal to &file_header.pages_num,
+    //&page_data[4] equal to &file_header.allocated_pages_num,
     //&page_data[8] equal to &file_header.bitmap and left space of page.page_data was part of array file_header.bitmap
     BufferPoolFileHeader *file_header = (BufferPoolFileHeader *) page.page_data;
-    file_header->page_count = 1, file_header->allocated_pages = 1;
+    file_header->pages_num = 1, file_header->allocated_pages_num = 1;
     char *bitmap = file_header->bitmap;
     //set the first bit of the char(byte) to 1(NOTE:i.e. the first page was used(the file header page itself)
     bitmap[0] |= 0x01;
@@ -542,37 +522,36 @@ Re GlobalBufferPoolManager::createFile(const char *file_name) {
     return Re::Success;
 }
 
-Re GlobalBufferPoolManager::openFile(const char *file_name, DiskBufferPool *&bp) {
+Re GlobalBufferPoolManager::openFile(std::string file_name, DiskBufferPool *&bp) {
     std::string x(file_name);
     if (buffer_pools_.find(x) != buffer_pools_.end()) {
-        debugPrint("GlobalBufferPoolManager:file already opened. file name=%s\n", file_name);
+        debugPrint("GlobalBufferPoolManager:file already opened and has a buffer now. file name=%s\n", file_name);
         return Re::BufferPoolOpen;
     }
-    DiskBufferPool *buffer_pool = new DiskBufferPool(*this, frame_manager_);
-    Re r = buffer_pool->openFile(file_name);
+    DiskBufferPool *new_buffer_pool = new DiskBufferPool(*this, frame_manager_);
+    Re r = new_buffer_pool->openFile(file_name);
     if (r != Re::Success) {
         debugPrint("GlobalBufferPoolManager:failed to open file name\n");
-        delete buffer_pool;
+        delete new_buffer_pool;
         return r;
     }
-    buffer_pools_.insert(std::pair<std::string, DiskBufferPool *>(x, buffer_pool));
-    fd_buffer_pools_.insert(std::pair<int, DiskBufferPool *>(buffer_pool->getFileDesc(), buffer_pool));
-    bp = buffer_pool;
+    buffer_pools_.insert(std::pair<std::string, DiskBufferPool *>(x, new_buffer_pool));
+    fd_buffer_pools_.insert(std::pair<int, DiskBufferPool *>(new_buffer_pool->getFileDesc(), new_buffer_pool));
+    bp = new_buffer_pool;
     return Re::Success;
 }
 
-Re GlobalBufferPoolManager::closeFile(const char *file_name) {
-    std::string f_name(file_name);
-    auto iter = buffer_pools_.find(f_name);
+Re GlobalBufferPoolManager::closeFile(std::string file_name) {
+    auto iter = buffer_pools_.find(file_name);
     if (iter == buffer_pools_.end()) {
-        debugPrint("GlobalBufferPoolManager:file has not opened: %s\n", file_name);
+        debugPrint("GlobalBufferPoolManager:file has not opened: %s\n", file_name.c_str());
         return Re::Internal;
     }
     int fd = iter->second->getFileDesc();
     fd_buffer_pools_.erase(fd);
-    DiskBufferPool *bp = iter->second;
     buffer_pools_.erase(iter);
-    delete bp;
+    DiskBufferPool *bp = iter->second;
+    bp->closeFile();
     return Re::Success;
 }
 
@@ -590,6 +569,31 @@ Re GlobalBufferPoolManager::flushPage(Frame &frame) {
 void GlobalBufferPoolManager::destroy() {
     std::unordered_map<std::string, DiskBufferPool *> tmp_bps;
     tmp_bps.swap(buffer_pools_);
-    for (auto &iter: tmp_bps)
-        delete iter.second;
+    for (auto &iter: tmp_bps) {
+        //do not close file in bpm,because there is nothing in the hash map now
+        iter.second->destroy();
+    }
 }
+
+Re BufferPoolIterator::init(DiskBufferPool &bp, int32_t start_page /* = 0 */) {
+    bit_map_.init(bp.file_header_->bitmap, bp.file_header_->pages_num);
+    current_page_num_ = std::max(0, start_page);
+    return Re::Success;
+}
+
+bool BufferPoolIterator::hasNext() {
+    return bit_map_.nextSetBit(current_page_num_ + 1) != -1;
+}
+
+int32_t BufferPoolIterator::next() {
+    int32_t next_page = bit_map_.nextSetBit(current_page_num_ + 1);
+    if (next_page != -1)
+        current_page_num_ = next_page;
+    return next_page;
+}
+
+Re BufferPoolIterator::reset() {
+    current_page_num_ = 0;
+    return Re::Success;
+}
+

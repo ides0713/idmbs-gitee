@@ -11,13 +11,15 @@
 #include "../common/re.h"
 
 #define BP_INVALID_PAGE_NUM (-1)
-#define BP_PAGE_SIZE (1 << 14) //2^14
+#define BP_PAGE_SIZE (1 << 14) //2^14 16KB
 #define BP_PAGE_DATA_SIZE (BP_PAGE_SIZE - sizeof(int32_t))
 #define BP_FILE_HDR_SIZE (sizeof(BPFileHeader))
 
 ///@brief unit of store data in the buffer
 class Page {
 public:
+    ///@brief divide the data of the file into pages,the page id begin from 0
+    ///@NOTE pages are identified by page_id
     int32_t page_id;
     char page_data[BP_PAGE_DATA_SIZE];
 };
@@ -26,14 +28,17 @@ public:
 struct BufferPoolFileHeader {
 public:
     ///@brief num of total pages of current file
-    int32_t page_count;
+    int32_t pages_num;
     ///@brief num of total allocated pages
-    int32_t allocated_pages;
-    ///@brief array with size 0,means a variable-length array@n(LINK:https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html)
+    int32_t allocated_pages_num;
+    ///@brief indicate which pages in the file have been put into the cache
+    ///@NOTE array with size 0,means a variable-length array
+    ///@LINK https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
     char bitmap[0];
 public:
-    ///@brief max num of allocatable pages,i.e. num of bit of bitmap;@n(note:file header is a page itself,therefore max page num is calculate this way)
-    static const int max_page_num = (BP_PAGE_DATA_SIZE - sizeof(page_count) - sizeof(allocated_pages)) * 8;
+    ///@brief max num of allocatable pages,i.e. num of bit of bitmap;
+    ///@NOTE file header is a page itself,therefore max page num is calculate this way
+    static const int max_page_num = (BP_PAGE_DATA_SIZE - sizeof(pages_num) - sizeof(allocated_pages_num)) * 8;
 };
 
 ///@brief frame is slot for page in the buffer
@@ -69,8 +74,7 @@ public:
 private:
     bool dirty_;//a frame is set dirty,i.e. it was 'changed' in memory and we need to write it to disk
     ///@brief pin count of the frame if pin count GT 0 the page is pinned
-    ///@n(NOTE:pin page means the make this page can not be replaced out of memory)
-    ///@n(NOTE:if the page is the frame of the header file page,the is pinned when pin count GT 1('difficult' to pin))
+    ///@NOTE pin page means the make this page can not be replaced out of memory@n if the page is the frame of the header file page,the is pinned when pin count GT 1('difficult' to pin))
     unsigned int pin_count_;
     unsigned long acc_time_;//this member variable describes the time at when the frame was created
     int file_desc_;//file_desc of the corresponding buffer pool
@@ -111,19 +115,22 @@ class FrameManager {
 public:
     explicit FrameManager(const char *tag) : frame_allocator_(tag) {}
 
-    ///@brief initialize the memory pool of frames
+    ///@brief openFile the memory pool of frames
     Re initialize(int pool_num);
 
     ///@brief destruction
     Re cleanUp();
 
-    ///@brief try to get pointer of frame with file_desc and page_id from lru@n(NOTE:if can not find frame in lru,return nullptr)
+    ///@brief try to get pointer of frame with file_desc and page_id from lru
+    ///@NOTE if can not find frame in lru,return nullptr
     Frame *getFrame(int file_desc, int32_t page_id);
 
-    ///@brief allocate a frame with file_desc and page_id in buffer pool,then return pointer of it@n(NOTE:if find frame in lru,just return nullptr)
+    ///@brief allocate a frame with file_desc and page_id in buffer pool,then return pointer of it
+    ///@NOTE if find frame in lru,just return nullptr
     Frame *alloc(int file_desc, int32_t page_id);
 
-    ///@brief free the frame from lru and memory pool with provided params@n(NOTE:if arg:frame not equal to frame found in lru cache then return error and do nothing)
+    ///@brief free the frame from lru and memory pool with provided params
+    ///@NOTE if arg:frame not equal to frame found in lru cache then return error and do nothing
     Re free(int file_desc, int32_t page_id, Frame *frame);
 
     ///@brief find purgeable frame from lru cache(if can not find from lru cache,return nullptr(no unpinned page that can be purged))
@@ -158,85 +165,111 @@ class GlobalBufferPoolManager;
 class DiskBufferPool {
 public:
 
-    DiskBufferPool(GlobalBufferPoolManager &bp_manager, FrameManager &frame_manager) :
-            bp_manager_(bp_manager), frame_manager_(frame_manager),
+    DiskBufferPool(GlobalBufferPoolManager &buffer_pool_manager, FrameManager &frame_manager) :
+            buffer_pool_manager_(buffer_pool_manager), frame_manager_(frame_manager),
             file_desc_(-1), header_frame_(nullptr), file_header_(nullptr) {}
 
-    ~DiskBufferPool();
-
-    //todo:ascertain the relationship between allocated_page and page_count of file header
-    ///@brief as a buffer pool correspond one on-disk file,openFile is initialization of the instance indeed
-    Re openFile(const char *file_name);
-
-    ///@brief close the file means unlink the buffer pool and the on-disk file
-    Re closeFile();
-
-    ///@brief get target page with page_id,result passed by param:frame@n(NOTE:if target page was already stored in a frame(in lru cache),get it with frame manager(lru cache),set param:frame to frame get from lru cache;if not,allocated a new frame and put page in it ,then set param:frame to the allocated frame)
+    ///@brief get target page with page_id,result passed by param:frame
+    ///@NOTE if target page was already stored in a frame(in lru cache),get it with frame manager(lru cache),set param:frame to frame get from lru cache;if not,allocated a new frame and put page in it ,then set param:frame to the allocated frame)
     Re getPage(int32_t page_id, Frame **frame);
 
-    ///@brief allocate page in frame@n(NOTE:if there is usable frame,just put page in it;if not,allocate a frame with frame manager,and then put page in it)
+    ///@brief allocate page in frame
+    ///@NOTE set corresponding bit of bitmap to 1
     Re allocatePage(Frame **frame);
 
+    ///@brief if the page is purgeable,just purge it(purge page);if not,insert it into the set disposed_pages and dispose it later
     Re disposePage(int32_t page_id);
 
-    Re purgePage(int32_t page_num);
-
-    Re purgeAllPages();
-
+    ///@brief unpin page means set pin_count-=1 and if the page was unpinned(pin count <=0 ) after unpinPage,check if this page is waiting to be disposed
+    ///@NOTE there is an assert that pin_count of the frame GE 1
     Re unpinPage(Frame *frame);
 
-    Re getPageCount(int *page_count);
+    ///@brief return allocated pages num
+    Re getAllocatedPagesNum(int *page_count);
 
+    ///@brief use for debug
     Re checkAllPagesUnpinned();
 
+    ///@brief return page
     [[nodiscard]] int getFileDesc() const;
 
+    ///@brief flush the page,i.e. if page is dirty,write data back to on-disk file
+    ///@NOTE flush page does not dispose the page or move the page out of buffer
     Re flushPage(Frame &frame);
 
-    Re flushAllPages();
-
-    Re recoverPage(int32_t page_id);
-
-protected:
-    ///@brief allocate a frame for page,result passed by param:buf(currently no data in frame.page,but frame id has already been set)
-    Re allocateFrame(int32_t page_id, Frame **buf);
-
-    ///@brief try to free the frame
-    Re purgeFrame(int32_t page_id, Frame *used_frame);
-
-    Re checkPageId(int32_t page_id);
-
-    ///@brief load a page from file to given frame
-    Re loadPage(int32_t page_id, Frame *frame);
+    ///@brief check if corresponding bit of page_id in bitmap was 0,set it to 1
+    Re recoverPageInHdr(int32_t page_id);
 
 private:
-    GlobalBufferPoolManager &bp_manager_;
+    GlobalBufferPoolManager &buffer_pool_manager_;
     FrameManager &frame_manager_;
     std::string file_name_;
     int file_desc_;
     Frame *header_frame_;//header_frame's page id = 0(BP_HEADER_PAGE)
     BufferPoolFileHeader *file_header_;
+    ///@brief pages in disposed_pages_ are those which should be disposed,but were pinned,so they cannot be disposed immediately
+    ///@NOTE pages in disposed_pages_ will be tried to disposed again when the file is going to be closed or the page is unpinned(unpinPage)
     std::set<int32_t> disposed_pages_;
+
+private :
+    ///@brief if target page was stored in allocated frame,purge frame;if not,just do nothing and return success
+    ///@NOTE purge page should only be used in CloseFile(purge header page) and implementation of dispose page,because purgePage did not apply the change in the bitmap
+    Re purgePage(int32_t page_id);
+
+    ///@brief purge all page
+    Re purgeAllPages();
+
+    ///@brief allocate a frame for page,result passed by param:buf(currently no data in frame.page,but frame id has already been set)
+    Re allocateFrame(int32_t page_id, Frame **buf);
+
+    ///@brief flush page if dirty and then free the frame with frame manager
+    Re purgeFrame(int32_t page_id, Frame *used_frame);
+
+    ///@brief check 1.if page_id is GT 
+    Re checkPageId(int32_t page_id);
+
+    ///@brief load a page from file to given frame
+    Re loadPage(int32_t page_id, Frame *frame);
+
+    ///@brief flush all pages of the on-disk file in buffer
+    Re flushAllPages();
+
+    //todo:ascertain the relationship between allocated_page and pages_num of file header
+    ///@brief as a buffer pool correspond one on-disk file,openFile is initialization of the instance indeed
+    Re openFile(std::string file_name);
+
+    ///@brief close the file/unlink the buffer pool and the on-disk file
+    Re closeFile();
+
+    void destroy();
 
 private:
     friend class BufferPoolIterator;
+
+    friend class GlobalBufferPoolManager;
 };
 
 class GlobalBufferPoolManager {
 public:
     GlobalBufferPoolManager() = default;
 
+    ///@brief initialize the frame manager
     void initialize();
-
-    Re openFile(const char *file_name, DiskBufferPool *&bp);
-
-    Re closeFile(const char *file_name);
-
-    Re flushPage(Frame &frame);
 
     void destroy();
 
+    ///@brief open file,i.e. allocate a buffer for the target file and pass the buffer by param:bp
+    Re openFile(std::string file_name, DiskBufferPool *&bp);
+
+    ///@brief close file,i.e. close the buffer allocated to the file
+    Re closeFile(std::string file_name);
+
+    ///@brief different from buffer.flushPage(flushPage will try to get frame )
+    Re flushPage(Frame &frame);
+
 public:
+    ///@brief create a file with a special format(first page is header page with a bitmap and two params(pages_num and allocated_pages_num))
+    ///@NOTE did not allocate a buffer for it,just create it
     static Re createFile(const char *file_name);
 
 private:

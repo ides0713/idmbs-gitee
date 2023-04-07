@@ -249,7 +249,7 @@ Re Table::initRecordHandler(const char *base_dir) {
     std::string data_file_name = table_meta_.getTableName() + ".data";
     fs::path data_file_path = fs::path(base_dir).append(data_file_name);
     GlobalBufferPoolManager &bpm = GlobalManagers::globalBufferPoolManager();
-    Re r = bpm.openFile(data_file_path.c_str(), data_buffer_pool_);
+    Re r = bpm.openFile(data_file_path, data_buffer_pool_);
     if (r != Re::Success) {
         debugPrint("TableMeta:failed to open disk buffer pool for file:%s. rc=%d\n", data_file_name.c_str(), r);
         return r;
@@ -258,7 +258,7 @@ Re Table::initRecordHandler(const char *base_dir) {
     r = record_handler_->init(data_buffer_pool_);
     if (r != Re::Success) {
         debugPrint("TableMeta:failed to init record handler. rc=%d:%s\n", r, strRe(r));
-        data_buffer_pool_->closeFile();
+        bpm.closeFile(data_file_path);
         data_buffer_pool_ = nullptr;
         delete record_handler_;
         record_handler_ = nullptr;
@@ -276,7 +276,7 @@ Re Table::init(std::filesystem::path database_path, const char *table_name, Clog
     fs::path table_data_file_path = getTableDataFilePath(database_path, table_name);
     Re r = GlobalManagers::globalBufferPoolManager().openFile(table_data_file_path.c_str(), data_buffer_pool_);
     if (r != Re::Success) {
-        debugPrint("Table:failed to open disk buffer pool for file:%s. rc=%d:%s", table_data_file_path.c_str(), r,
+        debugPrint("Table:failed to open disk buffer pool for file:%s. rc=%d:%s\n", table_data_file_path.c_str(), r,
                    strRe(r));
         return r;
     }
@@ -284,7 +284,7 @@ Re Table::init(std::filesystem::path database_path, const char *table_name, Clog
     r = record_handler_->init(data_buffer_pool_);
     if (r != Re::Success) {
         debugPrint("Table:failed to init record handler.re=%d:%s.\n", r, strRe(r));
-        data_buffer_pool_->closeFile();
+        GlobalManagers::globalBufferPoolManager().closeFile(table_data_file_path);
         data_buffer_pool_ = nullptr;
         delete record_handler_;
         record_handler_ = nullptr;

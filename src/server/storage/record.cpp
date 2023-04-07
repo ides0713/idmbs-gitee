@@ -29,11 +29,7 @@ std::string RecordId::toString() const {
 }
 
 int RecordId::compare(const RecordId *rid_1, const RecordId *rid_2) {
-    int page_diff = rid_1->page_id - rid_2->page_id;
-    if (page_diff != 0)
-        return page_diff;
-    else
-        return rid_1->slot_id - rid_2->slot_id;
+    return rid_1->page_id - rid_2->page_id == 0 ? rid_1->page_id - rid_2->page_id : rid_1->slot_id - rid_2->slot_id;
 }
 
 RecordId *RecordId::min() {
@@ -107,7 +103,7 @@ Re RecordPageHandler::recoverInit(DiskBufferPool &buffer_pool, int32_t page_id) 
     disk_buffer_pool_ = &buffer_pool;
     page_header_ = (PageHeader *) (data);
     bitmap_ = data + pageFixSize();
-    buffer_pool.recoverPage(page_id);
+    buffer_pool.recoverPageInHdr(page_id);
     debugPrint("RecordPageHandler:successfully init page_id %d.\n", page_id);
     return Re::Success;
 }

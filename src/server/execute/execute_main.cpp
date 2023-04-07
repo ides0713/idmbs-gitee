@@ -11,8 +11,7 @@ Re ExecuteMain::handle() {
             doSelect(stmt);
             break;
         case StatementFlag::CreateTable:
-            doCreateTable(stmt);
-            break;
+            return doCreateTable(stmt);
         default:
             break;
     }
