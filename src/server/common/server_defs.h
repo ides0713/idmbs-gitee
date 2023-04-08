@@ -11,7 +11,7 @@ class GlobalParamsManager {
 public:
     GlobalParamsManager() = default;
 
-    void initialize();
+    void init();
 
     std::filesystem::path const getProjectPath() { return project_path_; }
 

@@ -48,8 +48,8 @@ int readN(int fd, void *buf, int size) {
     return 0;
 }
 
-Re FrameManager::initialize(int pool_num) {
-    bool ret = frame_allocator_.initialize(false, pool_num);
+Re FrameManager::init(int pool_num) {
+    bool ret = frame_allocator_.init(false, pool_num);
     if (ret)
         return Re::Success;
     return Re::GenericError;
@@ -125,7 +125,7 @@ std::list<Frame *> FrameManager::findFrames(int file_desc) {
 }
 
 //DiskBufferPool::~DiskBufferPool() {
-//    debugPrint("!!!!!!!!!!! enter close file in destruction function\n");
+//    debugPrint("!!!!!!!!!!! enter destroy file in destruction function\n");
 //    closeFile();
 //    debugPrint("DiskBufferPool:disk buffer pool destructed\n");
 //}
@@ -172,16 +172,16 @@ Re DiskBufferPool::closeFile() {
     Re r = purgePage(0);
     if (r != Re::Success) {
         header_frame_->pin_count_++;
-        debugPrint("DiskBufferPool:failed to close %s, due to failed to purge all pages.\n", file_name_.c_str());
+        debugPrint("DiskBufferPool:failed to destroy %s, due to failed to purge all pages.\n", file_name_.c_str());
         return r;
     }
     disposed_pages_.clear();
     if (close(file_desc_) < 0) {
-        debugPrint("DiskBufferPool:failed to close fileId:%d, fileName:%s, error:%s\n", file_desc_, file_name_.c_str(),
+        debugPrint("DiskBufferPool:failed to destroy fileId:%d, fileName:%s, error:%s\n", file_desc_, file_name_.c_str(),
                    strerror(errno));
         return Re::IoErrClose;
     }
-    debugPrint("DiskBufferPool:successfully close file %d:%s.\n", file_desc_, file_name_.c_str());
+    debugPrint("DiskBufferPool:successfully destroy file %d:%s.\n", file_desc_, file_name_.c_str());
     file_desc_ = -1;
     return Re::Success;
 }
@@ -198,6 +198,7 @@ Re DiskBufferPool::getPage(int32_t page_id, Frame **frame) {
     }
     // did not find target page,strategy is allocating a frame and put target page from file to the frame,
     // then set param:frame to the frame we allocated and return
+    // todo:why not apply change to bitmap
     Frame *allocated_frame = nullptr;
     Re r = allocateFrame(page_id, &allocated_frame);
     if (r != Re::Success) {
@@ -386,7 +387,7 @@ Re DiskBufferPool::flushAllPages() {
     return Re::Success;
 }
 
-Re DiskBufferPool::recoverPageInHdr(int32_t page_id) {
+Re DiskBufferPool::recoverPage(int32_t page_id) {
     int byte = page_id / 8, bit = page_id % 8;
     if (!(file_header_->bitmap[byte] & (1 << bit))) {
         file_header_->bitmap[byte] |= (1 << bit);
@@ -477,8 +478,8 @@ void DiskBufferPool::destroy() {
     debugPrint("DiskBufferPool:disk buffer pool destructed\n");
 }
 
-void GlobalBufferPoolManager::initialize() {
-    frame_manager_.initialize(MEM_POOL_ITEM_NUM);
+void GlobalBufferPoolManager::init() {
+    frame_manager_.init(MEM_POOL_ITEM_NUM);
     debugPrint("GlobalBufferPoolManager:initialized done\n");
 }
 
@@ -570,7 +571,7 @@ void GlobalBufferPoolManager::destroy() {
     std::unordered_map<std::string, DiskBufferPool *> tmp_bps;
     tmp_bps.swap(buffer_pools_);
     for (auto &iter: tmp_bps) {
-        //do not close file in bpm,because there is nothing in the hash map now
+        //do not destroy file in bpm,because there is nothing in the hash map now
         iter.second->destroy();
     }
 }

@@ -6,7 +6,7 @@
 void DataBase::destroy() {
 }
 
-Re DataBase::initialize(const char *database_name, const std::filesystem::path &database_path) {
+Re DataBase::init(const char *database_name, const std::filesystem::path &database_path) {
     //todo:init clog_manager of the database(not implement)
     namespace fs = std::filesystem;
     if (strlen(database_name) == 0) {
@@ -81,7 +81,7 @@ Re DataBase::openAllTables() {
     return Re::Success;
 }
 
-void GlobalDataBaseManager::initialize() {
+void GlobalDataBaseManager::init() {
     namespace fs = std::filesystem;
     GlobalParamsManager gpm = GlobalManagers::globalParamsManager();
     project_default_database_path_ = fs::path(
@@ -136,7 +136,7 @@ DataBase *GlobalDataBaseManager::getDb(const char *database_name) {
         fs::path th_database_path = project_bin_path_.append(database_name);
         if (fs::is_directory(th_database_path)) {
             DataBase *th_new_db = new DataBase();
-            Re r = th_new_db->initialize(database_name, th_database_path);
+            Re r = th_new_db->init(database_name, th_database_path);
             if (r == Re::Success) {
                 opened_databases_.emplace(std::string(database_name), th_new_db);
                 debugPrint("GlobalDataBaseManager:getDb succeeded,database_name:%s\n", database_name);

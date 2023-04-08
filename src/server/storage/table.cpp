@@ -41,8 +41,8 @@ Re TableMeta::init(const char *table_name, int32_t attr_infos_num, const AttrInf
     int field_offset = sys_fields_.back().getOffset() + sys_fields_.back().getLen();
     for (int i = 0; i < attr_infos_num; i++) {
         const AttrInfo &attr_info = attr_infos[i];
-        Re r = fields_[i + sys_fields_size].initialize(attr_info.attr_name, attr_info.attr_type, field_offset,
-                                                       attr_info.attr_len, true);
+        Re r = fields_[i + sys_fields_size].init(attr_info.attr_name, attr_info.attr_type, field_offset,
+                                                 attr_info.attr_len, true);
         if (r != Re::Success) {
             debugPrint("TableMeta:Failed to init field meta.table name=%s,getFieldName name:%s\n", table_name,
                        attr_info.attr_name);
@@ -58,7 +58,7 @@ Re TableMeta::init(const char *table_name, int32_t attr_infos_num, const AttrInf
 Re TableMeta::initializeSysFields() {
     sys_fields_.reserve(1);
     FieldMeta field_meta;
-    Re r = field_meta.initialize(Txn::getTxnFieldName(), Txn::getTxnFieldType(), 0, Txn::getTxnFieldLen(), false);
+    Re r = field_meta.init(Txn::getTxnFieldName(), Txn::getTxnFieldType(), 0, Txn::getTxnFieldLen(), false);
     if (r != Re::Success) {
         debugPrint("TableMeta:failed to init system fields\n");
         return r;

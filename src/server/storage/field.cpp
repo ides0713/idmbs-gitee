@@ -24,7 +24,7 @@ AttrType castStringAttrType(const char *s) {
     return AttrType::Undefined;
 }
 
-Re FieldMeta::initialize(const char *field_name, AttrType attr_type, int attr_offset, int attr_len, bool visible) {
+Re FieldMeta::init(const char *field_name, AttrType attr_type, int attr_offset, int attr_len, bool visible) {
     if (strlen(field_name) == 0) {
         debugPrint("FieldMeta:field_meta name:%s invalid\n", field_name);
         return Re::InvalidArgument;
@@ -95,7 +95,7 @@ Re FieldMeta::fromJson(const Json::Value &json_value, FieldMeta &field) {
     int attr_offset = offset_value.asInt();
     int attr_len = len_value.asInt();
     bool visible = visible_value.asBool();
-    return field.initialize(field_name, type, attr_offset, attr_len, visible);
+    return field.init(field_name, type, attr_offset, attr_len, visible);
 }
 
 std::string Field::getTableName() const {

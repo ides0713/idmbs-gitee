@@ -15,9 +15,12 @@ public:
 
     void clearBit(int index);
 
-    ///@brief find next unset bit from pos:start@n(note:start is included)
+    ///@brief find next unset bit from pos:start
+    ///@NOTE pos:start is included
     int nextUnsetBit(int start);
 
+    ///@brief find next set bit from pos:start
+    ///@NOTE pos:start is included
     int nextSetBit(int start);
 
 private:

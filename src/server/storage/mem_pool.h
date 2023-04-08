@@ -22,8 +22,8 @@ public:
 
     ~MemoryPool();
 
-    bool initialize(bool is_dynamic = true, int pool_num = DEFAULT_POOL_NUM,
-                    int item_num_per_pool = DEFAULT_ITEM_NUM_PER_POOL);
+    bool init(bool is_dynamic = true, int pool_num = DEFAULT_POOL_NUM,
+              int item_num_per_pool = DEFAULT_ITEM_NUM_PER_POOL);
 
     void cleanUp();
 
@@ -65,7 +65,7 @@ inline MemoryPool<T>::~MemoryPool() {
 }
 
 template<class T>
-inline bool MemoryPool<T>::initialize(bool is_dynamic, int pool_num, int item_num_per_pool) {
+inline bool MemoryPool<T>::init(bool is_dynamic, int pool_num, int item_num_per_pool) {
     if (!pools_.empty()) {
         debugPrint("MemoryPool:pool is not empty,the memory pool is already initialized\n");
         return true;

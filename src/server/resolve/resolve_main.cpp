@@ -18,7 +18,7 @@ Re ResolveMain::handle() {
         debugPrint("ResolveMain:create statement failed\n");
         return Re::GenericError;
     }
-    stmt_->initialize(q);
+    stmt_->init(q);
     stmt_->handle(q);
     resolve_session_ = new ResolveSession(parse_session_, stmt_);
     q->destroy();

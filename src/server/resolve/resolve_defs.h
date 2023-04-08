@@ -14,7 +14,7 @@ class Statement {
 public:
     explicit Statement(SqlCommandFlag flag) : flag_(flag) {}
 
-    virtual void initialize(Query *query) = 0;
+    virtual void init(Query *query) = 0;
 
     virtual Re handle(Query *query) = 0;
 
@@ -34,7 +34,7 @@ class SelectStatement : public Statement {
 public:
     explicit SelectStatement(Query *query);
 
-    void initialize(Query *query) override;
+    void init(Query *query) override;
 
     Re handle(Query *query) override;
 
@@ -49,7 +49,7 @@ class CreateTableStatement : public Statement {
 public:
     explicit CreateTableStatement(Query *query);
 
-    void initialize(Query *query) override;
+    void init(Query *query) override;
 
     Re handle(Query *query) override;
 

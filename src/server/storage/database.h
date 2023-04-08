@@ -17,7 +17,7 @@ class DataBase {
 public:
     DataBase() = default;
 
-    Re initialize(const char *database_name, const std::filesystem::path &database_path);
+    Re init(const char *database_name, const std::filesystem::path &database_path);
 
     void destroy();
 
@@ -49,7 +49,7 @@ class GlobalDataBaseManager {
 public:
     GlobalDataBaseManager() = default;
 
-    void initialize();
+    void init();
 
     Re createDb(const char *database_name);
 

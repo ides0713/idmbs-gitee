@@ -14,7 +14,7 @@ class FieldMeta {
 public:
     FieldMeta() : attr_type_(AttrType::Undefined), offset_(-1), len_(0), visible_(false) {}
 
-    Re initialize(const char *field_name, AttrType attr_type, int attr_offset, int attr_len, bool visible);
+    Re init(const char *field_name, AttrType attr_type, int attr_offset, int attr_len, bool visible);
 
     [[nodiscard]] std::string getFieldName() const { return field_name_; }
 

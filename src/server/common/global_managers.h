@@ -6,7 +6,7 @@
 
 class GlobalManagers {
 public:
-    static void initialize();
+    static void init();
 
     static GlobalParamsManager &globalParamsManager();
 

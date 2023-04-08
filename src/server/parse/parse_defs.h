@@ -119,9 +119,9 @@ public:
 
     explicit Query(SqlCommandFlag flag) : flag_(flag) {}
 
-    virtual void initialize() = 0;
+    virtual void init() = 0;
 
-    //~xxxquery()
+    //~query()
     virtual void destroy() = 0;
 
     SqlCommandFlag getScf() { return flag_; }
@@ -136,7 +136,7 @@ public:
         rel_name_ = nullptr;
     }
 
-    void initialize() override {
+    void init() override {
         rel_name_ = new char[MAX_REL_LENGTH + 1];
     }
 
@@ -154,7 +154,7 @@ public:
         rel_name_ = nullptr;
     }
 
-    void initialize() override {
+    void init() override {
         rel_name_ = new char[MAX_REL_LENGTH + 1];
     }
 
@@ -170,7 +170,7 @@ class CreateTableQuery : public Query {
 public:
     CreateTableQuery() : Query(ScfCreateTable) { rel_name_ = nullptr, attr_num_ = 0, attrs_ = nullptr; }
 
-    void initialize() override {
+    void init() override {
         rel_name_ = nullptr;
         attr_num_ = 0;
         attrs_ = new AttrInfo[MAX_ATTRS_NUM];
@@ -209,7 +209,7 @@ public:
         strcpy(error_message_, str);
     }
 
-    void initialize() override {}
+    void init() override {}
 
     void destroy() override {
         delete[] error_message_;

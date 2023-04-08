@@ -13,7 +13,7 @@ void Statement::createStatement(Query *const query, Statement *&stmt) {
     }
 }
 
-void SelectStatement::initialize(Query *query) {}
+void SelectStatement::init(Query *query) {}
 
 Re SelectStatement::handle(Query *query) { return Re::Success; }
 
@@ -22,7 +22,7 @@ void SelectStatement::destroy() {}
 CreateTableStatement::CreateTableStatement(Query *query) :
         Statement(query->getScf()) { table_name_ = nullptr, attr_infos_num_ = 0, attr_infos_ = nullptr; }
 
-void CreateTableStatement::initialize(Query *query) {
+void CreateTableStatement::init(Query *query) {
     CreateTableQuery *ctq = static_cast<CreateTableQuery *>(query);
     assert(this->getScf() == ScfCreateTable);
     attr_infos_num_ = ctq->getAttrNum();

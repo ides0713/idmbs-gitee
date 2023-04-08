@@ -116,7 +116,7 @@ public:
     explicit FrameManager(const char *tag) : frame_allocator_(tag) {}
 
     ///@brief openFile the memory pool of frames
-    Re initialize(int pool_num);
+    Re init(int pool_num);
 
     ///@brief destruction
     Re cleanUp();
@@ -198,7 +198,7 @@ public:
     Re flushPage(Frame &frame);
 
     ///@brief check if corresponding bit of page_id in bitmap was 0,set it to 1
-    Re recoverPageInHdr(int32_t page_id);
+    Re recoverPage(int32_t page_id);
 
 private:
     GlobalBufferPoolManager &buffer_pool_manager_;
@@ -238,7 +238,7 @@ private :
     ///@brief as a buffer pool correspond one on-disk file,openFile is initialization of the instance indeed
     Re openFile(std::string file_name);
 
-    ///@brief close the file/unlink the buffer pool and the on-disk file
+    ///@brief destroy the file/unlink the buffer pool and the on-disk file
     Re closeFile();
 
     void destroy();
@@ -253,15 +253,15 @@ class GlobalBufferPoolManager {
 public:
     GlobalBufferPoolManager() = default;
 
-    ///@brief initialize the frame manager
-    void initialize();
+    ///@brief init the frame manager
+    void init();
 
     void destroy();
 
     ///@brief open file,i.e. allocate a buffer for the target file and pass the buffer by param:bp
     Re openFile(std::string file_name, DiskBufferPool *&bp);
 
-    ///@brief close file,i.e. close the buffer allocated to the file
+    ///@brief close file,i.e. destroy the buffer allocated to the file
     Re closeFile(std::string file_name);
 
     ///@brief different from buffer.flushPage(flushPage will try to get frame )

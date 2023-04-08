@@ -205,7 +205,7 @@ attr_def:
     ID_get type LBRACE number RBRACE {
 		if(CONTEXT->query==nullptr){
 			CONTEXT->query=new CreateTableQuery();
-			CONTEXT->query->initialize();
+			CONTEXT->query->init();
 		}
 		AttrInfo attribute(CONTEXT->id,(AttrType)$2,$4);
 		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);
@@ -215,7 +215,7 @@ attr_def:
 		//attr with default length
 		if(CONTEXT->query==nullptr){
 			CONTEXT->query=new CreateTableQuery();
-			CONTEXT->query->initialize();
+			CONTEXT->query->init();
 		}
 		AttrInfo attribute(CONTEXT->id,(AttrType)$2,1);
 		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);

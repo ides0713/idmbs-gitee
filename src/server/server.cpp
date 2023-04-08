@@ -18,8 +18,8 @@ void pStart(const char *sql, int sock_fd);
 
 void recvFunc(int fd);
 
-int main() {
-    GlobalManagers::initialize();
+int main(int argc, char *argv[]) {
+    GlobalManagers::init();
     // int listen_fd, conn_fd;
     // sockaddr_in serve_addr;
     // listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -39,7 +39,8 @@ int main() {
     //     recv_thread.detach();
     // }
     char buffer[100];
-    strcpy(buffer, "create table t_basic(id int(2), age int, name char, score float);");
+    assert(argc>=2);
+    strcpy(buffer, argv[1]);
     debugPrint("Main:sql_buffer:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);
     GlobalManagers::destroy();

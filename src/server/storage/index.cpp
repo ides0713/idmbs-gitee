@@ -7,7 +7,7 @@
 const static Json::StaticString FIELD_NAME("name");
 const static Json::StaticString FIELD_FIELD_NAME("field_name");
 
-Re IndexMeta::initialize(const char *name, const FieldMeta &field) {
+Re IndexMeta::init(const char *name, const FieldMeta &field) {
     if (strlen(name) == 0) {
         debugPrint("IndexMeta:Failed to init index, index_name is empty.\n");
         return Re::InvalidArgument;
@@ -48,5 +48,5 @@ Re IndexMeta::fromJson(const TableMeta &table_meta, const Json::Value &json_valu
                    field_value.asCString());
         return Re::SchemaFieldMissing;
     }
-    return index_meta.initialize(name_value.asCString(), *field);
+    return index_meta.init(name_value.asCString(), *field);
 }

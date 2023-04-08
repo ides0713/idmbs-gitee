@@ -1,4 +1,9 @@
-build/
-bin/
-cmake-build-debug/
-.idea/
+/build/
+/bin/
+/.idea/
+/cmake-build-debug/
+/client
+/server
+/stest.bash
+/ctest.bash
+

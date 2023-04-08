@@ -1,9 +1,9 @@
 #include "global_managers.h"
 
-void GlobalManagers::initialize() {
-    globalParamsManager().initialize();
-    globalDataBaseManager().initialize();
-    globalBufferPoolManager().initialize();
+void GlobalManagers::init() {
+    globalParamsManager().init();
+    globalDataBaseManager().init();
+    globalBufferPoolManager().init();
 }
 
 void GlobalManagers::destroy() {

@@ -17,7 +17,7 @@ class IndexMeta {
 public:
     IndexMeta() = default;
 
-    Re initialize(const char *name, const FieldMeta &field);
+    Re init(const char *name, const FieldMeta &field);
 
     [[nodiscard]] std::string getIndexName() const;
 
