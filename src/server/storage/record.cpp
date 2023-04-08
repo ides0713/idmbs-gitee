@@ -464,7 +464,7 @@ Re RecordFileScanner::fetchNextRecordInPage() {
         if (r != Re::Success)
             return r;
         if (condition_filter_ == nullptr or condition_filter_->filter(next_record_))
-            return Re ::Success;
+            return Re::Success;
         next_record_.getRecordId().slot_id = -1;
         return Re::RecordEof;
     }

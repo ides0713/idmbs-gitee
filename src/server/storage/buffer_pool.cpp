@@ -177,7 +177,8 @@ Re DiskBufferPool::closeFile() {
     }
     disposed_pages_.clear();
     if (close(file_desc_) < 0) {
-        debugPrint("DiskBufferPool:failed to destroy fileId:%d, fileName:%s, error:%s\n", file_desc_, file_name_.c_str(),
+        debugPrint("DiskBufferPool:failed to destroy fileId:%d, fileName:%s, error:%s\n", file_desc_,
+                   file_name_.c_str(),
                    strerror(errno));
         return Re::IoErrClose;
     }

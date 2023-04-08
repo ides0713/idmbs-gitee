@@ -9,11 +9,15 @@ const int MAX_ATTRS_NUM = 20;
 const int MAX_CONDITIONS_NUM = 20;
 const int MAX_ATTR_LENGTH = 20;
 const int MAX_MSG_LENGTH = 50;
-
-// add func
-int testFunc(int param);
+const int MAX_VALUES_NUM = 20;
 
 char *strNew(const char *str);
+
+int *initIntsValue(int value);
+
+float *initFloatValue(float value);
+
+char *initCharsValue(const char *value);
 
 enum SqlCommandFlag {
     // SCF_ERROR 解析失败
@@ -57,8 +61,13 @@ enum CompOp {
 };
 
 struct Value {
+public:
     AttrType type; // 属性类型(数据类型)
     void *data;    // 数据内容(值)
+public:
+    Value() : type(AttrType::Undefined), data(nullptr) {}
+
+    Value(AttrType t, void *d) : type(t), data(d) {}
 };
 
 struct RelAttr {
@@ -132,17 +141,11 @@ private:
 
 class SelectQuery : public Query {
 public:
-    SelectQuery() : Query(ScfSelect) {
-        rel_name_ = nullptr;
-    }
+    SelectQuery() : Query(ScfSelect) { rel_name_ = nullptr; }
 
-    void init() override {
-        rel_name_ = new char[MAX_REL_LENGTH + 1];
-    }
+    void init() override { rel_name_ = new char[MAX_REL_LENGTH + 1]; }
 
-    void destroy() override {
-        delete[] rel_name_;
-    }
+    void destroy() override { delete[] rel_name_; }
 
 private:
     char *rel_name_;
@@ -150,55 +153,65 @@ private:
 
 class InsertQuery : public Query {
 public:
-    InsertQuery() : Query(ScfInsert) {
-        rel_name_ = nullptr;
-    }
+    InsertQuery() : Query(ScfInsert) { rel_name_ = nullptr; }
 
     void init() override {
-        rel_name_ = new char[MAX_REL_LENGTH + 1];
+        rel_name_ = nullptr;
+        values_num_ = 0;
+        values_ = new Value[MAX_VALUES_NUM];
     }
 
     void destroy() override {
         delete[] rel_name_;
+//        for(int i=0;i<values_num_;i++)
+//            values[i].destroy();
     }
+
+    void setRelName(const char *str) { rel_name_ = strNew(str); }
+
+    void addValue(const Value &value) { values_[values_num_++] = value; }
+
+    char *getRelName() { return rel_name_; }
+
+    [[nodiscard]]int getValuesNum() const { return values_num_; }
+
+    Value *getValues() { return values_; }
 
 private:
     char *rel_name_;
+    int values_num_;
+    Value *values_;
 };
 
 class CreateTableQuery : public Query {
 public:
-    CreateTableQuery() : Query(ScfCreateTable) { rel_name_ = nullptr, attr_num_ = 0, attrs_ = nullptr; }
+    CreateTableQuery() : Query(ScfCreateTable) { rel_name_ = nullptr, attrs_num_ = 0, attrs_ = nullptr; }
 
     void init() override {
         rel_name_ = nullptr;
-        attr_num_ = 0;
+        attrs_num_ = 0;
         attrs_ = new AttrInfo[MAX_ATTRS_NUM];
     }
 
     void destroy() override {
         delete[] rel_name_;
-        for (int i = 0; i < attr_num_; i++)
+        for (int i = 0; i < attrs_num_; i++)
             attrs_[i].destroy();
     }
 
-    void setRelName(const char *str) {
-        rel_name_ = strNew(str);
-    }
+    void setRelName(const char *str) { rel_name_ = strNew(str); }
 
-    void addAttr(const AttrInfo &attr) {
-        attrs_[attr_num_++] = attr;
-    }
+    void addAttr(const AttrInfo &attr) { attrs_[attrs_num_++] = attr; }
 
     char *getRelName() { return rel_name_; }
 
-    [[nodiscard]] size_t getAttrNum() const { return attr_num_; }
+    [[nodiscard]] int getAttrNum() const { return attrs_num_; }
 
     AttrInfo *getAttrs() { return attrs_; }
 
 private:
     char *rel_name_;
-    size_t attr_num_;
+    int attrs_num_;
     AttrInfo *attrs_;
 };
 
@@ -211,9 +224,7 @@ public:
 
     void init() override {}
 
-    void destroy() override {
-        delete[] error_message_;
-    }
+    void destroy() override { delete[] error_message_; }
 
 private:
     char *error_message_;

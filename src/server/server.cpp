@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     //     recv_thread.detach();
     // }
     char buffer[100];
-    assert(argc>=2);
+    assert(argc >= 2);
     strcpy(buffer, argv[1]);
     debugPrint("Main:sql_buffer:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);

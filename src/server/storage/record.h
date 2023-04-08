@@ -192,7 +192,7 @@ class RecordFileScanner {
 public:
     RecordFileScanner() : disk_buffer_pool_(nullptr), condition_filter_(nullptr) {}
 
-     ///@brief open a file and scan it,return all records fit the condition filter
+    ///@brief open a file and scan it,return all records fit the condition filter
     Re init(DiskBufferPool &buffer_pool, ConditionFilter *condition_filter);
 
     ///@brief unlink buffer of file and condition filter with iterator
@@ -208,6 +208,7 @@ private:
     ConditionFilter *condition_filter_;
     RecordPageHandler record_page_handler_;
     RecordPageIterator record_page_iterator_;
+
     class Record next_record_;
 
 private:

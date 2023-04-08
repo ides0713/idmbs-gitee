@@ -180,11 +180,10 @@ create_index:		/*create index 语句的语法解析树*/
     ;
 
 drop_index:			/*drop index 语句的语法解析树*/
-    DROP INDEX ID  SEMICOLON 
-		{
+    DROP INDEX ID  SEMICOLON {
 			// CONTEXT->query_info->SCF_Flag=ScfDropIndex;//"drop_index";
 			// drop_index_init(&CONTEXT->ssql->sstr.drop_index, $3);
-		}
+	}
     ;
 create_table:		/*create table 语句的语法解析树*/
     CREATE TABLE ID LBRACE attr_def attr_def_list RBRACE SEMICOLON {
@@ -194,7 +193,7 @@ create_table:		/*create table 语句的语法解析树*/
 		// //临时变量清零
 		// CONTEXT->value_tuple_num=0;	
 		CONTEXT->value_length = 0;
-		}
+	}
     ;
 attr_def_list:
     /* empty */
@@ -225,25 +224,24 @@ attr_def:
 number:
 	NUMBER{
 		$$ = $1;
-		}
+	}
 	;
 type:
 	INT_T{
-		$$=Ints;
+		$$=AttrType::Ints;
 		}
 	|DATE_T{
-		$$=Dates;
+		$$=AttrType::Dates;
 		}
     |STRING_T{
-		$$=Chars;
+		$$=AttrType::Chars;
 		}
     |FLOAT_T{ 
-		$$=Floats;
+		$$=AttrType::Floats;
 		}
     ;
 ID_get:
-	ID 
-	{
+	ID {
 		char *temp=$1; 
 		snprintf(CONTEXT->id, sizeof(CONTEXT->id), "%s", temp);
 	}
@@ -254,8 +252,7 @@ insert:				/*insert   语句的语法解析树*/
     INSERT INTO ID VALUES LBRACE value value_list RBRACE value_unit SEMICOLON {
 		// CONTEXT->query=new InsertQuery();
 		// CONTEXT->query->init();
-
-
+        (static_cast<InsertQuery*>(CONTEXT->query))->setRelName($3);
 		// CONTEXT->query_info->SCF_Flag=ScfInsert;//"insert";
 		// CONTEXT->value_tuple_num++;
 		// inserts_init(&CONTEXT->ssql->sstr.insertion,$3,CONTEXT->values,CONTEXT->value_tuple_num,CONTEXT->value_length);
@@ -276,20 +273,40 @@ value_list:
 	  }
     ;
 value:
-    NUMBER{	
-  		// value_init_integer(&CONTEXT->values[CONTEXT->value_length++], $1);
-		}
+    NUMBER{
+        if(CONTEXT->query==nullptr){
+    	    CONTEXT->query=new InsertQuery();
+    		CONTEXT->query->init();
+    	}
+    	Value v(AttrType::Ints,initIntsValue($1));
+    	static_cast<InsertQuery*>(CONTEXT->query)->addValue(v);
+	}
 	|DATE_STR{
-		// $1=substr($1,1,strlen($1)-2);
+        //if(CONTEXT->query==nullptr){
+    	//  CONTEXT->query=new InsertQuery();
+    	//	CONTEXT->query->init();
+    	//}
+		//$1=substr($1,1,strlen($1)-2);
+		//init_str
 		// value_init_date(&CONTEXT->values[CONTEXT->value_length++], $1);
 	}
     |FLOAT{
-  		// value_init_float(&CONTEXT->values[CONTEXT->value_length++],$1);
-		}
+        if(CONTEXT->query==nullptr){
+    	    CONTEXT->query=new InsertQuery();
+    		CONTEXT->query->init();
+    	}
+    	Value v(AttrType::Floats,initFloatValue($1));
+  		static_cast<InsertQuery*>(CONTEXT->query)->addValue(v);
+	}
     |SSS {
-		// $1 = substr($1,1,strlen($1)-2);
-  		// value_init_string(&CONTEXT->values[CONTEXT->value_length++], $1);
-		}
+        if(CONTEXT->query==nullptr){
+    	    CONTEXT->query=new InsertQuery();
+    		CONTEXT->query->init();
+    	}
+		$1 = substr($1,1,strlen($1)-2);
+	    Value v(AttrType::Chars,initCharsValue($1));
+        static_cast<InsertQuery*>(CONTEXT->query)->addValue(v);
+	}
     ;
     
 delete:		/*  delete 语句的语法解析树*/

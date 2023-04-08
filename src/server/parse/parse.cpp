@@ -11,12 +11,24 @@ int parse(const char *st, Query *&res) {
     return 1;
 }
 
+int *initIntsValue(int value) {
+    int *res = new int;
+    *res = value;
+    return res;
+}
+
+float *initFloatValue(float value) {
+    float *res = new float;
+    *res = value;
+    return res;
+}
+
+char *initCharsValue(const char *value) {
+    char *res = strNew(value);
+    return res;
+}
 // parse_defs
 //----------------------------------------------------
-[[maybe_unused]] int testFunc(int param) {
-    debugPrint("param of the func is %d\n", param);
-    return 0;
-}
 
 char *strNew(const char *str) {
     int len = int(strlen(str));
