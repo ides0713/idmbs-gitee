@@ -29,7 +29,9 @@ public:
 
     Re createTable(const std::string &table_name, const size_t attr_infos_num, const AttrInfo *attr_infos);
 
-    const Table *getTable();
+    ///@brief existed table will be opened when database constructed,when table is creating,
+    ///it will be added into opened_tables automatically,so all exist valid tables can be find in opened_tables
+    Table *getTable(const std::string & table_name);
 
 private:
 //    Re create();

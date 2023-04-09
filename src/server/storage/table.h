@@ -10,6 +10,7 @@
 #include "record.h"
 #include "field.h"
 #include "index.h"
+#include "txn.h"
 
 #define TABLE_NAME_MAX_LEN 20
 
@@ -27,13 +28,21 @@ public:
 
     [[nodiscard]] int getSerialSize() const;
 
-    const FieldMeta *getField(int index) const;
+    [[nodiscard]] const FieldMeta* getTxnField() const;
+    [[nodiscard]] const FieldMeta *getField(int index) const;
 
     const FieldMeta *getField(const char *field_name) const;
 
-    const FieldMeta *getField(std::string field_name) const;
+    [[nodiscard]] const FieldMeta *getField(std::string field_name) const;
 
-    std::string getTableName() const { return table_name_; }
+    [[nodiscard]] std::string getTableName() const { return table_name_; }
+
+    [[nodiscard]] int getFieldsNum() const { return fields_.size(); }
+
+    [[nodiscard]] int getRecordSize() const { return record_size_; }
+
+public:
+    static int getSysFieldsNum();
 
 private:
     std::string table_name_;
@@ -45,7 +54,6 @@ private:
 private:
     static std::vector<FieldMeta> sys_fields_;
 private:
-
     static Re initializeSysFields();
 };
 
@@ -63,6 +71,10 @@ public:
     /// @brief getFrame table name from table(table meta)
     std::string getTableName() { return table_meta_.getTableName(); }
 
+    TableMeta getTableMeta() const { return table_meta_; }
+
+    Re insertRecord(Txn *txn, int values_num, const Value *values);
+
 private:
     std::filesystem::path database_path_;
     TableMeta table_meta_;
@@ -74,4 +86,8 @@ private:
     Re initRecordHandler(const char *base_dir);
 
     Re initRecordHandler(std::filesystem::path base_dir);
+
+    Re makeRecord(int values_num, const Value *values, char *&record_data);
+
+    Re insertRecord(Txn *txn, class Record *rec);
 };

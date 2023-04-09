@@ -65,7 +65,9 @@ public:
     explicit ExecuteSession(DataBase *database = nullptr, Txn *txn = nullptr, bool txn_multi_operation = false)
             : Session(database, txn, txn_multi_operation) {}
 
-    explicit ExecuteSession(Session *resolve_session) : Session(*resolve_session) {}
+    explicit ExecuteSession(Session *resolve_session) :
+            Session(*resolve_session), stmt_(static_cast<ResolveSession *>(resolve_session)->getStmt()) {}
 
 private:
+    Statement *stmt_;
 };

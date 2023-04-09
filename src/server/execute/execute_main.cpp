@@ -12,9 +12,12 @@ Re ExecuteMain::handle() {
             break;
         case StatementFlag::CreateTable:
             return doCreateTable(stmt);
+        case StatementFlag::Insert:
+            return doInsert(stmt);
         default:
             break;
     }
+    execute_session_=new ExecuteSession(rs)
     return Re::Success;
 }
 
@@ -35,4 +38,18 @@ Re ExecuteMain::doCreateTable(Statement *stmt) {
         return Re::SchemaDbNotExist;
     }
     return db->createTable(s->getTableName(), s->getAttrInfosNum(), s->getAttrInfos());
+}
+
+Re ExecuteMain::doInsert(Statement *stmt) {
+    ResolveSession *rs = static_cast<ResolveSession *>(resolve_session_);
+    InsertStatement *s = static_cast<InsertStatement *>(stmt);
+    DataBase *db = resolve_session_->getDb();
+    if (db == nullptr) {
+        debugPrint("ExecuteMain:getDb failed,no db was set\n");
+        return Re::SchemaDbNotExist;
+    }
+    Table *table = db->getTable(std::string(s->getTableName()));
+    Re r = table->insertRecord(rs->getTxn(), s->getValuesNum(), s->getValues());
+    //todo:clog manager apply changes
+    return Re::GenericError;
 }

@@ -17,5 +17,7 @@ private:
 
     Re doCreateTable(Statement *stmt);
 
+    Re doInsert(Statement *stmt);
+
     Session *resolve_session_, *execute_session_;
 };

@@ -189,6 +189,14 @@ const FieldMeta *TableMeta::getField(std::string field_name) const {
     return getField(field_name.c_str());
 }
 
+int TableMeta::getSysFieldsNum() {
+    return sys_fields_.size();
+}
+
+const FieldMeta *TableMeta::getTxnField() const {
+    return &fields_[0];
+}
+
 Re Table::init(std::filesystem::path database_path, const char *table_name, const size_t attr_infos_num,
                const AttrInfo *attr_infos, ClogManager *clog_manager) {
     if (strlen(table_name) == 0 or strlen(table_name) > TABLE_NAME_MAX_LEN) {
@@ -273,22 +281,97 @@ Re Table::initRecordHandler(std::filesystem::path base_dir) {
 
 Re Table::init(std::filesystem::path database_path, const char *table_name, ClogManager *clog_manager) {
     namespace fs = std::filesystem;
-    fs::path table_data_file_path = getTableDataFilePath(database_path, table_name);
-    Re r = GlobalManagers::globalBufferPoolManager().openFile(table_data_file_path.c_str(), data_buffer_pool_);
+    std::fstream f_stream;
+    fs::path table_meta_file_path = getTableMetaFilePath(database_path, table_name);
+    f_stream.open(table_meta_file_path.c_str(), std::ios_base::in | std::ios_base::binary);
+    if (!f_stream.is_open()) {
+        debugPrint("Table:failed to open meta file for read. file name=%s, errmsg=%s\n",
+                   table_meta_file_path.c_str(), strerror(errno));
+        return Re::IoErr;
+    }
+    if (table_meta_.deserialize(f_stream) < 0) {
+        debugPrint("Table:failed to deserialize table meta. file name=%s\n",
+                   table_meta_file_path.c_str());
+        f_stream.close();
+        return Re::GenericError;
+    }
+    f_stream.close();
+    Re r = initRecordHandler(database_path);
     if (r != Re::Success) {
-        debugPrint("Table:failed to open disk buffer pool for file:%s. rc=%d:%s\n", table_data_file_path.c_str(), r,
-                   strRe(r));
+        debugPrint("Table:failed to open table %s due to init record handler failed.\n",
+                   table_meta_.getTableName().c_str());
+        // don't need to remove the data_file
         return r;
     }
-    record_handler_ = new RecordFileHandler();
-    r = record_handler_->init(data_buffer_pool_);
+    if (clog_manager_ == nullptr)
+        clog_manager_ = clog_manager;
+    return Re::Success;
+}
+
+Re Table::insertRecord(Txn *txn, int values_num, const Value *values) {
+    char *record_data;
+    makeRecord(values_num, values, record_data);
+    class Record *rec = new class Record;
+    rec->setData(record_data);
+    Re r = insertRecord(txn, rec);
+    delete[]record_data;
+    return r;
+}
+
+Re Table::insertRecord(Txn *txn, class Record *rec) {
+    if (txn != nullptr)
+        txn->init(this, *rec);
+    Re r = record_handler_->insertRecord(rec->getData(), table_meta_.getRecordSize(), &rec->getRecordId());
     if (r != Re::Success) {
-        debugPrint("Table:failed to init record handler.re=%d:%s.\n", r, strRe(r));
-        GlobalManagers::globalBufferPoolManager().closeFile(table_data_file_path);
-        data_buffer_pool_ = nullptr;
-        delete record_handler_;
-        record_handler_ = nullptr;
+        debugPrint("Table:insert record failed. table name=%s, re=%d:%s\n",
+                   table_meta_.getTableName().c_str(), r, strRe(r));
         return r;
+    }
+    if (txn != nullptr) {
+        r = txn->insertRecord(this,rec);
+        if (r != Re::Success) {
+            LOG_ERROR("Failed to log operation(insertion) to trx");
+
+            RC rc2 = record_handler_->delete_record(&record->rid());
+            if (rc2 != RC::SUCCESS) {
+                LOG_ERROR("Failed to rollback record data when insert index entries failed. table name=%s, rc=%d:%s",
+                          name(),
+                          rc2,
+                          strrc(rc2));
+            }
+            return rc;
+        }
+    }
+    return Re::Success;
+}
+
+Re Table::makeRecord(int values_num, const Value *values, char *&record_data) {
+    int table_sys_fields_num = table_meta_.getSysFieldsNum();
+    if (values_num != table_meta_.getFieldsNum() - table_sys_fields_num) {
+        debugPrint("Table:make record failed,values_num not match,values num=%d,table's common fields num=%d\n",
+                   values_num, table_meta_.getFieldsNum() - table_sys_fields_num);
+        return Re::SchemaFieldMissing;
+    }
+    //type check before copy the
+    for (int i = 0; i < values_num; i++) {
+        const Value &th_value = values[i];
+        const FieldMeta *th_field_meta = table_meta_.getField(i + table_sys_fields_num);
+        if (th_value.type != th_field_meta->getAttrType()) {
+            debugPrint("Table:make record failed,values type %d mismatch fields type %d\n",
+                       th_value.type, th_field_meta->getAttrType());
+            return Re::SchemaFieldTypeMismatch;
+        }
+    }
+    record_data = new char[table_meta_.getRecordSize()];
+    for (int i = 0; i < values_num; i++) {
+        const FieldMeta *th_field_meta = table_meta_.getField(i + table_sys_fields_num);
+        int offset = th_field_meta->getOffset(), len = th_field_meta->getLen();
+        if (th_field_meta->getAttrType() == AttrType::Chars) {
+            int data_len = strlen(static_cast<const char *>(values[i].data));
+            if (len > data_len + 1)
+                len = data_len + 1;
+        }
+        memcpy(record_data + offset, values[i].data, len);
     }
     return Re::Success;
 }

@@ -61,7 +61,8 @@ Re DataBase::openAllTables() {
     }
     for (const std::string &file_name: table_meta_files) {
         Table *table = new Table();
-        Re r = table->init(database_path_, file_name.c_str(), clog_manager_);
+        std::string table_name = file_name.substr(0, file_name.find_last_of('.'));
+        Re r = table->init(database_path_, table_name.c_str(), clog_manager_);
         if (r != Re::Success) {
             delete table;
             debugPrint("DataBase:failed to open table. file_name=%s\n", file_name.c_str());
@@ -79,6 +80,13 @@ Re DataBase::openAllTables() {
     }
     debugPrint("DataBase:all table have been opened. num=%d\n", opened_tables_.size());
     return Re::Success;
+}
+
+Table *DataBase::getTable(const std::string &table_name) {
+    auto it = opened_tables_.find(table_name);
+    if (it != opened_tables_.end())
+        return it->second;
+    return nullptr;
 }
 
 void GlobalDataBaseManager::init() {

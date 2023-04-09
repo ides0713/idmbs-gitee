@@ -1,13 +1,18 @@
 #include "txn.h"
 #include "table.h"
 
+static const uint32_t DELETED_FLAG_BIT_MASK = 0x80000000;
+static const uint32_t TXN_ID_BIT_MASK = 0x7FFFFFFF;
+
 std::atomic<int32_t> Txn::txn_id(0);
 
-void Txn::start() {
-    if (txn_id_ == 0)
-        txn_id_ = getNextTxnId();
+void Txn::init(Table *table, class Record &rec) {
+    setRecordTxnId(table, rec, txn_id_, false);
 }
 
+Re Txn::insertRecord(Table *table, struct Record *rec) {
+    return RecordEof;
+}
 int32_t Txn::getDefaultTxnId() {
     return 0;
 }
@@ -30,4 +35,18 @@ AttrType Txn::getTxnFieldType() {
 
 int Txn::getTxnFieldLen() {
     return sizeof(int32_t);
+}
+
+void Txn::start() {
+    if (txn_id_ == 0)
+        txn_id_ = getNextTxnId();
+}
+
+void setRecordTxnId(Table *table, class Record &rec, int32_t txn_id, bool deleted) {
+    const FieldMeta *trx_field = table->getTableMeta().getTxnField();
+    int32_t *txn_id_in_rec = (int32_t *) (rec.getData() + trx_field->getOffset());
+    if (deleted) {
+        txn_id |= DELETED_FLAG_BIT_MASK;
+    }
+    *txn_id_in_rec = txn_id;
 }

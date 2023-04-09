@@ -310,8 +310,7 @@ value:
     ;
     
 delete:		/*  delete 语句的语法解析树*/
-    DELETE FROM ID where SEMICOLON 
-		{
+    DELETE FROM ID where SEMICOLON {
 			// CONTEXT->query_info->SCF_Flag = ScfDelete;//"delete";
 			// deletes_init_relation(&CONTEXT->ssql->sstr.deletion, $3);
 			// deletes_set_conditions(&CONTEXT->ssql->sstr.deletion, 

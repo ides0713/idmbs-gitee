@@ -4,10 +4,15 @@
 #include "../parse/parse_defs.h"
 #include <vector>
 #include "../common/re.h"
+#include "../storage/database.h"
+#include "../common/global_managers.h"
+
+class Session;
 
 enum StatementFlag {
     Select = 0,
     CreateTable,
+    Insert
 };
 
 class Statement {
@@ -16,7 +21,7 @@ public:
 
     virtual void init(Query *query) = 0;
 
-    virtual Re handle(Query *query) = 0;
+    virtual Re handle(Query *query, Session *parse_session) = 0;
 
     virtual void destroy() = 0;
 
@@ -24,7 +29,7 @@ public:
 
     SqlCommandFlag getScf() { return flag_; }
 
-    static void createStatement(Query *const query, Statement *&stmt);
+    static void createStatement(Query *const query, Session *parse_session, Statement *&stmt);
 
 private:
     SqlCommandFlag flag_;
@@ -36,7 +41,7 @@ public:
 
     void init(Query *query) override;
 
-    Re handle(Query *query) override;
+    Re handle(Query *query, Session *parse_session) override;
 
     void destroy() override;
 
@@ -47,11 +52,11 @@ private:
 
 class CreateTableStatement : public Statement {
 public:
-    explicit CreateTableStatement(Query *query);
+    CreateTableStatement(Query *query);
 
     void init(Query *query) override;
 
-    Re handle(Query *query) override;
+    Re handle(Query *query, Session *parse_session) override;
 
     void destroy() override;
 
@@ -61,10 +66,34 @@ public:
 
     const AttrInfo *getAttrInfos() { return attr_infos_; }
 
-    [[nodiscard]] const size_t getAttrInfosNum() const { return attr_infos_num_; }
+    [[nodiscard]] int getAttrInfosNum() const { return attr_infos_num_; }
 
 private:
     char *table_name_;
     AttrInfo *attr_infos_;
-    size_t attr_infos_num_;
+    int attr_infos_num_;
+};
+
+class InsertStatement : public Statement {
+public:
+    InsertStatement(Query *query);
+
+    void init(Query *query) override;
+
+    Re handle(Query *query, Session *parse_session) override;
+
+    void destroy() override;
+
+    StatementFlag getType() override { return StatementFlag::Insert; }
+
+    const char *getTableName() { return table_name_; }
+
+    const Value *getValues() { return values_; }
+
+    [[nodiscard]] int getValuesNum() const { return values_num_; }
+
+private:
+    char *table_name_;
+    Value *values_;
+    int values_num_;
 };

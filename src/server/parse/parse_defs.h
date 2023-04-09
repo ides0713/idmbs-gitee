@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <cassert>
 
 const int MAX_ID_LENGTH = 20;
 const int MAX_REL_LENGTH = 20;
@@ -68,6 +69,57 @@ public:
     Value() : type(AttrType::Undefined), data(nullptr) {}
 
     Value(AttrType t, void *d) : type(t), data(d) {}
+
+    void copy(const Value &value) {
+        if (data != nullptr) {
+            destroy();
+            data = nullptr;
+        }
+        switch (value.type) {
+            case AttrType::Undefined:
+                type = AttrType::Undefined;
+                data = nullptr;
+                break;
+            case AttrType::Ints:
+                type = AttrType::Ints;
+                data = new int;
+                memcpy(data, value.data, sizeof(int));
+                break;
+            case AttrType::Floats:
+                type = AttrType::Floats;
+                data = new float;
+                memcpy(data, value.data, sizeof(float));
+                break;
+            case AttrType::Chars:
+                type = AttrType::Chars;
+                data = strNew(static_cast<char *>(value.data));
+                break;
+            case AttrType::Dates:
+                assert(false);
+                break;
+        }
+    }
+
+    void destroy() {
+        if (data = nullptr)
+            return;
+        switch (type) {
+            case AttrType::Undefined:
+                break;
+            case AttrType::Ints:
+                delete static_cast<int *>(data);
+                break;
+            case AttrType::Floats:
+                delete static_cast<float *>(data);
+                break;
+            case AttrType::Chars:
+                delete static_cast<char *>(data);
+                break;
+            case AttrType::Dates:
+                break;
+        }
+        data = nullptr;
+    }
 };
 
 struct RelAttr {
@@ -163,8 +215,8 @@ public:
 
     void destroy() override {
         delete[] rel_name_;
-//        for(int i=0;i<values_num_;i++)
-//            values[i].destroy();
+        for (int i = 0; i < values_num_; i++)
+            values_[i].destroy();
     }
 
     void setRelName(const char *str) { rel_name_ = strNew(str); }

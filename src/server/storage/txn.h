@@ -46,9 +46,18 @@ public:
 
 class Txn {
 public:
+    Txn() : txn_id_(0) { start(); }
+
+public:
+    void init(Table *table, class Record &rec);
+
+    Re insertRecord(Table *table, class Record *rec);
+
+    Re updateRecord();
+    Re deleteRecord();
+public:
     static std::atomic<int32_t> txn_id;
 public:
-    Txn() : txn_id_(0) { start(); }
 
     static int32_t getDefaultTxnId();
 
@@ -68,4 +77,6 @@ private:
     std::unordered_map<Table *, OperationSet> operations_;
 private:
     void start();
+
+    void setRecordTxnId(Table *table, class Record &rec, int32_t txn_id, bool deleted);
 };

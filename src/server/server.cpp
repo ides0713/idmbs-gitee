@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
     debugPrint("Main:sql_buffer:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);
     GlobalManagers::destroy();
+    debugPrint("Main:------------------------------------\n\n");
     return 0;
 }
 
