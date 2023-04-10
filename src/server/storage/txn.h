@@ -1,12 +1,17 @@
 #pragma once
 
 #include <atomic>
-#include "record.h"
 #include <unordered_set>
 #include <unordered_map>
 #include <cstddef>
+#include "../common/re.h"
+#include "../parse/parse_defs.h"
 
 class Table;
+
+class RecordId;
+
+class Record;
 
 class Operation {
 public:
@@ -17,7 +22,7 @@ public:
         Undefined
     };
 public:
-    Operation(Type type, const RecordId &rid) : type_(type), page_id_(rid.page_id), slot_id_(rid.slot_id) {}
+    Operation(Type type, const RecordId &rid);
 
     [[nodiscard]]Type getType() const { return type_; }
 
@@ -54,7 +59,9 @@ public:
     Re insertRecord(Table *table, class Record *rec);
 
     Re updateRecord();
+
     Re deleteRecord();
+
 public:
     static std::atomic<int32_t> txn_id;
 public:

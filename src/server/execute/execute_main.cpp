@@ -2,7 +2,7 @@
 #include <cassert>
 
 Re ExecuteMain::handle() {
-    ResolveSession *rs = static_cast<ResolveSession *>(resolve_session_);
+    auto rs = static_cast<ResolveSession *>(resolve_session_);
     Statement *stmt = rs->getStmt();
     (void) resolve_session_->getTxn();
     assert(stmt != nullptr);
@@ -17,7 +17,7 @@ Re ExecuteMain::handle() {
         default:
             break;
     }
-    execute_session_=new ExecuteSession(rs)
+    execute_session_ = new ExecuteSession(rs);
     return Re::Success;
 }
 
@@ -26,12 +26,12 @@ Session *ExecuteMain::callBack() {
 }
 
 Re ExecuteMain::doSelect(Statement *stmt) {
-    SelectStatement *s = static_cast<SelectStatement *>(stmt);
+    auto s = static_cast<SelectStatement *>(stmt);
     return Re::Success;
 }
 
 Re ExecuteMain::doCreateTable(Statement *stmt) {
-    CreateTableStatement *s = static_cast<CreateTableStatement *>(stmt);
+    auto s = static_cast<CreateTableStatement *>(stmt);
     DataBase *db = resolve_session_->getDb();
     if (db == nullptr) {
         debugPrint("ExecuteMain:getDb failed,no db was set\n");
@@ -41,8 +41,8 @@ Re ExecuteMain::doCreateTable(Statement *stmt) {
 }
 
 Re ExecuteMain::doInsert(Statement *stmt) {
-    ResolveSession *rs = static_cast<ResolveSession *>(resolve_session_);
-    InsertStatement *s = static_cast<InsertStatement *>(stmt);
+    auto rs = static_cast<ResolveSession *>(resolve_session_);
+    auto s = static_cast<InsertStatement *>(stmt);
     DataBase *db = resolve_session_->getDb();
     if (db == nullptr) {
         debugPrint("ExecuteMain:getDb failed,no db was set\n");

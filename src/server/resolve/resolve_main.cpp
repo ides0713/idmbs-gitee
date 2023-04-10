@@ -3,7 +3,7 @@
 #include <filesystem>
 
 Re ResolveMain::handle() {
-    ParseSession *ps = static_cast<ParseSession *>(parse_session_);
+    auto *ps = static_cast<ParseSession *>(parse_session_);
     Query *q = ps->getQuery();
     GlobalDataBaseManager dbm = GlobalManagers::globalDataBaseManager();
     DataBase *default_db = dbm.getDb(dbm.getProjectDefaultDatabasePath());

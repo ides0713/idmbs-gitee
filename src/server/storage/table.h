@@ -4,13 +4,31 @@
 #include <string>
 #include <filesystem>
 #include <jsoncpp/json/json.h>
-#include "clog_manager.h"
-#include "buffer_pool.h"
 #include "../parse/parse_defs.h"
-#include "record.h"
 #include "field.h"
 #include "index.h"
-#include "txn.h"
+
+class RecordId;
+
+class Record;
+
+class DiskBufferPool;
+
+class RecordFileHandler;
+
+class RecordFileScanner;
+
+class ConditionFilter;
+
+class DefaultConditionFilter;
+
+class IndexScanner;
+
+class RecordDeleter;
+
+class Txn;
+
+class CLogManager;
 
 #define TABLE_NAME_MAX_LEN 20
 
@@ -28,7 +46,8 @@ public:
 
     [[nodiscard]] int getSerialSize() const;
 
-    [[nodiscard]] const FieldMeta* getTxnField() const;
+    [[nodiscard]] const FieldMeta *getTxnField() const;
+
     [[nodiscard]] const FieldMeta *getField(int index) const;
 
     const FieldMeta *getField(const char *field_name) const;
@@ -63,10 +82,10 @@ public:
 
     /// @brief create a not existed table within params
     Re init(std::filesystem::path database_path, const char *table_name, const size_t attr_infos_num,
-            const AttrInfo *attr_infos, ClogManager *clog_manager);
+            const AttrInfo *attr_infos, CLogManager *clog_manager);
 
     /// @brief open an exist table from existed table meta file(open table)
-    Re init(std::filesystem::path database_path, const char *table_name, ClogManager *clog_manager);
+    Re init(std::filesystem::path database_path, const char *table_name, CLogManager *clog_manager);
 
     /// @brief getFrame table name from table(table meta)
     std::string getTableName() { return table_meta_.getTableName(); }
@@ -81,7 +100,7 @@ private:
     DiskBufferPool *data_buffer_pool_;  /// 数据文件关联的buffer pool
     RecordFileHandler *record_handler_; /// 记录操作
     std::vector<Index *> indexes_;
-    ClogManager *clog_manager_;
+    CLogManager *clog_manager_;
 private:
     Re initRecordHandler(const char *base_dir);
 

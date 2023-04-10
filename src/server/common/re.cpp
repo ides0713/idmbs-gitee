@@ -166,7 +166,7 @@ const char *strRe(Re re) {
         RE_CASE_STRING(FileExist);
         RE_CASE_STRING(FileNotExist);
         RE_CASE_STRING(FileName);
-        RE_CASE_STRING(FileBound);
+        RE_CASE_STRING(FileAssociated);
         RE_CASE_STRING(FileCreate);
         RE_CASE_STRING(FileOpen);
         RE_CASE_STRING(FileNotOpened);

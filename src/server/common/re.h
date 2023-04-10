@@ -356,7 +356,7 @@ enum Re {
     FileExist = (FileError | (ReFile::FExist << 8)),
     FileNotExist = (FileError | (ReFile::FNotExist << 8)),
     FileName = (FileError | (ReFile::FName << 8)),
-    FileBound = (FileError | (ReFile::FBound << 8)),
+    FileAssociated = (FileError | (ReFile::FBound << 8)),
     FileCreate = (FileError | (ReFile::FCreate << 8)),
     FileOpen = (FileError | (ReFile::FOpen << 8)),
     FileNotOpened = (FileError | (ReFile::FNotOpened << 8)),

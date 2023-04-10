@@ -7,6 +7,10 @@
 #include "../common/global_managers.h"
 #include "storage_defs.h"
 #include "storage_handler.h"
+#include "clog_manager.h"
+#include "buffer_pool.h"
+#include "record.h"
+#include "txn.h"
 
 static const Json::StaticString FIELD_TABLE_NAME("table_name");
 static const Json::StaticString FIELD_FIELDS("fields");
@@ -198,7 +202,7 @@ const FieldMeta *TableMeta::getTxnField() const {
 }
 
 Re Table::init(std::filesystem::path database_path, const char *table_name, const size_t attr_infos_num,
-               const AttrInfo *attr_infos, ClogManager *clog_manager) {
+               const AttrInfo *attr_infos, CLogManager *clog_manager) {
     if (strlen(table_name) == 0 or strlen(table_name) > TABLE_NAME_MAX_LEN) {
         debugPrint("Table:init table:%s failed,table getTableName:%s is not valid \n", table_name, table_name);
         return Re::InvalidArgument;
@@ -279,7 +283,7 @@ Re Table::initRecordHandler(std::filesystem::path base_dir) {
     return initRecordHandler(base_dir.c_str());
 }
 
-Re Table::init(std::filesystem::path database_path, const char *table_name, ClogManager *clog_manager) {
+Re Table::init(std::filesystem::path database_path, const char *table_name, CLogManager *clog_manager) {
     namespace fs = std::filesystem;
     std::fstream f_stream;
     fs::path table_meta_file_path = getTableMetaFilePath(database_path, table_name);
@@ -328,18 +332,15 @@ Re Table::insertRecord(Txn *txn, class Record *rec) {
         return r;
     }
     if (txn != nullptr) {
-        r = txn->insertRecord(this,rec);
+        r = txn->insertRecord(this, rec);
         if (r != Re::Success) {
-            LOG_ERROR("Failed to log operation(insertion) to trx");
-
-            RC rc2 = record_handler_->delete_record(&record->rid());
-            if (rc2 != RC::SUCCESS) {
-                LOG_ERROR("Failed to rollback record data when insert index entries failed. table name=%s, rc=%d:%s",
-                          name(),
-                          rc2,
-                          strrc(rc2));
-            }
-            return rc;
+            debugPrint("Table:failed to log operation(insertion) to trx\n");
+            Re r_2 = record_handler_->deleteRecord(&rec->getRecordId());
+            if (r_2 != Re::Success)
+                debugPrint(
+                        "Table:failed to rollback record data when insert index entry failed table name=%s, rc=%d:%s\n",
+                        getTableName().c_str(), r_2, strRe(r_2));
+            return r;
         }
     }
     return Re::Success;

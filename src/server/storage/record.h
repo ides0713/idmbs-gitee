@@ -8,6 +8,15 @@
 #include "buffer_pool.h"
 #include "../common/re.h"
 
+int align8(int size);
+
+int pageHeaderSize();
+
+int pageRecordCapacity(int page_data_size, int record_size);
+
+int pageBitmapSize(int record_capacity);
+
+int pageHeaderSize(int record_capacity);
 
 class RecordId {
 public:

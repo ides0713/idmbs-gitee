@@ -26,7 +26,7 @@ CreateTableStatement::CreateTableStatement(Query *query) :
         Statement(query->getScf()) { table_name_ = nullptr, attr_infos_ = nullptr, attr_infos_num_ = 0; }
 
 void CreateTableStatement::init(Query *query) {
-    CreateTableQuery *ctq = static_cast<CreateTableQuery *>(query);
+    auto *ctq = static_cast<CreateTableQuery *>(query);
     assert(this->getScf() == ScfCreateTable);
     attr_infos_num_ = ctq->getAttrNum();
     table_name_ = strNew(ctq->getRelName());
@@ -51,7 +51,7 @@ InsertStatement::InsertStatement(Query *query) :
         Statement(query->getScf()), table_name_(nullptr), values_(nullptr), values_num_(0) {}
 
 void InsertStatement::init(Query *query) {
-    InsertQuery *iq = static_cast<InsertQuery *>(query);
+    auto *iq = static_cast<InsertQuery *>(query);
     assert(this->getScf() == ScfInsert);
     values_num_ = iq->getValuesNum();
     table_name_ = strNew(iq->getRelName());
@@ -64,7 +64,7 @@ void InsertStatement::init(Query *query) {
 Re InsertStatement::handle(Query *query, Session *parse_session) {
     Txn *txn = new Txn;
     parse_session->setTxn(txn);
-    ParseSession *ps = static_cast<ParseSession *>(parse_session);
+    auto *ps = static_cast<ParseSession *>(parse_session);
     DataBase *current_db = ps->getDb();
     if (current_db == nullptr or table_name_ == nullptr or values_num_ <= 0) {
         debugPrint("InsertStatement:invalid argument. db=%p, table_name=%p,values_num=%d\n",

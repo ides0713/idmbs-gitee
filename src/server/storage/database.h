@@ -9,7 +9,8 @@
 #include <unordered_map>
 #include <filesystem>
 #include "../parse/parse_defs.h"
-#include "clog_manager.h"
+
+class CLogManager;
 
 #define DATABASE_NAME_MAX_LEN 20
 
@@ -31,7 +32,7 @@ public:
 
     ///@brief existed table will be opened when database constructed,when table is creating,
     ///it will be added into opened_tables automatically,so all exist valid tables can be find in opened_tables
-    Table *getTable(const std::string & table_name);
+    Table *getTable(const std::string &table_name);
 
 private:
 //    Re create();
@@ -40,7 +41,7 @@ private:
     Re destruction();
 
 //    bool isExists();
-    ClogManager *clog_manager_;
+    CLogManager *clog_manager_;
     std::string database_name_;
     std::filesystem::path database_path_;
     std::unordered_map<std::string, Table *> opened_tables_;
