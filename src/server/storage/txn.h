@@ -9,7 +9,7 @@
 
 class Table;
 
-class RecordId;
+struct RecordId;
 
 class Record;
 

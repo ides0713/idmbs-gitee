@@ -6,8 +6,8 @@
 #include "record.h"
 #include "../common/re.h"
 
-#define CLOG_FILE_SIZE 48 * 1024 * 1024
-#define CLOG_BUFFER_SIZE 4 * 1024 * 1024
+#define CLOG_FILE_SIZE (48 * 1024 * 1024)
+#define CLOG_BUFFER_SIZE (4 * 1024 * 1024)
 #define TABLE_NAME_MAX_LEN 20
 
 enum CLogType {
@@ -100,11 +100,11 @@ public:
 class CLogRecord {
 public:
     // TODO: lsn当前在内部分配
-    // 对齐在内部处理
+    ///@brief construct a clog record with given params
     CLogRecord(CLogType flag, int32_t txn_id, const char *table_name, int data_len,
                class Record *rec);
 
-    // 从外存恢复log record
+    ///@brief construct from chars data,using for recover clog from disk
     explicit CLogRecord(char *data);
 
     ~CLogRecord();
@@ -117,7 +117,8 @@ public:
 
     int32_t getLsn() { return clog_record_->header.lsn; }
 
-    Re copyRecord(void *dest, int start_off, int copy_len);
+    ///@brief copy data of record to dest(from (param:start_off) to (param:start_off+param:copy_len))
+    Re copyRecordTo(void *dest, int start_off, int copy_len);
 
     int cmpEq(CLogRecord *other);
 
@@ -128,6 +129,111 @@ private:
     CLogRecordBase *clog_record_;
 private:
     friend class DataBase;
+};
+
+class CLogBlock;
+
+class CLogFile;
+
+class CLogBuffer {
+public:
+    CLogBuffer();
+
+    ~CLogBuffer();
+
+    Re appendCLogRecord(CLogRecord *clog_record, int &offset);
+
+    // 将buffer中的数据下刷到log_file
+    Re flushBuffer(CLogFile *clog_file);
+
+    void setCurrentBlockOffset(const int32_t block_offset) { current_block_end_offset_ = block_offset; }
+
+    void setWriteBlockOffset(const int32_t write_block_offset) { write_block_offset_ = write_block_offset; };
+
+    void setWriteOffset(const int32_t write_offset) { write_offset_ = write_offset; };
+
+    Re blockCopyFrom(int32_t offset, CLogBlock *log_block);
+
+private:
+    int32_t current_block_end_offset_; //offset of the block (of the first byte of the block)
+    int32_t write_block_offset_;
+    int32_t write_offset_;
+    char buffer_[CLOG_BUFFER_SIZE];//4MB
+};
+
+struct CLogBlockHeader;
+struct CLogFileHeader;
+
+#define CLOG_FILE_HEADER_SIZE sizeof(CLogFileHeader)
+#define CLOG_BLOCK_SIZE (1 << 9)
+#define CLOG_BLOCK_HEADER_SIZE sizeof(CLogBlockHeader)
+#define CLOG_BLOCK_DATA_SIZE (CLOG_BLOCK_SIZE - CLOG_BLOCK_HEADER_SIZE)
+#define CLOG_REDO_BUFFER_SIZE (8 * CLOG_BLOCK_SIZE)
+
+struct CLogRecordBuffer {
+public:
+    int32_t write_offset;
+    // TODO: 当前假定log record大小不会超过CLOG_REDO_BUFFER_SIZE
+    char buffer[CLOG_REDO_BUFFER_SIZE];
+};
+
+struct CLogFileHeader {
+public:
+    int32_t file_real_offset;
+    // TODO: 用于文件组，当前没用
+    int32_t file_lsn;
+};
+
+struct CLogFileHeaderBlock {
+public:
+    CLogFileHeader header;
+    char pad[CLOG_BLOCK_SIZE - CLOG_FILE_HEADER_SIZE];
+};
+
+struct CLogBlockHeader {
+public:
+    int32_t block_end_offset;  // offset of the block in clock buffer
+    int16_t block_data_len; //len of current data stored in the block
+    int16_t first_record_offset;//offset of first record start in the block(first record in the block ends at offset)
+};
+
+///@brief structure used to explain the buffer
+struct CLogBlock {
+public:
+    CLogBlockHeader header;
+    char data[CLOG_BLOCK_DATA_SIZE];
+};
+
+class CLogMiniTxnManager;
+
+class CLogFile {
+public:
+    CLogFile(const char *dir_path);
+
+    ~CLogFile();
+
+    Re updateCLogFileHeader(int32_t current_file_lsn);
+
+    Re append(int data_len, char *data);
+
+    Re write(uint64_t offset, int data_len, char *data);
+
+    Re recover(CLogMiniTxnManager *mini_txn_manager, CLogBuffer *clog_buffer);
+
+    Re blockRecover(CLogBlock *block, int16_t &offset, CLogRecordBuffer *clog_record_buffer, CLogRecord *&clog_record);
+
+private:
+    CLogFileHeaderBlock clog_file_header_block_;
+    PersistFileIoHandler *clog_file_;
+};
+
+// TODO: 当前简单管理mtr
+struct CLogMiniTxnManager {
+public:
+    std::list<CLogRecord *> clog_redo_list;
+    std::unordered_map<int32_t, bool> txn_committed;  // <trx_id, committed>
+public:
+    void cLogRecordManage(CLogRecord *clog_record);
 };
 
 class CLogManager {

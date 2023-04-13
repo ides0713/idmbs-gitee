@@ -18,7 +18,7 @@ int pageBitmapSize(int record_capacity);
 
 int pageHeaderSize(int record_capacity);
 
-class RecordId {
+struct RecordId {
 public:
     int32_t page_id, slot_id;
 public:

@@ -8,7 +8,7 @@
 #include "field.h"
 #include "index.h"
 
-class RecordId;
+struct RecordId;
 
 class Record;
 

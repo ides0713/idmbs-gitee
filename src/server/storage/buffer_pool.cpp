@@ -530,11 +530,11 @@ Re GlobalBufferPoolManager::openFile(std::string file_name, DiskBufferPool *&bp)
         debugPrint("GlobalBufferPoolManager:file already opened and has a buffer now. file name=%s\n", file_name);
         return Re::BufferPoolOpen;
     }
-    DiskBufferPool *new_buffer_pool = new DiskBufferPool(*this, frame_manager_);
+    auto new_buffer_pool = new DiskBufferPool(*this, frame_manager_);
     Re r = new_buffer_pool->openFile(file_name);
     if (r != Re::Success) {
         debugPrint("GlobalBufferPoolManager:failed to open file name\n");
-        delete new_buffer_pool;
+        new_buffer_pool->destroy();
         return r;
     }
     buffer_pools_.insert(std::pair<std::string, DiskBufferPool *>(x, new_buffer_pool));

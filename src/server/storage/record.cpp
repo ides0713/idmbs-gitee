@@ -13,7 +13,7 @@ int pageHeaderSize() {
 
 ///@brief page record capacity
 int pageRecordCapacity(int page_data_size, int record_size) {
-    return (int) ((page_data_size - pageHeaderSize() - 1) / (record_size + 0.125));
+    return int((page_data_size - pageHeaderSize() - 1) / (record_size + 0.125));
 }
 
 ///@brief

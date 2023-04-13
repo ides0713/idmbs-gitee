@@ -16,7 +16,7 @@
 #define BP_FILE_HDR_SIZE (sizeof(BPFileHeader))
 
 ///@brief unit of store data in the buffer
-class Page {
+struct Page {
 public:
     ///@brief divide the data of the file into pages,the page id begin from 0
     ///@NOTE pages are identified by page_id
@@ -25,6 +25,7 @@ public:
 };
 
 ///@brief first page of bp file
+///@NOTE page of buffer pool file header 's id is 0;header page of bp file also has its corresponding on-disk structure
 struct BufferPoolFileHeader {
 public:
     ///@brief num of total pages of current file
@@ -200,6 +201,8 @@ public:
     ///@brief check if corresponding bit of page_id in bitmap was 0,set it to 1
     Re recoverPage(int32_t page_id);
 
+    void destroy();
+
 private:
     GlobalBufferPoolManager &buffer_pool_manager_;
     FrameManager &frame_manager_;
@@ -240,8 +243,6 @@ private :
 
     ///@brief destroy the file/unlink the buffer pool and the on-disk file
     Re closeFile();
-
-    void destroy();
 
 private:
     friend class BufferPoolIterator;
