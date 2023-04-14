@@ -53,5 +53,10 @@ void Txn::setRecordTxnId(Table *table, class Record &rec, int32_t txn_id, bool d
     *txn_id_in_rec = txn_id;
 }
 
+void Txn::nextCurrentId() {
+    (void) getNextTxnId();
+    txn_id_ = txn_id;
+}
+
 Operation::Operation(Operation::Type type, const RecordId &rid) :
         type_(type), page_id_(rid.page_id), slot_id_(rid.slot_id) {}

@@ -62,6 +62,9 @@ public:
 
     Re deleteRecord();
 
+    int32_t getCurrentTxnId() { return txn_id_; }
+
+    void nextCurrentId();
 public:
     static std::atomic<int32_t> txn_id;
 public:

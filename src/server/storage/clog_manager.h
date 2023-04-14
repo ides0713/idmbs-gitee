@@ -6,8 +6,9 @@
 #include "record.h"
 #include "../common/re.h"
 
-#define CLOG_FILE_SIZE (48 * 1024 * 1024)
-#define CLOG_BUFFER_SIZE (4 * 1024 * 1024)
+
+#define CLOG_FILE_SIZE (48 * 1024 * 1024) //48MB
+#define CLOG_BUFFER_SIZE (4 * 1024 * 1024) //4MB
 #define TABLE_NAME_MAX_LEN 20
 
 enum CLogType {
@@ -146,16 +147,16 @@ public:
     // 将buffer中的数据下刷到log_file
     Re flushBuffer(CLogFile *clog_file);
 
-    void setCurrentBlockOffset(const int32_t block_offset) { current_block_end_offset_ = block_offset; }
+    void setCurrentBlockOffset(const int32_t block_offset) { current_block_offset_ = block_offset; }
 
     void setWriteBlockOffset(const int32_t write_block_offset) { write_block_offset_ = write_block_offset; };
 
     void setWriteOffset(const int32_t write_offset) { write_offset_ = write_offset; };
 
-    Re blockCopyFrom(int32_t offset, CLogBlock *log_block);
+    Re blockCopyFrom(int32_t offset, CLogBlock *clog_block);
 
 private:
-    int32_t current_block_end_offset_; //offset of the block (of the first byte of the block)
+    int32_t current_block_offset_; //offset of the block (of the first byte of the block)
     int32_t write_block_offset_;
     int32_t write_offset_;
     char buffer_[CLOG_BUFFER_SIZE];//4MB
@@ -164,11 +165,11 @@ private:
 struct CLogBlockHeader;
 struct CLogFileHeader;
 
-#define CLOG_FILE_HEADER_SIZE sizeof(CLogFileHeader)
-#define CLOG_BLOCK_SIZE (1 << 9)
-#define CLOG_BLOCK_HEADER_SIZE sizeof(CLogBlockHeader)
-#define CLOG_BLOCK_DATA_SIZE (CLOG_BLOCK_SIZE - CLOG_BLOCK_HEADER_SIZE)
-#define CLOG_REDO_BUFFER_SIZE (8 * CLOG_BLOCK_SIZE)
+#define CLOG_FILE_HEADER_SIZE sizeof(CLogFileHeader) //8B
+#define CLOG_BLOCK_SIZE (1 << 9) //512B
+#define CLOG_BLOCK_HEADER_SIZE sizeof(CLogBlockHeader) //8B
+#define CLOG_BLOCK_DATA_SIZE (CLOG_BLOCK_SIZE - CLOG_BLOCK_HEADER_SIZE) //504B (512B-8B)
+#define CLOG_REDO_BUFFER_SIZE (8 * CLOG_BLOCK_SIZE) //4KB
 
 struct CLogRecordBuffer {
 public:
@@ -192,7 +193,7 @@ public:
 
 struct CLogBlockHeader {
 public:
-    int32_t block_end_offset;  // offset of the block in clock buffer
+    int32_t block_offset;  // offset of the block in clock buffer
     int16_t block_data_len; //len of current data stored in the block
     int16_t first_record_offset;//offset of first record start in the block(first record in the block ends at offset)
 };
@@ -218,8 +219,14 @@ public:
 
     Re write(uint64_t offset, int data_len, char *data);
 
+    ///@brief r
     Re recover(CLogMiniTxnManager *mini_txn_manager, CLogBuffer *clog_buffer);
 
+    ///@brief recover a clog_record from block at param:offset
+    ///@param offset offset in the block from the block header
+    ///@param clog_record_buffer used to store the temp result of clog record
+    ///@param clog_record result passed by reference of the ptr
+    ///@NOTE all of the operation happen in one block;take into
     Re blockRecover(CLogBlock *block, int16_t &offset, CLogRecordBuffer *clog_record_buffer, CLogRecord *&clog_record);
 
 private:
@@ -231,14 +238,27 @@ private:
 struct CLogMiniTxnManager {
 public:
     std::list<CLogRecord *> clog_redo_list;
-    std::unordered_map<int32_t, bool> txn_committed;  // <trx_id, committed>
+    std::unordered_map<int32_t, bool> txn_committed;  // <txn_id, committed>
 public:
     void cLogRecordManage(CLogRecord *clog_record);
 };
 
 class CLogManager {
 public:
-    explicit CLogManager(std::filesystem::path database_path);
+    explicit CLogManager(const char *dir_path);
+
+    ~CLogManager();
+
+    Re makeRecord(CLogType flag, int32_t txn_id, CLogRecord *&clog_record, const char *table_name = nullptr,
+                  int data_len = 0, class Record *rec = nullptr);
+
+    //追加写到log_buffer
+    Re appendRecord(CLogRecord *clog_record);
+
+    // TODO: 优化回放过程，对同一位置的修改可以用哈希聚合
+    Re recover();
+
+    CLogMiniTxnManager *getMiniTxnManager() { return clog_mini_txn_manager_; }
 
 public:
     static std::atomic<int32_t> global_lsn;
@@ -246,5 +266,13 @@ public:
     static int32_t getNextLsn(int32_t rec_len);
 
 private:
+    CLogBuffer *clog_buffer_;
+    CLogFile *clog_file_;
+    CLogMiniTxnManager *clog_mini_txn_manager_;
+
+private:
+    // 通常不需要在外部调用
+    Re sync();
+
 };
 

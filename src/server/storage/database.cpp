@@ -18,7 +18,7 @@ Re DataBase::init(const char *database_name, const std::filesystem::path &databa
         debugPrint("DataBase:failed to init DB, path is not a directory: %s\n", database_path.c_str());
         return Re::GenericError;
     }
-    clog_manager_ = new CLogManager(database_path);
+    clog_manager_ = new CLogManager(database_path.c_str());
     if (clog_manager_ == nullptr) {
         debugPrint("DataBase:failed to init CLogManager.\n");
         return Re::GenericError;

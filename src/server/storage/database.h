@@ -34,6 +34,8 @@ public:
     ///it will be added into opened_tables automatically,so all exist valid tables can be find in opened_tables
     Table *getTable(const std::string &table_name);
 
+    CLogManager *getCLogManager() { return clog_manager_; }
+
 private:
 //    Re create();
     Re openAllTables();

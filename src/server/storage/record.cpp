@@ -336,8 +336,8 @@ Re RecordFileHandler::insertRecord(const char *data, int record_size, RecordId *
         current_page_id = *free_pages_.begin();
         Re r = record_page_handler.init(*disk_buffer_pool_, current_page_id);
         if (r != Re::Success) {
-            debugPrint("RecordFileHandler:failed to init record page handler. page id=%d, r=%d\n", current_page_id,
-                       r);
+            debugPrint("RecordFileHandler:failed to init record page handler. page id=%d, r=%d\n",
+                       current_page_id, r);
             return r;
         }
         if (!record_page_handler.isFull())

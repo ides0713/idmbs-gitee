@@ -3,6 +3,8 @@
 #include "../common/server_defs.h"
 #include "../common/session.h"
 #include "../common/re.h"
+#include "../storage/clog_manager.h"
+
 
 class ExecuteMain {
 public:
