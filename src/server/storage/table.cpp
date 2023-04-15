@@ -343,6 +343,7 @@ Re Table::insertRecord(Txn *txn, class Record *rec) {
             return r;
         }
     }
+    //todo after implement index of table,we must update the index of the table in order to keep it usable
     return Re::Success;
 }
 

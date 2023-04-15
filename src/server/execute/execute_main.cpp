@@ -8,13 +8,13 @@ Re ExecuteMain::handle() {
     (void) resolve_session_->getTxn();
     assert(stmt != nullptr);
     switch (stmt->getType()) {
-        case StatementFlag::Select:
+        case StatementType::Select:
             r = doSelect(stmt);
             break;
-        case StatementFlag::CreateTable:
+        case StatementType::CreateTable:
             r = doCreateTable(stmt);
             break;
-        case StatementFlag::Insert:
+        case StatementType::Insert:
             r = doInsert(stmt);
             break;
         default:
@@ -61,7 +61,7 @@ Re ExecuteMain::doInsert(Statement *stmt) {
     CLogManager *clog_manager = db->getCLogManager();
     if (!resolve_session_->getTmo()) {
         CLogRecord *clog_record = nullptr;
-        r = clog_manager->makeRecord(CLogType::RedoMiniTxnCommit, txn->getCurrentTxnId(), clog_record);
+        r = clog_manager->makeRecord(CLogType::RedoMiniTxnCommit, txn->getTxnId(), clog_record);
         if (r != Re::Success or clog_record == nullptr)
             return r;
         r = clog_manager->appendRecord(clog_record);

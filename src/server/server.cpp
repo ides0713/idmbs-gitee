@@ -44,7 +44,8 @@ int main(int argc, char *argv[]) {
     debugPrint("Main:sql_buffer:\n--\n%s\n--\n", buffer);
     pStart(buffer, -1);
     GlobalManagers::destroy();
-    debugPrint("Main:------------------------------------\n\n");
+//    closeLogStream();
+    debugPrint("Main:------------------------------------exit\n\n");
     return 0;
 }
 
@@ -54,6 +55,7 @@ void pStart(const char *sql, int sock_fd) {
     strRe(Re::Success);
     if (re_parse != Re::Success) {
         debugPrint("\nMain:parse failed\n");
+        pm.response();
         return;
     }
     debugPrint("\nMain:sql parse succeeded\n");
@@ -61,6 +63,7 @@ void pStart(const char *sql, int sock_fd) {
     Re re_resolve = rm.handle();
     if (re_resolve != Re::Success) {
         debugPrint("\nMain:resolve stmt failed\n");
+        rm.response();
         return;
     }
     debugPrint("\nMain:resolve stmt succeeded\n");
@@ -77,6 +80,8 @@ void pStart(const char *sql, int sock_fd) {
         debugPrint("\nMain:storage failed\n");
         return;
     }
+    rm.stmtSucceed();
+    rm.stmtDestroyed();
 }
 
 void recvFunc(int fd) {

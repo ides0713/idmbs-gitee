@@ -399,7 +399,7 @@ CLogManager::~CLogManager() {
 
 Re CLogManager::makeRecord(
         CLogType flag, int32_t txn_id, CLogRecord *&clog_record,
-        const char *table_name, int data_len,class Record *rec) {
+        const char *table_name, int data_len, class Record *rec) {
     auto new_clog_record = new(std::nothrow) CLogRecord(flag, txn_id, table_name, data_len, rec);
     if (new_clog_record != nullptr)
         clog_record = new_clog_record;
@@ -415,8 +415,9 @@ Re CLogManager::appendRecord(CLogRecord *clog_record) {
     Re r = clog_buffer_->appendCLogRecord(clog_record, start_offset);
     if (r == Re::LogBufFull or clog_record->getCLogType() == CLogType::RedoMiniTxnCommit) {
         sync();
-        if (start_offset != clog_record->getCLogRecordLen()) // 当前日志记录还没写完
+        if (start_offset != clog_record->getCLogRecordLen()) { // 当前日志记录还没写完
             clog_buffer_->appendCLogRecord(clog_record, start_offset);
+        }
     }
     delete clog_record;  // NOTE: 单元测试需要注释该行
     return r;

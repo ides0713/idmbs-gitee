@@ -172,27 +172,21 @@ desc_table:
     ;
 
 create_index:		/*create index 语句的语法解析树*/
-    CREATE INDEX ID ON ID LBRACE ID RBRACE SEMICOLON 
-		{
-			// CONTEXT->query_info->SCF_Flag = ScfCreateIndex;//"create_index";
-			// create_index_init(&CONTEXT->ssql->sstr.create_index, $3, $5, $7);
-		}
+    CREATE INDEX ID ON ID LBRACE ID RBRACE SEMICOLON {
+        // CONTEXT->query_info->SCF_Flag = ScfCreateIndex;//"create_index";
+        // create_index_init(&CONTEXT->ssql->sstr.create_index, $3, $5, $7);
+	}
     ;
 
 drop_index:			/*drop index 语句的语法解析树*/
     DROP INDEX ID  SEMICOLON {
-			// CONTEXT->query_info->SCF_Flag=ScfDropIndex;//"drop_index";
-			// drop_index_init(&CONTEXT->ssql->sstr.drop_index, $3);
+        // CONTEXT->query_info->SCF_Flag=ScfDropIndex;//"drop_index";
+        // drop_index_init(&CONTEXT->ssql->sstr.drop_index, $3);
 	}
     ;
 create_table:		/*create table 语句的语法解析树*/
     CREATE TABLE ID LBRACE attr_def attr_def_list RBRACE SEMICOLON {
-		// CONTEXT->query=new CreateTableQuery();
-		// CONTEXT->query->init();
 		(static_cast<CreateTableQuery*>(CONTEXT->query))->setRelName($3);
-		// //临时变量清零
-		// CONTEXT->value_tuple_num=0;	
-		CONTEXT->value_length = 0;
 	}
     ;
 attr_def_list:
@@ -208,7 +202,6 @@ attr_def:
 		}
 		AttrInfo attribute(CONTEXT->id,(AttrType)$2,$4);
 		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);
-		CONTEXT->value_length++;
 	}
     |ID_get type{
 		//attr with default length
@@ -218,7 +211,6 @@ attr_def:
 		}
 		AttrInfo attribute(CONTEXT->id,(AttrType)$2,1);
 		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);
-		CONTEXT->value_length++;
 	}
     ;
 number:
@@ -229,16 +221,16 @@ number:
 type:
 	INT_T{
 		$$=AttrType::Ints;
-		}
+	}
 	|DATE_T{
 		$$=AttrType::Dates;
-		}
+	}
     |STRING_T{
 		$$=AttrType::Chars;
-		}
+	}
     |FLOAT_T{ 
 		$$=AttrType::Floats;
-		}
+	}
     ;
 ID_get:
 	ID {
@@ -248,17 +240,17 @@ ID_get:
 	;
 
 	
-insert:				/*insert   语句的语法解析树*/
+insert:
     INSERT INTO ID VALUES LBRACE value value_list RBRACE value_unit SEMICOLON {
-		// CONTEXT->query=new InsertQuery();
-		// CONTEXT->query->init();
-        (static_cast<InsertQuery*>(CONTEXT->query))->setRelName($3);
-		// CONTEXT->query_info->SCF_Flag=ScfInsert;//"insert";
-		// CONTEXT->value_tuple_num++;
-		// inserts_init(&CONTEXT->ssql->sstr.insertion,$3,CONTEXT->values,CONTEXT->value_tuple_num,CONTEXT->value_length);
-        // //临时变量清零
-		// CONTEXT->value_tuple_num=0;
-        // CONTEXT->value_length=0;
+        if(CONTEXT->query==nullptr){
+            CONTEXT->query=new InsertQuery();
+            CONTEXT->query->init();
+        }
+        static_cast<InsertQuery*>(CONTEXT->query)->setRelName($3);
+        static_cast<InsertQuery*>(CONTEXT->query)->addValues(CONTEXT->value_length,CONTEXT->values);
+        //临时变量清零
+		CONTEXT->value_tuple_num=0;
+        CONTEXT->value_length=0;
     }
 
 value_unit:
@@ -270,111 +262,96 @@ value_list:
     /* empty */
     | COMMA value value_list  {
   		// CONTEXT->values[CONTEXT->value_length++] = *$2;
-	  }
+	}
     ;
 value:
     NUMBER{
-        if(CONTEXT->query==nullptr){
-    	    CONTEXT->query=new InsertQuery();
-    		CONTEXT->query->init();
-    	}
-    	Value v(AttrType::Ints,initIntsValue($1));
-    	static_cast<InsertQuery*>(CONTEXT->query)->addValue(v);
+    	CONTEXT->values[CONTEXT->value_length].type=AttrType::Ints;
+    	CONTEXT->values[CONTEXT->value_length++].data=initIntsValue($1);
 	}
 	|DATE_STR{
-        //if(CONTEXT->query==nullptr){
-    	//  CONTEXT->query=new InsertQuery();
-    	//	CONTEXT->query->init();
-    	//}
 		//$1=substr($1,1,strlen($1)-2);
 		//init_str
 		// value_init_date(&CONTEXT->values[CONTEXT->value_length++], $1);
 	}
     |FLOAT{
-        if(CONTEXT->query==nullptr){
-    	    CONTEXT->query=new InsertQuery();
-    		CONTEXT->query->init();
-    	}
-    	Value v(AttrType::Floats,initFloatValue($1));
-  		static_cast<InsertQuery*>(CONTEXT->query)->addValue(v);
+    	CONTEXT->values[CONTEXT->value_length].type=AttrType::Floats;
+    	CONTEXT->values[CONTEXT->value_length++].data=initFloatValue($1);
 	}
     |SSS {
-        if(CONTEXT->query==nullptr){
-    	    CONTEXT->query=new InsertQuery();
-    		CONTEXT->query->init();
-    	}
-		$1 = substr($1,1,strlen($1)-2);
-	    Value v(AttrType::Chars,initCharsValue($1));
-        static_cast<InsertQuery*>(CONTEXT->query)->addValue(v);
+    	$1 = substr($1,1,strlen($1)-2);
+        CONTEXT->values[CONTEXT->value_length].type=AttrType::Chars;
+        CONTEXT->values[CONTEXT->value_length++].data=initCharsValue($1);
 	}
     ;
     
 delete:		/*  delete 语句的语法解析树*/
     DELETE FROM ID where SEMICOLON {
-			// CONTEXT->query_info->SCF_Flag = ScfDelete;//"delete";
-			// deletes_init_relation(&CONTEXT->ssql->sstr.deletion, $3);
-			// deletes_set_conditions(&CONTEXT->ssql->sstr.deletion, 
-			// 		CONTEXT->conditions, CONTEXT->condition_length);
-			// CONTEXT->condition_length = 0;	
+        // CONTEXT->query_info->SCF_Flag = ScfDelete;//"delete";
+        // deletes_init_relation(&CONTEXT->ssql->sstr.deletion, $3);
+        // deletes_set_conditions(&CONTEXT->ssql->sstr.deletion,
+        // 		CONTEXT->conditions, CONTEXT->condition_length);
+        // CONTEXT->condition_length = 0;
     }
     ;
 update:			/*  update 语句的语法解析树*/
-    UPDATE ID SET ID EQ value where SEMICOLON
-		{
-			// CONTEXT->query_info->SCF_Flag = ScfUpdate;//"update";
-			// Value *value = &CONTEXT->values[0];
-			// updates_init(&CONTEXT->ssql->sstr.update, $2, $4, value, 
-			// CONTEXT->conditions, CONTEXT->condition_length);
-			// CONTEXT->condition_length = 0;
-		}
+    UPDATE ID SET ID EQ value where SEMICOLON{
+        // CONTEXT->query_info->SCF_Flag = ScfUpdate;//"update";
+        // Value *value = &CONTEXT->values[0];
+        // updates_init(&CONTEXT->ssql->sstr.update, $2, $4, value,
+        // CONTEXT->conditions, CONTEXT->condition_length);
+        // CONTEXT->condition_length = 0;
+	}
     ;
 select:				/*  select 语句的语法解析树*/
-    SELECT select_attr FROM ID rel_list where SEMICOLON
-		{
-			// selects_append_relation(&CONTEXT->ssql->sstr.selection, $4);
-
-			// selects_append_conditions(&CONTEXT->ssql->sstr.selection, CONTEXT->conditions, CONTEXT->condition_length);
-
-			// CONTEXT->query_info->SCF_Flag=SCF_SELECT;//"select";
-
-			// //临时变量清零
-			// CONTEXT->condition_length=0;
-			// CONTEXT->from_length=0;
-			// CONTEXT->select_length=0;
-			// CONTEXT->value_length = 0;
-			// CONTEXT->value_tuple_num=0;
+    SELECT select_attr FROM ID rel_list where SEMICOLON{
+        static_cast<SelectQuery*>(CONTEXT->query)->setRelName($4);
+        static_cast<SelectQuery*>(CONTEXT->query)->addConditions(CONTEXT->condition_length,CONTEXT->conditions);
+        //临时变量清零
+        CONTEXT->condition_length=0;
+        // CONTEXT->from_length=0;
+        // CONTEXT->select_length=0;
+        CONTEXT->value_length = 0;
+        CONTEXT->value_tuple_num=0;
 	}
 	;
 
 select_attr:
-    STAR {  
-			// RelAttr attr;
-			// relation_attr_init(&attr, NULL, "*");
-			// selects_append_attribute(&CONTEXT->ssql->sstr.selection, &attr);
+    STAR {
+        if(CONTEXT->query==nullptr){
+            CONTEXT->query=new SelectQuery();
+            CONTEXT->query->init();
+        }
+        RelAttr attr(nullptr,"*");
+        static_cast<SelectQuery*>(CONTEXT->query)->addRelAttr(attr);
 		}
     | ID attr_list {
-			// RelAttr attr;
-			// relation_attr_init(&attr, NULL, $1);
-			// selects_append_attribute(&CONTEXT->ssql->sstr.selection, &attr);
+        if(CONTEXT->query==nullptr){
+            CONTEXT->query=new SelectQuery();
+            CONTEXT->query->init();
+        }
+        RelAttr attr(nullptr,$1);
+        static_cast<SelectQuery*>(CONTEXT->query)->addRelAttr(attr);
 		}
   	| ID DOT ID attr_list {
-			// RelAttr attr;
-			// relation_attr_init(&attr, $1, $3);
-			// selects_append_attribute(&CONTEXT->ssql->sstr.selection, &attr);
+        if(CONTEXT->query==nullptr){
+            CONTEXT->query=new SelectQuery();
+            CONTEXT->query->init();
+        }
+        RelAttr attr($1,$3);
+        static_cast<SelectQuery*>(CONTEXT->query)->addRelAttr(attr);
 		}
     ;
 attr_list:
     /* empty */
     | COMMA ID attr_list {
-			// RelAttr attr;
-			// relation_attr_init(&attr, NULL, $2);
-			// selects_append_attribute(&CONTEXT->ssql->sstr.selection, &attr);
-      }
+        RelAttr attr(nullptr,$2);
+        static_cast<SelectQuery*>(CONTEXT->query)->addRelAttr(attr);
+    }
     | COMMA ID DOT ID attr_list {
-			// RelAttr attr;
-			// relation_attr_init(&attr, $2, $4);
-			// selects_append_attribute(&CONTEXT->ssql->sstr.selection, &attr);
-  	  }
+        RelAttr attr($2, $4);
+        static_cast<SelectQuery*>(CONTEXT->query)->addRelAttr(attr);
+  	}
   	;
 
 rel_list:
@@ -396,100 +373,76 @@ condition_list:
 			}
     ;
 condition:
-    ID comOp value 
-		{
-			// RelAttr left_attr;
-			// relation_attr_init(&left_attr, NULL, $1);
-
-			// Value *right_value = &CONTEXT->values[CONTEXT->value_length - 1];
-
-			// Condition condition;
-			// condition_init(&condition, CONTEXT->comp, 1, &left_attr, NULL, 0, NULL, right_value);
-			// CONTEXT->conditions[CONTEXT->condition_length++] = condition;
+    ID comOp value {
+			RelAttr left_attr(NULL, $1);
+			Value *right_value = &CONTEXT->values[CONTEXT->value_length - 1];
+			Condition condition;
+			condition.init(CONTEXT->comp, 1, &left_attr,nullptr, 0, nullptr, right_value);
+			CONTEXT->conditions[CONTEXT->condition_length++] = condition;
 		}
-		|value comOp value 
-		{
-			// Value *left_value = &CONTEXT->values[CONTEXT->value_length - 2];
-			// Value *right_value = &CONTEXT->values[CONTEXT->value_length - 1];
-
-			// Condition condition;
-			// condition_init(&condition, CONTEXT->comp, 0, NULL, left_value, 0, NULL, right_value);
-			// CONTEXT->conditions[CONTEXT->condition_length++] = condition;
+	|value comOp value {
+        Value *left_value = &CONTEXT->values[CONTEXT->value_length - 2];
+        Value *right_value = &CONTEXT->values[CONTEXT->value_length - 1];
+        Condition condition;
+        condition.init(CONTEXT->comp, 0,nullptr, left_value, 0,nullptr, right_value);
+        CONTEXT->conditions[CONTEXT->condition_length++] = condition;
 		}
-		|ID comOp ID 
-		{
-			// RelAttr left_attr;
-			// relation_attr_init(&left_attr, NULL, $1);
-			// RelAttr right_attr;
-			// relation_attr_init(&right_attr, NULL, $3);
-
-			// Condition condition;
-			// condition_init(&condition, CONTEXT->comp, 1, &left_attr, NULL, 1, &right_attr, NULL);
-			// CONTEXT->conditions[CONTEXT->condition_length++] = condition;
+	|ID comOp ID {
+        RelAttr left_attr(nullptr,$1);
+        RelAttr right_attr(nullptr,$3);
+        Condition condition;
+        condition.init(CONTEXT->comp, 1, &left_attr,nullptr, 1, &right_attr,nullptr);
+        CONTEXT->conditions[CONTEXT->condition_length++] = condition;
 		}
-    |value comOp ID
-		{
-			// Value *left_value = &CONTEXT->values[CONTEXT->value_length - 1];
-			// RelAttr right_attr;
-			// relation_attr_init(&right_attr, NULL, $3);
-
-			// Condition condition;
-			// condition_init(&condition, CONTEXT->comp, 0, NULL, left_value, 1, &right_attr, NULL);
-			// CONTEXT->conditions[CONTEXT->condition_length++] = condition;
+    |value comOp ID{
+        Value *left_value = &CONTEXT->values[CONTEXT->value_length - 1];
+        RelAttr right_attr(nullptr, $3);
+        Condition condition;
+        condition.init(CONTEXT->comp, 0,nullptr, left_value, 1, &right_attr,nullptr);
+        CONTEXT->conditions[CONTEXT->condition_length++] = condition;
 		}
-    |ID DOT ID comOp value
-		{
-			// RelAttr left_attr;
-			// relation_attr_init(&left_attr, $1, $3);
-			// Value *right_value = &CONTEXT->values[CONTEXT->value_length - 1];
-
-			// Condition condition;
-			// condition_init(&condition, CONTEXT->comp, 1, &left_attr, NULL, 0, NULL, right_value);
-			// CONTEXT->conditions[CONTEXT->condition_length++] = condition;
+    |ID DOT ID comOp value{
+        RelAttr left_attr($1, $3);
+        Value *right_value = &CONTEXT->values[CONTEXT->value_length - 1];
+        Condition condition;
+        condition.init(CONTEXT->comp, 1, &left_attr,nullptr, 0, nullptr, right_value);
+        CONTEXT->conditions[CONTEXT->condition_length++] = condition;
     }
-    |value comOp ID DOT ID
-		{
-			// Value *left_value = &CONTEXT->values[CONTEXT->value_length - 1];
-
-			// RelAttr right_attr;
-			// relation_attr_init(&right_attr, $3, $5);
-
-			// Condition condition;
-			// condition_init(&condition, CONTEXT->comp, 0, NULL, left_value, 1, &right_attr, NULL);
-			// CONTEXT->conditions[CONTEXT->condition_length++] = condition;
+    |value comOp ID DOT ID{
+        Value *left_value = &CONTEXT->values[CONTEXT->value_length - 1];
+        RelAttr right_attr($3,$5);
+        Condition condition;
+        condition.init(CONTEXT->comp, 0,nullptr, left_value, 1, &right_attr, nullptr);
+        CONTEXT->conditions[CONTEXT->condition_length++] = condition;
     }
-    |ID DOT ID comOp ID DOT ID
-		{
-			// RelAttr left_attr;
-			// relation_attr_init(&left_attr, $1, $3);
-			// RelAttr right_attr;
-			// relation_attr_init(&right_attr, $5, $7);
-
-			// Condition condition;
-			// condition_init(&condition, CONTEXT->comp, 1, &left_attr, NULL, 1, &right_attr, NULL);
-			// CONTEXT->conditions[CONTEXT->condition_length++] = condition;
+    |ID DOT ID comOp ID DOT ID{
+        RelAttr left_attr($1, $3);
+        RelAttr right_attr($5, $7);
+        Condition condition;
+        condition.init(CONTEXT->comp, 1, &left_attr,nullptr, 1, &right_attr,nullptr);
+        CONTEXT->conditions[CONTEXT->condition_length++] = condition;
     }
     ;
 
 comOp:
-  	  EQ { 
-		// CONTEXT->comp = EqualTo;
-		}
-    | LT { 
-		// CONTEXT->comp = LessThan;
-		}
+  	EQ {
+	    CONTEXT->comp = CompOp::EqualTo;
+	}
+    | LT {
+		CONTEXT->comp = CompOp::LessThan;
+	}
     | GT {
-		//  CONTEXT->comp = GreatThan;
+		CONTEXT->comp = CompOp::GreatThan;
 	}
     | LE {
-		//  CONTEXT->comp = LessEqual;
-		  }
+		CONTEXT->comp = CompOp::LessEqual;
+	}
     | GE {
-		//  CONTEXT->comp = GreatEqual;
-		 }
+	    CONTEXT->comp = CompOp::GreatEqual;
+	}
     | NE {
-		//  CONTEXT->comp = NotEqual;
-		 }
+		CONTEXT->comp = CompOp::NotEqual;
+	}
     ;
 
 load_data:

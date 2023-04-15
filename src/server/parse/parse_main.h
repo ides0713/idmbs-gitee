@@ -14,7 +14,12 @@ public:
 
     Session *callBack();
 
+    void setResponse(const char *msg) { strcpy(response_, msg); }
+
+    void response();
+
 private:
     Query *query_;
+    char response_[MAX_MSG_LENGTH];
     Session *parse_session_;
 };

@@ -8,7 +8,9 @@
 class Session {
 public:
     explicit Session(DataBase *database = nullptr, Txn *txn = nullptr, bool txn_multi_operation = false)
-            : database_(database), txn_(txn), txn_multi_operation_(txn_multi_operation) {}
+            : database_(database), txn_(txn), txn_multi_operation_(txn_multi_operation) {
+        strcpy(response_, "response not set");
+    }
 
     ~Session() = default;
 
@@ -24,10 +26,15 @@ public:
 
     void setTmo(bool txn_multi_operation) { txn_multi_operation_ = txn_multi_operation; }
 
+    void setResponse(const char *msg) { strcpy(response_, msg); }
+
+    char *getResponse() { return response_; }
+
 private:
     DataBase *database_;
     Txn *txn_;
     bool txn_multi_operation_;
+    char response_[MSG_MSG_LEN];
 };
 
 class ParseSession : public Session {

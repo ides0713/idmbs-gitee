@@ -1,12 +1,22 @@
 #include "common_defs.h"
 #include <cstring>
 #include <cstdio>
+#include "params_deliver.h"
+#include <filesystem>
+#include <cassert>
 
 void debugPrint(const char *format, ...) {
 #ifdef DEBUG
+    if (LOG_STREAM == nullptr) {
+        namespace fs = std::filesystem;
+        fs::path p(PROJECT_PATH);
+        p.append("debug.log");
+        LOG_STREAM = fopen(p.c_str(), "a+");
+        assert(LOG_STREAM != nullptr);
+    }
     va_list var_list;
     va_start(var_list, format);
-    vprintf(format, var_list);
+    vfprintf(LOG_STREAM, format, var_list);
     va_end(var_list);
 #endif
 }

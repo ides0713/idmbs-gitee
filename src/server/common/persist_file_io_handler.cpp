@@ -97,7 +97,7 @@ Re PersistFileIoHandler::writeFile(int size, const char *data, size_t *out_size)
         debugPrint("PersistFileIoHandler:write file failed,because no file is associated with handler\n");
         return Re::FileAssociated;
     }
-    size_t write_size = fwrite(data, size, 1, file_);
+    size_t write_size = fwrite(data, 1, size, file_);
     if (write_size != size) {
         debugPrint("PersistFileIoHandler:write file %s failed.\n", file_path_.c_str());
         return Re::FileWrite;
@@ -123,7 +123,7 @@ Re PersistFileIoHandler::writeAt(long offset, int size, const char *data, size_t
                    file_path_.c_str(), offset);
         return Re::FileSeek;
     }
-    size_t write_size = fwrite(data, size, 1, file_);
+    size_t write_size = fwrite(data, 1, size, file_);
     if (write_size != size) {
         debugPrint("PersistFileIoHandler:write file %s at %ld failed.\n", file_path_.c_str(), offset);
         return Re::FileWrite;
@@ -147,7 +147,7 @@ Re PersistFileIoHandler::append(int size, const char *data, size_t *out_size) {
         debugPrint("PersistFileIoHandler:append file %s failed,because seek failed\n", file_path_.c_str());
         return Re::FileSeek;
     }
-    size_t write_size = fwrite(data, size, 1, file_);
+    size_t write_size = fwrite(data, 1, size, file_);
     if (write_size != size) {
         debugPrint("PersistFileIoHandler:append file %s failed.\n", file_path_.c_str());
         return Re::FileWrite;
@@ -167,7 +167,7 @@ Re PersistFileIoHandler::readFile(int size, char *data, size_t *out_size) {
                    file_path_.c_str(), strerror(errno));
         return Re::FileError;
     }
-    size_t read_size = fread(data, size, 1, file_);
+    size_t read_size = fread(data, 1, size, file_);
     if (read_size != size) {
         debugPrint("PersistFileIoHandler:read file %s failed.\n", file_path_.c_str());
         return Re::FileRead;
@@ -193,7 +193,7 @@ Re PersistFileIoHandler::readAt(long offset, int size, char *data, size_t *out_s
                    file_path_.c_str(), offset);
         return Re::FileSeek;
     }
-    size_t read_size = fread(data, size, 1, file_);
+    size_t read_size = fread(data, 1, size, file_);
     if (read_size != size) {
         debugPrint("PersistFileIoHandler:read file %s with offset %ld failed.\n", file_path_.c_str(), offset);
         return Re::FileRead;

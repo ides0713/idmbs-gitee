@@ -16,6 +16,8 @@ public:
 
     Re handle();
 
+    void response();
+
 private:
     Session *execute_session_, *storage_session_;
 };

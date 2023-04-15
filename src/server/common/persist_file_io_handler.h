@@ -49,5 +49,5 @@ private:
     std::string file_path_;
     FILE *file_;
 private:
-    bool isAssociated() { return (file_path_.empty() and file_ == nullptr); }
+    bool isAssociated() { return (!file_path_.empty() and file_ != nullptr); }
 };

@@ -372,7 +372,7 @@ Re DiskBufferPool::flushPage(Frame &frame) {
         return Re::IoErrWrite;
     }
     frame.dirty_ = false;
-    debugPrint("DiskBufferPool:Flush block. file desc=%d, page num=%d", file_desc_, page.page_id);
+    debugPrint("DiskBufferPool:Flush block. file desc=%d, page num=%d\n", file_desc_, page.page_id);
     return Re::Success;
 }
 

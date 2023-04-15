@@ -14,6 +14,12 @@ public:
 
     Session *callBack();
 
+    void response();
+
+    void stmtSucceed();
+
+    void stmtDestroyed();
+
 private:
     Statement *stmt_;
     Session *parse_session_, *resolve_session_;

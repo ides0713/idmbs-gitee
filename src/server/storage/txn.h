@@ -58,22 +58,25 @@ public:
 
     Re insertRecord(Table *table, class Record *rec);
 
-    Re updateRecord();
+    Re updateRecord(Table *table, class Record *rec);
 
-    Re deleteRecord();
+    Re deleteRecord(Table *table, class Record *rec);
 
-    int32_t getCurrentTxnId() { return txn_id_; }
+    int32_t getTxnId() { return txn_id_; }
+
+    void setTxnId(int32_t txn_id) { txn_id_ = txn_id; }
 
     void nextCurrentId();
+
 public:
-    static std::atomic<int32_t> txn_id;
+    static std::atomic<int32_t> global_txn_id;
 public:
 
     static int32_t getDefaultTxnId();
 
-    static int32_t getNextTxnId();
+    static int32_t getNextGlobalTxnId();
 
-    static void setTxnId(int32_t id);
+    static void setGlobalTxnId(int32_t id);
 
     static const char *getTxnFieldName();
 
@@ -89,4 +92,11 @@ private:
     void start();
 
     void setRecordTxnId(Table *table, class Record &rec, int32_t txn_id, bool deleted);
+
+    Operation *findOperation(Table *table, const RecordId &record_id);
+
+    void insertOperation(Table *table, Operation::Type type, const RecordId &rid);
+
+    void deleteOperation(Table *table, const RecordId &rid);
+
 };

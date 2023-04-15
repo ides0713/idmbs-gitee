@@ -4,5 +4,9 @@
 #include "../../common/common_defs.h"
 
 Re StorageMain::handle() {
-    return Re::GenericError;
+    return Re::Success;
+}
+
+void StorageMain::response() {
+    printf("%s\n", execute_session_->getResponse());
 }

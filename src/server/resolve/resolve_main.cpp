@@ -1,6 +1,5 @@
 #include "resolve_main.h"
 #include "../storage/storage_handler.h"
-#include <filesystem>
 
 Re ResolveMain::handle() {
     auto *ps = static_cast<ParseSession *>(parse_session_);
@@ -9,12 +8,14 @@ Re ResolveMain::handle() {
     DataBase *default_db = dbm.getDb(dbm.getProjectDefaultDatabasePath());
     if (default_db == nullptr) {
         debugPrint("ResolveMain:open default db failed,get nullptr,getFrame default db failed\n");
+        parse_session_->setResponse("CAN NOT OPEN CURRENT DATABASE");
         return Re::GenericError;
     }
     parse_session_->setDb(default_db);
-    Statement::createStatement(q, nullptr, stmt_);
+    Statement::createStatement(q, stmt_);
     if (stmt_ == nullptr) {
         debugPrint("ResolveMain:create statement failed\n");
+        parse_session_->setResponse("CAN NOT RESOLVE SQL STATEMENT");
         return Re::GenericError;
     }
     stmt_->init(q);
@@ -30,4 +31,28 @@ Re ResolveMain::handle() {
 
 Session *ResolveMain::callBack() {
     return resolve_session_;
+}
+
+void ResolveMain::response() {
+    printf("%s\n", parse_session_->getResponse());
+}
+
+void ResolveMain::stmtSucceed() {
+    switch (stmt_->getType()) {
+        case StatementType::CreateTable:
+            printf("CREATE TABLE %s SUCCEEDED\n", static_cast<CreateTableStatement *>(stmt_)->getTableName());
+            break;
+        case StatementType::Insert:
+            printf("INSERT RECORD SUCCEEDED\n");
+            break;
+        case StatementType::Select:
+            break;
+        default:
+            printf("SQL SUCCEEDED BUT NO MSG RETURNED\n");
+            break;
+    }
+}
+
+void ResolveMain::stmtDestroyed() {
+    stmt_->destroy();
 }

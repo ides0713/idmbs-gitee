@@ -9,7 +9,7 @@
 
 class Session;
 
-enum StatementFlag {
+enum StatementType {
     Select = 0,
     CreateTable,
     Insert
@@ -25,11 +25,11 @@ public:
 
     virtual void destroy() = 0;
 
-    virtual StatementFlag getType() = 0;
+    virtual StatementType getType() = 0;
 
     SqlCommandFlag getScf() { return flag_; }
 
-    static void createStatement(Query *const query, Session *parse_session, Statement *&stmt);
+    static void createStatement(Query *const query, Statement *&stmt);
 
 private:
     SqlCommandFlag flag_;
@@ -45,9 +45,14 @@ public:
 
     void destroy() override;
 
-    StatementFlag getType() override { return StatementFlag::Select; }
+    StatementType getType() override { return StatementType::Select; }
 
 private:
+    char *table_name_;
+    RelAttr *attrs_;
+    int attrs_num_;
+    Condition *conditions_;
+    int conditions_num_;
 };
 
 class CreateTableStatement : public Statement {
@@ -60,7 +65,7 @@ public:
 
     void destroy() override;
 
-    StatementFlag getType() override { return StatementFlag::CreateTable; }
+    StatementType getType() override { return StatementType::CreateTable; }
 
     const char *getTableName() { return table_name_; }
 
@@ -84,7 +89,7 @@ public:
 
     void destroy() override;
 
-    StatementFlag getType() override { return StatementFlag::Insert; }
+    StatementType getType() override { return StatementType::Insert; }
 
     const char *getTableName() { return table_name_; }
 
