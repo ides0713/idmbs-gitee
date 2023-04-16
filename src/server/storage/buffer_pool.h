@@ -269,8 +269,8 @@ public:
     Re flushPage(Frame &frame);
 
 public:
-    ///@brief create a file with a special format(first page is header page with a bitmap and two params(pages_num and allocated_pages_num))
-    ///@NOTE did not allocate a buffer for it,just create it
+    ///@brief createFilter a file with a special format(first page is header page with a bitmap and two params(pages_num and allocated_pages_num))
+    ///@NOTE did not allocate a buffer for it,just createFilter it
     static Re createFile(const char *file_name);
 
 private:

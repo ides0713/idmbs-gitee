@@ -241,18 +241,18 @@ Re Table::init(std::filesystem::path database_path, const char *table_name, cons
     GlobalBufferPoolManager &bpm = GlobalManagers::globalBufferPoolManager();
     r = bpm.createFile(data_file_path.c_str());
     if (r != Re::Success) {
-        debugPrint("Table:failed to create disk buffer pool of data file. file name=%s\n", data_file_name.c_str());
+        debugPrint("Table:failed to createFilter disk buffer pool of data file. file name=%s\n", data_file_name.c_str());
         return r;
     }
     r = initRecordHandler(database_path);
     if (r != Re::Success) {
-        debugPrint("Table:failed to create table %s due to init record handler failed.", data_file_name.c_str());
+        debugPrint("Table:failed to createFilter table %s due to init record handler failed.", data_file_name.c_str());
         // don't need to remove the data_file
         return r;
     }
     database_path_ = database_path;
     clog_manager_ = clog_manager;
-    debugPrint("Table:successfully create table %s:%s", database_path_.c_str(), table_meta_.getTableName().c_str());
+    debugPrint("Table:successfully createFilter table %s:%s", database_path_.c_str(), table_meta_.getTableName().c_str());
     return Re::Success;
 }
 
@@ -359,7 +359,7 @@ Re Table::makeRecord(int values_num, const Value *values, char *&record_data) {
         const Value &th_value = values[i];
         const FieldMeta *th_field_meta = table_meta_.getField(i + table_sys_fields_num);
         if (th_value.type != th_field_meta->getAttrType()) {
-            debugPrint("Table:make record failed,values type %d mismatch fields type %d\n",
+            debugPrint("Table:make record failed,values getExprType %d mismatch fields getExprType %d\n",
                        th_value.type, th_field_meta->getAttrType());
             return Re::SchemaFieldTypeMismatch;
         }

@@ -40,11 +40,12 @@ private:
 
 class Table;
 
+///@brief class Field is just a container of pointer of field meta and pointer of table,it does not have its own memeber
 class Field {
 public:
     Field() : table_(nullptr), field_meta_(nullptr) {}
 
-    Field(Table *table, FieldMeta *field) : table_(table), field_meta_(field) {}
+    Field(const Table *table, const FieldMeta *field) : table_(table), field_meta_(field) {}
 
     [[nodiscard]] const Table *getTable() const { return table_; }
 
@@ -56,11 +57,11 @@ public:
 
     [[nodiscard]] AttrType getAttrType() const { return field_meta_->getAttrType(); }
 
-    [[nodiscard]] std::string getTableName() const;
+    [[nodiscard]] std::string getTableName()const ;
 
     [[nodiscard]] std::string getFieldName() const { return field_meta_->getFieldName(); }
 
 private:
-    Table *table_;
-    FieldMeta *field_meta_;
+    const Table *table_;
+    const FieldMeta *field_meta_;
 };

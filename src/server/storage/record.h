@@ -58,7 +58,7 @@ public:
 
     [[nodiscard]] RecordId &getRecordId() { return record_id_; }
 
-    [[nodiscard]] const char *getData() const { return data_; }
+    [[nodiscard]] char *getData(){ return data_; }
 
 private:
     RecordId record_id_;

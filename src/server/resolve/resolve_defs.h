@@ -48,7 +48,8 @@ public:
     StatementType getType() override { return StatementType::Select; }
 
 private:
-    char *table_name_;
+    char **table_names_;
+    int table_names_num_;
     RelAttr *attrs_;
     int attrs_num_;
     Condition *conditions_;

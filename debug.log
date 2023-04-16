@@ -14,7 +14,7 @@ CREATE TABLE Select_tables_1(id int, age int, u_name char);
 --
 
 Main:sql parse succeeded
-PersistFileIoHandler:successfully create /home/ubuntu/idbms/bin/sys/clog
+PersistFileIoHandler:successfully createFilter /home/ubuntu/idbms/bin/sys/clog
 DataBase:all table have been opened. num=0
 GlobalDataBaseManager:getDb succeeded,database_name:sys
 
@@ -24,14 +24,14 @@ FieldMeta:init a field_meta with name:id
 FieldMeta:init a field_meta with name:age
 FieldMeta:init a field_meta with name:u_name
 TableMeta:initialized table meta.table name=Select_tables_1
-GlobalBufferPoolManager:successfully create /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
+GlobalBufferPoolManager:successfully createFilter /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
 DiskBufferPool:successfully open file /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
-DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7f1d07f99010
+DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7f24d0188010
 RecordFileHandler:open record file handle done. r=0
-Table:successfully create table /home/ubuntu/idbms/bin/sys:Select_tables_1DataBase:create table success. table name=Select_tables_1
+Table:successfully createFilter table /home/ubuntu/idbms/bin/sys:Select_tables_1DataBase:createFilter table success. table name=Select_tables_1
 
 Main:execute stmt succeeded
-DiskBufferPool:successfully purge frame =0x7f1d07f99010, page 0 of 6(file desc)
+DiskBufferPool:successfully purge frame =0x7f24d0188010, page 0 of 6(file desc)
 DiskBufferPool:successfully destroy file 6:/home/ubuntu/idbms/bin/sys/Select_tables_1.data.
 DiskBufferPool:disk buffer pool destructed
 Main:------------------------------------exit
@@ -51,7 +51,7 @@ INSERT INTO Select_tables_1 VALUES (1,18,'a');
 --
 
 Main:sql parse succeeded
-PersistFileIoHandler:failed to create file /home/ubuntu/idbms/bin/sys/clog,because file already exists
+PersistFileIoHandler:failed to createFilter file /home/ubuntu/idbms/bin/sys/clog,because file already exists
 PersistFileIoHandler:successfully open file /home/ubuntu/idbms/bin/sys/clog.
 FieldMeta:init a field_meta with name:__txn
 FieldMeta:init a field_meta with name:__txn
@@ -59,7 +59,7 @@ FieldMeta:init a field_meta with name:id
 FieldMeta:init a field_meta with name:age
 FieldMeta:init a field_meta with name:u_name
 DiskBufferPool:successfully open file /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
-DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7f17328ac010
+DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7fc3638b6010
 RecordFileHandler:open record file handle done. r=0
 DataBase:open table: Select_tables_1, file: Select_tables_1.table
 DataBase:all table have been opened. num=1
@@ -72,7 +72,7 @@ DiskBufferPool:Flush block. file desc=6, page num=1
 
 Main:execute stmt succeeded
 DiskBufferPool:Flush block. file desc=6, page num=0
-DiskBufferPool:successfully purge frame =0x7f17328ac010, page 0 of 6(file desc)
+DiskBufferPool:successfully purge frame =0x7fc3638b6010, page 0 of 6(file desc)
 DiskBufferPool:successfully destroy file 6:/home/ubuntu/idbms/bin/sys/Select_tables_1.data.
 DiskBufferPool:disk buffer pool destructed
 Main:------------------------------------exit
@@ -92,7 +92,7 @@ INSERT INTO Select_tables_1 VALUES (2,15,'b');
 --
 
 Main:sql parse succeeded
-PersistFileIoHandler:failed to create file /home/ubuntu/idbms/bin/sys/clog,because file already exists
+PersistFileIoHandler:failed to createFilter file /home/ubuntu/idbms/bin/sys/clog,because file already exists
 PersistFileIoHandler:successfully open file /home/ubuntu/idbms/bin/sys/clog.
 FieldMeta:init a field_meta with name:__txn
 FieldMeta:init a field_meta with name:__txn
@@ -100,7 +100,7 @@ FieldMeta:init a field_meta with name:id
 FieldMeta:init a field_meta with name:age
 FieldMeta:init a field_meta with name:u_name
 DiskBufferPool:successfully open file /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
-DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7fb0e0e74010
+DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7fc8e57d2010
 RecordPageHandler:successfully init page_id 1.
 RecordFileHandler:open record file handle done. r=0
 DataBase:open table: Select_tables_1, file: Select_tables_1.table
@@ -111,7 +111,7 @@ Main:resolve stmt succeeded
 RecordPageHandler:successfully init page_id 1.
 
 Main:execute stmt succeeded
-DiskBufferPool:successfully purge frame =0x7fb0e0e74010, page 0 of 6(file desc)
+DiskBufferPool:successfully purge frame =0x7fc8e57d2010, page 0 of 6(file desc)
 DiskBufferPool:successfully destroy file 6:/home/ubuntu/idbms/bin/sys/Select_tables_1.data.
 DiskBufferPool:disk buffer pool destructed
 Main:------------------------------------exit
@@ -131,7 +131,7 @@ INSERT INTO Select_tables_1 VALUES (1,20,'a');
 --
 
 Main:sql parse succeeded
-PersistFileIoHandler:failed to create file /home/ubuntu/idbms/bin/sys/clog,because file already exists
+PersistFileIoHandler:failed to createFilter file /home/ubuntu/idbms/bin/sys/clog,because file already exists
 PersistFileIoHandler:successfully open file /home/ubuntu/idbms/bin/sys/clog.
 FieldMeta:init a field_meta with name:__txn
 FieldMeta:init a field_meta with name:__txn
@@ -139,7 +139,7 @@ FieldMeta:init a field_meta with name:id
 FieldMeta:init a field_meta with name:age
 FieldMeta:init a field_meta with name:u_name
 DiskBufferPool:successfully open file /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
-DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7ff990cd6010
+DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7ff854b08010
 RecordPageHandler:successfully init page_id 1.
 RecordFileHandler:open record file handle done. r=0
 DataBase:open table: Select_tables_1, file: Select_tables_1.table
@@ -150,7 +150,7 @@ Main:resolve stmt succeeded
 RecordPageHandler:successfully init page_id 1.
 
 Main:execute stmt succeeded
-DiskBufferPool:successfully purge frame =0x7ff990cd6010, page 0 of 6(file desc)
+DiskBufferPool:successfully purge frame =0x7ff854b08010, page 0 of 6(file desc)
 DiskBufferPool:successfully destroy file 6:/home/ubuntu/idbms/bin/sys/Select_tables_1.data.
 DiskBufferPool:disk buffer pool destructed
 Main:------------------------------------exit
@@ -170,7 +170,7 @@ INSERT INTO Select_tables_1 VALUES (2,21,'c');
 --
 
 Main:sql parse succeeded
-PersistFileIoHandler:failed to create file /home/ubuntu/idbms/bin/sys/clog,because file already exists
+PersistFileIoHandler:failed to createFilter file /home/ubuntu/idbms/bin/sys/clog,because file already exists
 PersistFileIoHandler:successfully open file /home/ubuntu/idbms/bin/sys/clog.
 FieldMeta:init a field_meta with name:__txn
 FieldMeta:init a field_meta with name:__txn
@@ -178,7 +178,7 @@ FieldMeta:init a field_meta with name:id
 FieldMeta:init a field_meta with name:age
 FieldMeta:init a field_meta with name:u_name
 DiskBufferPool:successfully open file /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
-DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7f69bc587010
+DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7f053e938010
 RecordPageHandler:successfully init page_id 1.
 RecordFileHandler:open record file handle done. r=0
 DataBase:open table: Select_tables_1, file: Select_tables_1.table
@@ -189,7 +189,7 @@ Main:resolve stmt succeeded
 RecordPageHandler:successfully init page_id 1.
 
 Main:execute stmt succeeded
-DiskBufferPool:successfully purge frame =0x7f69bc587010, page 0 of 6(file desc)
+DiskBufferPool:successfully purge frame =0x7f053e938010, page 0 of 6(file desc)
 DiskBufferPool:successfully destroy file 6:/home/ubuntu/idbms/bin/sys/Select_tables_1.data.
 DiskBufferPool:disk buffer pool destructed
 Main:------------------------------------exit
@@ -209,7 +209,7 @@ INSERT INTO Select_tables_1 VALUES (1,35,'a');
 --
 
 Main:sql parse succeeded
-PersistFileIoHandler:failed to create file /home/ubuntu/idbms/bin/sys/clog,because file already exists
+PersistFileIoHandler:failed to createFilter file /home/ubuntu/idbms/bin/sys/clog,because file already exists
 PersistFileIoHandler:successfully open file /home/ubuntu/idbms/bin/sys/clog.
 FieldMeta:init a field_meta with name:__txn
 FieldMeta:init a field_meta with name:__txn
@@ -217,7 +217,7 @@ FieldMeta:init a field_meta with name:id
 FieldMeta:init a field_meta with name:age
 FieldMeta:init a field_meta with name:u_name
 DiskBufferPool:successfully open file /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
-DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7f20fa011010
+DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7fb06b313010
 RecordPageHandler:successfully init page_id 1.
 RecordFileHandler:open record file handle done. r=0
 DataBase:open table: Select_tables_1, file: Select_tables_1.table
@@ -228,7 +228,7 @@ Main:resolve stmt succeeded
 RecordPageHandler:successfully init page_id 1.
 
 Main:execute stmt succeeded
-DiskBufferPool:successfully purge frame =0x7f20fa011010, page 0 of 6(file desc)
+DiskBufferPool:successfully purge frame =0x7fb06b313010, page 0 of 6(file desc)
 DiskBufferPool:successfully destroy file 6:/home/ubuntu/idbms/bin/sys/Select_tables_1.data.
 DiskBufferPool:disk buffer pool destructed
 Main:------------------------------------exit
@@ -248,7 +248,7 @@ INSERT INTO Select_tables_1 VALUES (2,37,'a');
 --
 
 Main:sql parse succeeded
-PersistFileIoHandler:failed to create file /home/ubuntu/idbms/bin/sys/clog,because file already exists
+PersistFileIoHandler:failed to createFilter file /home/ubuntu/idbms/bin/sys/clog,because file already exists
 PersistFileIoHandler:successfully open file /home/ubuntu/idbms/bin/sys/clog.
 FieldMeta:init a field_meta with name:__txn
 FieldMeta:init a field_meta with name:__txn
@@ -256,7 +256,7 @@ FieldMeta:init a field_meta with name:id
 FieldMeta:init a field_meta with name:age
 FieldMeta:init a field_meta with name:u_name
 DiskBufferPool:successfully open file /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
-DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7f7f0ec7b010
+DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7f7367227010
 RecordPageHandler:successfully init page_id 1.
 RecordFileHandler:open record file handle done. r=0
 DataBase:open table: Select_tables_1, file: Select_tables_1.table
@@ -267,7 +267,7 @@ Main:resolve stmt succeeded
 RecordPageHandler:successfully init page_id 1.
 
 Main:execute stmt succeeded
-DiskBufferPool:successfully purge frame =0x7f7f0ec7b010, page 0 of 6(file desc)
+DiskBufferPool:successfully purge frame =0x7f7367227010, page 0 of 6(file desc)
 DiskBufferPool:successfully destroy file 6:/home/ubuntu/idbms/bin/sys/Select_tables_1.data.
 DiskBufferPool:disk buffer pool destructed
 Main:------------------------------------exit
@@ -287,7 +287,7 @@ SELECT * FROM Select_tables_1 WHERE id=1;
 --
 
 Main:sql parse succeeded
-PersistFileIoHandler:failed to create file /home/ubuntu/idbms/bin/sys/clog,because file already exists
+PersistFileIoHandler:failed to createFilter file /home/ubuntu/idbms/bin/sys/clog,because file already exists
 PersistFileIoHandler:successfully open file /home/ubuntu/idbms/bin/sys/clog.
 FieldMeta:init a field_meta with name:__txn
 FieldMeta:init a field_meta with name:__txn
@@ -295,16 +295,20 @@ FieldMeta:init a field_meta with name:id
 FieldMeta:init a field_meta with name:age
 FieldMeta:init a field_meta with name:u_name
 DiskBufferPool:successfully open file /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
-DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7f57a72cc010
+DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=6, hdr_frame=0x7f5ea8121010
 RecordPageHandler:successfully init page_id 1.
 RecordFileHandler:open record file handle done. r=0
 DataBase:open table: Select_tables_1, file: Select_tables_1.table
 DataBase:all table have been opened. num=1
 GlobalDataBaseManager:getDb succeeded,database_name:sys
-ResolveMain:statement initialize and handle failed re=1
+SelectStatement:got 1 tables in from stmt and 3 fields in query stmt
+Filter:invalid compare operator:77
+Filter:failed to create filter,create filter unit of condition with index:0 failed
+SelectStatement:create filter failed
+ResolveMain:statement initialize and handle failed re=2
 
 Main:resolve stmt failed
-DiskBufferPool:successfully purge frame =0x7f57a72cc010, page 0 of 6(file desc)
+DiskBufferPool:successfully purge frame =0x7f5ea8121010, page 0 of 6(file desc)
 DiskBufferPool:successfully destroy file 6:/home/ubuntu/idbms/bin/sys/Select_tables_1.data.
 DiskBufferPool:disk buffer pool destructed
 Main:------------------------------------exit

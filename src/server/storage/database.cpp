@@ -31,20 +31,20 @@ Re DataBase::init(const char *database_name, const std::filesystem::path &databa
 Re DataBase::createTable(const char *table_name, const size_t attr_infos_num, const AttrInfo *attr_infos) {
     namespace fs = std::filesystem;
     if (opened_tables_.count(std::string(table_name))) {
-        debugPrint("DataBase::create table %s in database %s failed,already exists\n", database_name_.c_str(),
+        debugPrint("DataBase::createFilter table %s in database %s failed,already exists\n", database_name_.c_str(),
                    table_name);
         return Re::SchemaTableExist;
     }
-    Table *new_table = new Table();
+    Table *new_table = new Table;
     //todo:table.init causes segmentation fault
     Re r = new_table->init(database_path_, table_name, attr_infos_num, attr_infos, clog_manager_);
     if (r != Re::Success) {
-        debugPrint("DataBase:failed to create table %s.\n", table_name);
+        debugPrint("DataBase:failed to createFilter table %s.\n", table_name);
         delete new_table;
         return r;
     }
     opened_tables_[table_name] = new_table;
-    debugPrint("DataBase:create table success. table name=%s\n", table_name);
+    debugPrint("DataBase:createFilter table success. table name=%s\n", table_name);
     return Re::Success;
 }
 
@@ -61,7 +61,7 @@ Re DataBase::openAllTables() {
         return Re::IoErr;
     }
     for (const std::string &file_name: table_meta_files) {
-        Table *table = new Table();
+        Table *table = new Table;
         std::string table_name = file_name.substr(0, file_name.find_last_of('.'));
         Re r = table->init(database_path_, table_name.c_str(), clog_manager_);
         if (r != Re::Success) {
@@ -118,11 +118,11 @@ Re GlobalDataBaseManager::createDb(const std::filesystem::path database_path) {
             debugPrint("DatabaseManager:created database %s\n", database_name.c_str());
             return Re::Success;
         } else {
-            debugPrint("DatabaseManager:create database %s failed,unknown error\n", database_name.c_str());
+            debugPrint("DatabaseManager:createFilter database %s failed,unknown error\n", database_name.c_str());
             return Re::GenericError;
         }
     } else {
-        debugPrint("DatabaseManager:create database %s failed,already exists\n", database_name.c_str());
+        debugPrint("DatabaseManager:createFilter database %s failed,already exists\n", database_name.c_str());
         return Re::SchemaDbExist;
     }
 }
@@ -151,7 +151,7 @@ DataBase *GlobalDataBaseManager::getDb(const char *database_name) {
                 debugPrint("GlobalDataBaseManager:getDb succeeded,database_name:%s\n", database_name);
                 return th_new_db;
             } else {
-                debugPrint("GlobalDataBaseManager:getDb failed,create failed,database_name:%s\n", database_name);
+                debugPrint("GlobalDataBaseManager:getDb failed,createFilter failed,database_name:%s\n", database_name);
                 return nullptr;
             }
         } else {

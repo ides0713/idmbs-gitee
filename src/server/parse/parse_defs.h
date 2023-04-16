@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cassert>
-
+#include <iostream>
 const int MAX_ID_LENGTH = 20;
 const int MAX_REL_NAME_LENGTH = 20;
 const int MAX_RELS_NUM = 20;
@@ -51,7 +51,7 @@ enum AttrType {
     Floats,
     Dates
 };
-
+std::string strAttrType(AttrType type);
 enum CompOp {
     EqualTo = 0, //"="     0
     LessEqual,   //"<="    1
@@ -61,12 +61,16 @@ enum CompOp {
     GreatThan,   //">"     5
     NoOp
 };
-
+std::string strCompOp(CompOp cmp);
 struct Value {
 public:
     AttrType type; // 属性类型(数据类型)
     void *data;    // 数据内容(值)
 public:
+    ///@brief debug
+    void desc(std::ostream & stream){
+
+    }
     Value() : type(AttrType::Undefined), data(nullptr) {}
 
     Value(AttrType t, void *d) : type(t), data(d) {}
@@ -264,16 +268,19 @@ private:
 
 class SelectQuery : public Query {
 public:
-    SelectQuery() : Query(ScfSelect), attrs_(nullptr), rel_name_(nullptr), conditions_(nullptr) {}
+    SelectQuery() : Query(ScfSelect), attrs_(nullptr), rel_names_(nullptr), conditions_(nullptr) {}
 
     void init() override {
-        attrs_num_ = 0, conditions_num_ = 0;
+        attrs_num_ = 0, rel_names_num_ = 0, conditions_num_ = 0;
         attrs_ = new RelAttr[MAX_ATTRS_NUM];
         conditions_ = new Condition[MAX_CONDITIONS_NUM];
+        rel_names_ = new char *[MAX_RELS_NUM];
     }
 
     void destroy() override {
-        delete[] rel_name_;
+        for (int i = 0; i < rel_names_num_; i++)
+            delete[]rel_names_[i];
+        delete[]rel_names_;
         for (int i = 0; i < attrs_num_; i++)
             attrs_[i].destroy();
         delete[]attrs_;
@@ -284,7 +291,7 @@ public:
 
     void addRelAttr(const RelAttr &rel_attr) { attrs_[attrs_num_++] = rel_attr; }
 
-    void setRelName(const char *str) { rel_name_ = strNew(str); }
+    void addRelName(const char *str) { rel_names_[rel_names_num_++] = strNew(str); }
 
     void addConditions(size_t conditions_num, const Condition *conditions) {
         for (int i = 0; i < conditions_num; i++)
@@ -293,16 +300,20 @@ public:
 
     int getAttrsNum() { return attrs_num_; }
 
+    int getRelNamesNum() { return rel_names_num_; }
+
     int getConditionsNum() { return conditions_num_; }
 
     RelAttr *getAttrs() { return attrs_; }
 
     Condition *getConditions() { return conditions_; }
 
+    char **getRelNames() { return rel_names_; }
+
 private:
-    int attrs_num_, conditions_num_;
+    int attrs_num_, rel_names_num_, conditions_num_;
     RelAttr *attrs_;
-    char *rel_name_;
+    char **rel_names_;
     Condition *conditions_;
 };
 

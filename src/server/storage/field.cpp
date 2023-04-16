@@ -4,7 +4,7 @@
 #include "table.h"
 
 const static Json::StaticString FIELD_NAME("name");
-const static Json::StaticString FIELD_TYPE("type");
+const static Json::StaticString FIELD_TYPE("getExprType");
 const static Json::StaticString FIELD_OFFSET("offset");
 const static Json::StaticString FIELD_LEN("len");
 const static Json::StaticString FIELD_VISIBLE("visible");
@@ -67,7 +67,7 @@ Re FieldMeta::fromJson(const Json::Value &json_value, FieldMeta &field) {
         return Re::GenericError;
     }
     if (!type_value.isString()) {
-        debugPrint("FieldMeta:Field type is not a string. json value=%s\n", type_value.toStyledString().c_str());
+        debugPrint("FieldMeta:Field getExprType is not a string. json value=%s\n", type_value.toStyledString().c_str());
         return Re::GenericError;
     }
 
@@ -87,7 +87,7 @@ Re FieldMeta::fromJson(const Json::Value &json_value, FieldMeta &field) {
 
     AttrType type = castStringAttrType(type_value.asCString());
     if (type == AttrType::Undefined) {
-        debugPrint("FieldMeta:getFrame invalid getFieldName type. type=%d\n", type);
+        debugPrint("FieldMeta:getFrame invalid getFieldName getExprType. getExprType=%d\n", type);
         return Re::GenericError;
     }
 
@@ -98,6 +98,6 @@ Re FieldMeta::fromJson(const Json::Value &json_value, FieldMeta &field) {
     return field.init(field_name, type, attr_offset, attr_len, visible);
 }
 
-std::string Field::getTableName() const {
+std::string Field::getTableName()const  {
     return table_->getTableName();
 }

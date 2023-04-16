@@ -37,3 +37,33 @@ char *strNew(const char *str) {
     res[len] = '\0';
     return res;
 }
+
+std::string strAttrType(AttrType type) {
+    switch (type) {
+        case AttrType::Undefined:
+            return std::string{"Undefined"};
+        case AttrType::Ints:
+            return std::string{"Ints"};
+        case AttrType::Floats:
+            return std::string{"Floats"};
+        case AttrType::Chars:
+            return std::string{"Chars"};
+        case AttrType::Dates:
+            return std::string{"Dates"};
+        default:
+            assert(false);
+    }
+}
+
+std::string strCompOp(CompOp cmp) {
+    switch (comp){
+        case CompOp ::NoOp:
+            return std::string{"NoOp"};
+        case CompOp ::EqualTo:
+            return std::string{"EqualTo"};
+        case CompOp ::GreatEqual:
+            return std::string{"GreatEqual"};
+        case CompOp ::GreatThan:
+            return std::string{"GreatThan"};
+    }
+}

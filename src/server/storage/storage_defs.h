@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <vector>
 
-/// @brief list all files meet the regular expression in the vector providing
+/// @brief list all files meet the regular getExpression in the vector providing
 int listFile(std::filesystem::path dir_path, const char *regx, std::vector<std::string> &files_name);
 
 /// @brief get path of database directory path with bin directory path and database name

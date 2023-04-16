@@ -100,7 +100,7 @@ commands:
     | commands command ;
 
 command:
-	select  
+	select
 	| insert
 	| update
 	| delete
@@ -108,7 +108,7 @@ command:
 	| drop_table
 	| show_tables
 	| desc_table
-	| create_index	
+	| create_index
 	| drop_index
 	| sync
 	| begin
@@ -118,7 +118,7 @@ command:
 	| help
 	| exit ;
 
-exit:			
+exit:
     EXIT SEMICOLON {
 		// CONTEXT->query=new ExitQuery();
     };
@@ -193,7 +193,7 @@ attr_def_list:
     /* empty */
     | COMMA attr_def attr_def_list {  }
     ;
-    
+
 attr_def:
     ID_get type LBRACE number RBRACE {
 		if(CONTEXT->query==nullptr){
@@ -228,18 +228,18 @@ type:
     |STRING_T{
 		$$=AttrType::Chars;
 	}
-    |FLOAT_T{ 
+    |FLOAT_T{
 		$$=AttrType::Floats;
 	}
     ;
 ID_get:
 	ID {
-		char *temp=$1; 
+		char *temp=$1;
 		snprintf(CONTEXT->id, sizeof(CONTEXT->id), "%s", temp);
 	}
 	;
 
-	
+
 insert:
     INSERT INTO ID VALUES LBRACE value value_list RBRACE value_unit SEMICOLON {
         if(CONTEXT->query==nullptr){
@@ -305,7 +305,7 @@ update:			/*  update 语句的语法解析树*/
     ;
 select:				/*  select 语句的语法解析树*/
     SELECT select_attr FROM ID rel_list where SEMICOLON{
-        static_cast<SelectQuery*>(CONTEXT->query)->setRelName($4);
+        static_cast<SelectQuery*>(CONTEXT->query)->addRelName($4);
         static_cast<SelectQuery*>(CONTEXT->query)->addConditions(CONTEXT->condition_length,CONTEXT->conditions);
         //临时变量清零
         CONTEXT->condition_length=0;
@@ -356,9 +356,9 @@ attr_list:
 
 rel_list:
     /* empty */
-    | COMMA ID rel_list {	
-			// selects_append_relation(&CONTEXT->ssql->sstr.selection, $2);
-		  }
+    | COMMA ID rel_list {
+        static_cast<SelectQuery*>(CONTEXT->query)->addRelName($2);
+	}
     ;
 where:
     /* empty */ 

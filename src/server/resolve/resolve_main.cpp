@@ -14,7 +14,7 @@ Re ResolveMain::handle() {
     parse_session_->setDb(default_db);
     Statement::createStatement(q, stmt_);
     if (stmt_ == nullptr) {
-        debugPrint("ResolveMain:create statement failed\n");
+        debugPrint("ResolveMain:createFilter statement failed\n");
         parse_session_->setResponse("CAN NOT RESOLVE SQL STATEMENT");
         return Re::GenericError;
     }
@@ -46,6 +46,7 @@ void ResolveMain::stmtSucceed() {
             printf("INSERT RECORD SUCCEEDED\n");
             break;
         case StatementType::Select:
+            printf("SELECT FINISH\n");
             break;
         default:
             printf("SQL SUCCEEDED BUT NO MSG RETURNED\n");

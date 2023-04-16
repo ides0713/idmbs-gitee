@@ -1,6 +1,13 @@
 #include "resolve_defs.h"
 #include <cassert>
 #include "../common/session.h"
+#include "filter.h"
+void wildcardFields(Table *table, std::vector<Field> &fields) {
+    const TableMeta &table_meta = table->getTableMeta();
+    const int field_num = table_meta.getFieldsNum();
+    for (int i = TableMeta::getSysFieldsNum(); i < field_num; i++)
+        fields.emplace_back(table, table_meta.getField(i));
+}
 
 void Statement::createStatement(Query *const query, Statement *&stmt) {
     switch (query->getScf()) {
@@ -22,15 +29,20 @@ void Statement::createStatement(Query *const query, Statement *&stmt) {
 
 SelectStatement::SelectStatement(Query *query) :
         Statement(query->getScf()) {
-    table_name_ = nullptr, attrs_ = nullptr, conditions_ = nullptr;
-    attrs_num_ = 0, conditions_num_ = 0;
+    table_names_ = nullptr, attrs_ = nullptr, conditions_ = nullptr;
+    attrs_num_ = 0, conditions_num_ = 0, table_names_num_ = 0;
 }
 
 void SelectStatement::init(Query *query) {
     auto sq = static_cast<SelectQuery *>(query);
     assert(this->getScf() == ScfSelect);
+    table_names_num_ = sq->getRelNamesNum();
     attrs_num_ = sq->getAttrsNum();
     conditions_num_ = sq->getConditionsNum();
+    table_names_ = new char *[table_names_num_];
+    char **table_names = sq->getRelNames();
+    for (int i = 0; i < table_names_num_; i++)
+        table_names_[i] = strNew(table_names[i]);
     attrs_ = new RelAttr[attrs_num_];
     RelAttr *attrs = sq->getAttrs();
     for (int i = 0; i < attrs_num_; i++)
@@ -41,10 +53,99 @@ void SelectStatement::init(Query *query) {
         conditions_[i].copy(conditions[i]);
 }
 
-Re SelectStatement::handle(Query *query, Session *parse_session) { return Re::GenericError; }
+Re SelectStatement::handle(Query *query, Session *parse_session) {
+    auto ps = static_cast<ParseSession *>(parse_session);
+    DataBase *current_db = ps->getDb();
+    if (current_db == nullptr) {
+        debugPrint("SelectStatement:invalid argument.can not get db\n");
+        parse_session->setResponse("SELECT ERROR,CAN NOT OPEN DATABASE");
+        return Re::InvalidArgument;
+    }
+    std::vector<Table *> tables_vec;
+    std::unordered_map<std::string, Table *> tables_map;
+    for (int i = 0; i < table_names_num_; i++) {
+        std::string table_name(table_names_[i]);
+        Table *table = current_db->getTable(table_name);
+        if (table == nullptr) {
+            debugPrint("SelectStatement:no such table. db=%s, table_name=%s\n",
+                       current_db->getDbName().c_str(), table_name.c_str());
+            parse_session->setResponse("SELECT ERROR,NO SUCH TABLE");
+            return Re::SchemaTableNotExist;
+        }
+        tables_vec.push_back(table);
+        tables_map.emplace(table_name, table);
+    }
+    std::vector<Field> fields_vec;
+    for (int i = 0; i < attrs_num_; i++) {
+        const RelAttr &attr = attrs_[i];
+        const char *rel_name = attr.rel_name;
+        const char *attr_name = attr.attr_name;
+        if (rel_name == nullptr and strcmp(attr_name, "*") == 0)
+            for (auto &t: tables_vec)
+                wildcardFields(t, fields_vec);
+        else if (rel_name != nullptr) {
+            if (strcmp(rel_name, "*") == 0) {
+                if (strcmp(attr_name, "*") != 0) {
+                    debugPrint("SelectStatement:invalid field name while table is *. attr=%s\n", attr_name);
+                    parse_session->setResponse("SELECT ERROR,SQL SYNTAX ERROR");
+                    return Re::SchemaFieldMissing;
+                }
+                for (auto &t: tables_vec)
+                    wildcardFields(t, fields_vec);
+            } else {
+                auto it = tables_map.find(std::string(rel_name));
+                if (it == tables_map.end()) {
+                    debugPrint("SelectStatement:no such table in from list:%s\n", rel_name);
+                    parse_session->setResponse("SELECT ERROR,NO SUCH TABLE");
+                    return Re::SchemaFieldMissing;
+                }
+                Table *table = it->second;
+                if (strcmp(attr_name, "*") == 0)
+                    wildcardFields(table, fields_vec);
+                else {
+                    const FieldMeta *field_meta = table->getTableMeta().getField(attr_name);
+                    if (field_meta == nullptr) {
+                        debugPrint("SelectStatement:no such field:%s in the table,invalid args\n", attr_name);
+                        parse_session->setResponse("SELECT ERROR,NO SUCH FIELD IN TABLE");
+                        return Re::SchemaFieldMissing;
+                    }
+                    fields_vec.emplace_back(table, field_meta);
+                }
+            }
+        } else {
+            if (tables_vec.size() != 1) {
+                debugPrint("SelectStatement:not clearly given attrs\n");
+                parse_session->setResponse("SELECT ERROR,ATTR GIVEN NOT CLEARLY");
+                return Re::SchemaFieldMissing;
+            }
+            Table *table = tables_vec[0];
+            const FieldMeta *field_meta = table->getTableMeta().getField(attr_name);
+            if (field_meta == nullptr) {
+                debugPrint("SelectStatement:no such field:%s in the table,invalid args\n", attr_name);
+                parse_session->setResponse("SELECT ERROR,NO SUCH FIELD IN TABLE");
+                return Re::SchemaFieldMissing;
+            }
+            fields_vec.emplace_back(table, field_meta);
+        }
+    }
+    debugPrint("SelectStatement:got %d tables in from stmt and %d fields in query stmt\n",
+               tables_vec.size(), fields_vec.size());
+    Table *default_table = nullptr;
+    if (tables_vec.size() == 1)
+        default_table = tables_vec[0];
+    Filter* filter= nullptr;
+    Re r=Filter::createFilter(current_db,default_table,&tables_map,conditions_num_,conditions_,filter);
+    if(r!=Re::Success){
+        debugPrint("SelectStatement:create filter failed\n");
+        return r;
+    }
+    return Re::Success;
+}
 
 void SelectStatement::destroy() {
-    delete[]table_name_;
+    for (int i = 0; i < table_names_num_; i++)
+        delete[]table_names_[i];
+    delete[]table_names_;
     for (int i = 0; i < attrs_num_; i++)
         attrs_[i].destroy();
     delete[]attrs_;
@@ -124,8 +225,9 @@ Re InsertStatement::handle(Query *query, Session *parse_session) {
     for (int i = 0; i < values_num_; i++) {
         const FieldMeta *field_meta = table_meta.getField(i + table_sys_field_num);
         if (values_[i].type != field_meta->getAttrType()) {
-            debugPrint("InsertStatement:field type mismatch. table=%s, field=%s, field type=%d, value_type=%d\n",
-                       table_name_, field_meta->getFieldName().c_str(), field_meta->getAttrType(), values_[i].type);
+            debugPrint(
+                    "InsertStatement:field getExprType mismatch. table=%s, field=%s, field getExprType=%d, value_type=%d\n",
+                    table_name_, field_meta->getFieldName().c_str(), field_meta->getAttrType(), values_[i].type);
             parse_session->setResponse("INSERT ERROR,VALUES TYPE INVALID.");
             return Re::SchemaFieldTypeMismatch;
         }

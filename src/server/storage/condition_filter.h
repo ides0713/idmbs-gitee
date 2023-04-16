@@ -17,7 +17,8 @@ public:
     bool is_attr;
     int attr_length, attr_offset;
     void *value;
-private:
+public:
+    
 };
 
 class ConditionFilter {

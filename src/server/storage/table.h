@@ -80,7 +80,7 @@ class Table {
 public:
     Table() : data_buffer_pool_(nullptr), record_handler_(nullptr), clog_manager_(nullptr) {}
 
-    /// @brief create a not existed table within params
+    /// @brief createFilter a not existed table within params
     Re init(std::filesystem::path database_path, const char *table_name, const size_t attr_infos_num,
             const AttrInfo *attr_infos, CLogManager *clog_manager);
 
@@ -88,7 +88,7 @@ public:
     Re init(std::filesystem::path database_path, const char *table_name, CLogManager *clog_manager);
 
     /// @brief getFrame table name from table(table meta)
-    std::string getTableName() { return table_meta_.getTableName(); }
+    std::string getTableName() const { return table_meta_.getTableName(); }
 
     TableMeta getTableMeta() const { return table_meta_; }
 
