@@ -30,6 +30,44 @@ void TupleUnit::toString(std::ostream &os) const {
     }
 }
 
+int TupleUnit::compare(const TupleUnit &other) {
+    if (attr_type_ == other.attr_type_) {
+        switch (attr_type_) {
+            case AttrType::Ints: {
+                int int_1 = *reinterpret_cast<int *>(data_), int_2 = *reinterpret_cast<int *>(other.data_);
+                return int_1 - int_2;
+            }
+            case AttrType::Undefined:
+                printf("undefined compare not implemented yet\n");
+                assert(false);
+            case AttrType::Chars: {
+                const char *str_1 = reinterpret_cast<const char *>(data_), *str_2 = reinterpret_cast<const char *>(other.data_);
+                int compare_len = std::min(length_, other.length_);
+                int compare_result = strncmp(str_1, str_2, compare_len);
+                if (compare_result != 0)
+                    return compare_result;
+                if (length_ == other.length_)
+                    return compare_result;
+                if (length_ > other.length_)
+                    return str_1[compare_len] - '\0';
+                return str_2[compare_len] - '\0';
+            }
+            case AttrType::Floats: {
+                float res = *reinterpret_cast<float *>(data_) - *reinterpret_cast<float *>(other.data_);
+                if (res > 0)
+                    return 1;
+                if (res < 0)
+                    return -1;
+                return 0;
+            }
+            case AttrType::Dates:
+                printf("dates compare not implemented yet\n");
+                assert(false);
+        }
+    }
+    assert(false);
+}
+
 TupleUnitSpec::~TupleUnitSpec() {
     delete expression_;
     expression_ = nullptr;

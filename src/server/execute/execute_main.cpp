@@ -31,7 +31,8 @@ Session *ExecuteMain::callBack() {
 
 Re ExecuteMain::doSelect(Statement *stmt) {
     auto s = static_cast<SelectStatement *>(stmt);
-    return Re::Success;
+    resolve_session_->setResponse("do select not implemented yet");
+    return Re::GenericError;
 }
 
 Re ExecuteMain::doCreateTable(Statement *stmt) {
@@ -70,4 +71,8 @@ Re ExecuteMain::doInsert(Statement *stmt) {
         txn->nextCurrentId();
     }
     return Re::Success;
+}
+
+void ExecuteMain::response() {
+    printf("%s\n", resolve_session_->getResponse());
 }

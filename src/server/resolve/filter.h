@@ -10,7 +10,6 @@ class Table;
 
 class FieldMeta;
 
-
 class FilterUnit {
 public:
     FilterUnit() : comp_(CompOp::NoOp), left_(nullptr), right_(nullptr) {}

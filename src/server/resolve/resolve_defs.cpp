@@ -2,6 +2,7 @@
 #include <cassert>
 #include "../common/session.h"
 #include "filter.h"
+
 void wildcardFields(Table *table, std::vector<Field> &fields) {
     const TableMeta &table_meta = table->getTableMeta();
     const int field_num = table_meta.getFieldsNum();
@@ -29,7 +30,7 @@ void Statement::createStatement(Query *const query, Statement *&stmt) {
 
 SelectStatement::SelectStatement(Query *query) :
         Statement(query->getScf()) {
-    table_names_ = nullptr, attrs_ = nullptr, conditions_ = nullptr;
+    table_names_ = nullptr, attrs_ = nullptr, conditions_ = nullptr, filter_ = nullptr;
     attrs_num_ = 0, conditions_num_ = 0, table_names_num_ = 0;
 }
 
@@ -51,6 +52,9 @@ void SelectStatement::init(Query *query) {
     Condition *conditions = sq->getConditions();
     for (int i = 0; i < conditions_num_; i++)
         conditions_[i].copy(conditions[i]);
+    assert(this->getScf() == ScfSelect);
+    filter_ = nullptr;
+
 }
 
 Re SelectStatement::handle(Query *query, Session *parse_session) {
@@ -133,12 +137,15 @@ Re SelectStatement::handle(Query *query, Session *parse_session) {
     Table *default_table = nullptr;
     if (tables_vec.size() == 1)
         default_table = tables_vec[0];
-    Filter* filter= nullptr;
-    Re r=Filter::createFilter(current_db,default_table,&tables_map,conditions_num_,conditions_,filter);
-    if(r!=Re::Success){
+    Filter *filter = nullptr;
+    Re r = Filter::createFilter(current_db, default_table, &tables_map, conditions_num_, conditions_, filter);
+    if (r != Re::Success) {
         debugPrint("SelectStatement:create filter failed\n");
         return r;
     }
+    filter_ = filter;
+    tables_.swap(tables_vec);
+    fields_.swap(fields_vec);
     return Re::Success;
 }
 
@@ -152,6 +159,7 @@ void SelectStatement::destroy() {
     for (int i = 0; i < conditions_num_; i++)
         conditions_[i].destroy();
     delete[]conditions_;
+    delete filter_;
 }
 
 CreateTableStatement::CreateTableStatement(Query *query) :

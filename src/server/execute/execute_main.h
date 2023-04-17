@@ -14,6 +14,7 @@ public:
 
     Session *callBack();
 
+    void response();
 private:
     Re doSelect(Statement *stmt);
 

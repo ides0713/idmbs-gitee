@@ -34,6 +34,7 @@ public:
 
     void toString(std::ostream &os) const;
 
+    int compare(const TupleUnit& other);
 private:
     AttrType attr_type_;
     int length_;
@@ -100,7 +101,6 @@ public:
 
 private:
     class Record *record_;
-
     const Table *table_;
     std::vector<TupleUnitSpec *> specs_;
 };

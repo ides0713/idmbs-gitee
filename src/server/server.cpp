@@ -71,6 +71,7 @@ void pStart(const char *sql, int sock_fd) {
     Re re_execute = em.handle();
     if (re_execute != Re::Success) {
         debugPrint("\nMain:execute stmt failed\n");
+        em.response();
         return;
     }
     debugPrint("\nMain:execute stmt succeeded\n");

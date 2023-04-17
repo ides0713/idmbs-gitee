@@ -94,6 +94,8 @@ public:
 
     Re insertRecord(Txn *txn, int values_num, const Value *values);
 
+    Re getRecordFileHandler(RecordFileHandler &record_handler) { record_handler = *record_handler_; }
+
 private:
     std::filesystem::path database_path_;
     TableMeta table_meta_;

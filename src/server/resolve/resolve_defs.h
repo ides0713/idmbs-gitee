@@ -6,6 +6,7 @@
 #include "../common/re.h"
 #include "../storage/database.h"
 #include "../common/global_managers.h"
+#include "filter.h"
 
 class Session;
 
@@ -47,6 +48,10 @@ public:
 
     StatementType getType() override { return StatementType::Select; }
 
+    void setFilter(Filter *filter) { filter_ = filter; }
+
+    Filter *getFilter() { return filter_; }
+
 private:
     char **table_names_;
     int table_names_num_;
@@ -54,6 +59,9 @@ private:
     int attrs_num_;
     Condition *conditions_;
     int conditions_num_;
+    Filter *filter_;
+    std::vector<Table *> tables_;
+    std::vector<Field> fields_;
 };
 
 class CreateTableStatement : public Statement {

@@ -56,14 +56,22 @@ std::string strAttrType(AttrType type) {
 }
 
 std::string strCompOp(CompOp cmp) {
-    switch (comp){
-        case CompOp ::NoOp:
+    switch (cmp) {
+        case CompOp::NoOp:
             return std::string{"NoOp"};
-        case CompOp ::EqualTo:
+        case CompOp::EqualTo:
             return std::string{"EqualTo"};
-        case CompOp ::GreatEqual:
+        case CompOp::GreatEqual:
             return std::string{"GreatEqual"};
-        case CompOp ::GreatThan:
+        case CompOp::GreatThan:
             return std::string{"GreatThan"};
+        case CompOp::LessEqual:
+            return std::string{"LessEqual"};
+        case CompOp::LessThan:
+            return std::string{"LessThan"};
+        case CompOp::NotEqual:
+            return std::string{"NotEqual"};
+        default:
+            assert(false);
     }
 }

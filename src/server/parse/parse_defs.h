@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cassert>
 #include <iostream>
+
 const int MAX_ID_LENGTH = 20;
 const int MAX_REL_NAME_LENGTH = 20;
 const int MAX_RELS_NUM = 20;
@@ -51,7 +52,9 @@ enum AttrType {
     Floats,
     Dates
 };
+
 std::string strAttrType(AttrType type);
+
 enum CompOp {
     EqualTo = 0, //"="     0
     LessEqual,   //"<="    1
@@ -61,16 +64,35 @@ enum CompOp {
     GreatThan,   //">"     5
     NoOp
 };
+
 std::string strCompOp(CompOp cmp);
+
 struct Value {
 public:
     AttrType type; // 属性类型(数据类型)
     void *data;    // 数据内容(值)
 public:
     ///@brief debug
-    void desc(std::ostream & stream){
-
+    void desc(std::ostream &stream) const {
+        stream << "[type: " << strAttrType(type) << " data: ";
+        switch (type) {
+            case AttrType::Ints:
+                stream << *reinterpret_cast<int *>(data);
+                break;
+            case AttrType::Floats:
+                stream << *reinterpret_cast<float *>(data);
+                break;
+            case AttrType::Chars:
+                stream << reinterpret_cast<char *>(data);
+                break;
+            case AttrType::Undefined:
+            case AttrType::Dates:
+            default:
+                assert(false);
+        }
+        stream << "]";
     }
+
     Value() : type(AttrType::Undefined), data(nullptr) {}
 
     Value(AttrType t, void *d) : type(t), data(d) {}
@@ -97,7 +119,7 @@ public:
                 break;
             case AttrType::Chars:
                 type = AttrType::Chars;
-                data = strNew(static_cast<char *>(value.data));
+                data = strNew(reinterpret_cast<char *>(value.data));
                 break;
             case AttrType::Dates:
                 assert(false);
@@ -112,13 +134,13 @@ public:
             case AttrType::Undefined:
                 break;
             case AttrType::Ints:
-                delete static_cast<int *>(data);
+                delete reinterpret_cast<int *>(data);
                 break;
             case AttrType::Floats:
-                delete static_cast<float *>(data);
+                delete reinterpret_cast<float *>(data);
                 break;
             case AttrType::Chars:
-                delete static_cast<char *>(data);
+                delete reinterpret_cast<char *>(data);
                 break;
             case AttrType::Dates:
                 break;
@@ -132,6 +154,15 @@ public:
     char *rel_name;  // 关系名(表名)
     char *attr_name; // 属性名
 public:
+    void desc(std::ostream &stream) const {
+        stream << "[rel_name: ";
+        if (rel_name == nullptr)
+            stream << "null";
+        else
+            stream << rel_name;
+        stream << " attr_name: " << attr_name << "]";
+    }
+
     RelAttr() : rel_name(nullptr), attr_name(nullptr) {}
 
     RelAttr(const char *r_name, const char *a_name) {
@@ -160,6 +191,11 @@ public:
     AttrType attr_type; // 属性类型(数据类型)
     size_t attr_len;    // 属性长度(占空间大小)
 public:
+    void desc(std::ostream &stream) const {
+        stream << "[attr_name: " << attr_name << " attr_type: " << strAttrType(attr_type) << " attr_len: " << attr_len
+               << "]";
+    }
+
     AttrInfo() {
         attr_name = nullptr;
         attr_type = Undefined;
@@ -209,6 +245,25 @@ public:
     RelAttr right_attr;
     Value right_value;
 public:
+    void desc(std::ostream &stream) const {
+        stream << "LEFT ";
+        if (left_is_attr) {
+            stream << "RelAttr: ";
+            left_attr.desc(stream);
+        } else {
+            stream << "Value: ";
+            left_value.desc(stream);
+        }
+        stream << '\n' << "RIGHT ";
+        if (right_is_attr) {
+            stream << "RelAttr: ";
+            right_attr.desc(stream);
+        } else {
+            stream << "Value: ";
+            right_value.desc(stream);
+        }
+    }
+
     void init(CompOp c, int l_is_attr, RelAttr *l_attr, Value *l_value,
               int r_is_attr, RelAttr *r_attr, Value *r_value) {
         comp = c;
@@ -225,8 +280,8 @@ public:
     }
 
     void copy(const Condition &c) {
-        if (left_is_attr != c.left_is_attr or right_is_attr != c.right_is_attr)
-            return;
+        comp = c.comp;
+        left_is_attr = c.left_is_attr, right_is_attr = c.right_is_attr;
         if (left_is_attr)
             left_attr.copy(c.left_attr);
         else
