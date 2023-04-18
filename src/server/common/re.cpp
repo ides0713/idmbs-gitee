@@ -4,11 +4,13 @@
 #include "re.h"
 
 #define RE_CASE_STRING(re) \
-  case re:                 \
-    return #re
+    case re:               \
+        return #re
 
-const char *strRe(Re re) {
-    switch (re) {
+const char *strRe(Re re)
+{
+    switch (re)
+    {
         RE_CASE_STRING(Success);
         RE_CASE_STRING(GenericError);
         RE_CASE_STRING(InvalidArgument);
@@ -180,8 +182,9 @@ const char *strRe(Re re) {
 
         RE_CASE_STRING(LogBufFull);
         RE_CASE_STRING(LogBufEmpty);
-        default: {
-            return "UNKNOWN";
-        }
+    default:
+    {
+        return "UNKNOWN";
+    }
     }
 }

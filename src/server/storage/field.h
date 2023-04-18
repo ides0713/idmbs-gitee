@@ -6,11 +6,13 @@
 #include <string>
 #include "../common/re.h"
 
-namespace Json {
+namespace Json
+{
     class Value;
 }
 
-class FieldMeta {
+class FieldMeta
+{
 public:
     FieldMeta() : attr_type_(AttrType::Undefined), offset_(-1), len_(0), visible_(false) {}
 
@@ -41,7 +43,8 @@ private:
 class Table;
 
 ///@brief class Field is just a container of pointer of field meta and pointer of table,it does not have its own memeber
-class Field {
+class Field
+{
 public:
     Field() : table_(nullptr), field_meta_(nullptr) {}
 
@@ -57,7 +60,7 @@ public:
 
     [[nodiscard]] AttrType getAttrType() const { return field_meta_->getAttrType(); }
 
-    [[nodiscard]] std::string getTableName()const ;
+    [[nodiscard]] std::string getTableName() const;
 
     [[nodiscard]] std::string getFieldName() const { return field_meta_->getFieldName(); }
 

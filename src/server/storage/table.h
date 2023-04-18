@@ -32,7 +32,8 @@ class CLogManager;
 
 #define TABLE_NAME_MAX_LEN 20
 
-class TableMeta {
+class TableMeta
+{
 public:
     TableMeta() : record_size_(0) {}
 
@@ -60,23 +61,27 @@ public:
 
     [[nodiscard]] int getRecordSize() const { return record_size_; }
 
+    [[nodiscard]] const std::vector<FieldMeta> *getFields() { return &fields_; }
+
 public:
     static int getSysFieldsNum();
 
 private:
     std::string table_name_;
-    std::vector<FieldMeta> fields_;  // 包含sys_fields
+    std::vector<FieldMeta> fields_; // 包含sys_fields
     std::vector<IndexMeta> indexes_;
     int record_size_;
-    //todo: why use static variable?
+    // todo: why use static variable?
 private:
 private:
     static std::vector<FieldMeta> sys_fields_;
+
 private:
     static Re initializeSysFields();
 };
 
-class Table {
+class Table
+{
 public:
     Table() : data_buffer_pool_(nullptr), record_handler_(nullptr), clog_manager_(nullptr) {}
 
@@ -94,7 +99,9 @@ public:
 
     Re insertRecord(Txn *txn, int values_num, const Value *values);
 
-    Re getRecordFileHandler(RecordFileHandler &record_handler) { record_handler = *record_handler_; }
+    RecordFileHandler *getRecordFileHandler() { return record_handler_; }
+
+    Re getRecordFileScanner(RecordFileScanner &scanner);
 
 private:
     std::filesystem::path database_path_;
@@ -103,6 +110,7 @@ private:
     RecordFileHandler *record_handler_; /// 记录操作
     std::vector<Index *> indexes_;
     CLogManager *clog_manager_;
+
 private:
     Re initRecordHandler(const char *base_dir);
 

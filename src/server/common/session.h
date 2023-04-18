@@ -5,10 +5,12 @@
 #include "../parse/parse_defs.h"
 #include "../resolve/resolve_defs.h"
 
-class Session {
+class Session
+{
 public:
     explicit Session(DataBase *database = nullptr, Txn *txn = nullptr, bool txn_multi_operation = false)
-            : database_(database), txn_(txn), txn_multi_operation_(txn_multi_operation) {
+        : database_(database), txn_(txn), txn_multi_operation_(txn_multi_operation)
+    {
         strcpy(response_, "response not set");
     }
 
@@ -37,11 +39,12 @@ private:
     char response_[MSG_MSG_LEN];
 };
 
-class ParseSession : public Session {
+class ParseSession : public Session
+{
 public:
     explicit ParseSession(DataBase *database = nullptr, Txn *txn = nullptr, bool txn_multi_operation = false,
                           Query *query = nullptr)
-            : Session(database, txn, txn_multi_operation), query_(query) {}
+        : Session(database, txn, txn_multi_operation), query_(query) {}
 
     [[nodiscard]] Query *getQuery() const { return query_; };
 
@@ -51,11 +54,12 @@ private:
     Query *query_;
 };
 
-class ResolveSession : public Session {
+class ResolveSession : public Session
+{
 public:
     explicit ResolveSession(DataBase *database = nullptr, Txn *txn = nullptr, bool txn_multi_operation = false,
                             Statement *stmt = nullptr)
-            : Session(database, txn, txn_multi_operation), stmt_(stmt) {}
+        : Session(database, txn, txn_multi_operation), stmt_(stmt) {}
 
     ResolveSession(Session *parse_session, Statement *stmt) : Session(*parse_session), stmt_(stmt) {}
 
@@ -67,13 +71,13 @@ private:
     Statement *stmt_;
 };
 
-class ExecuteSession : public Session {
+class ExecuteSession : public Session
+{
 public:
     explicit ExecuteSession(DataBase *database = nullptr, Txn *txn = nullptr, bool txn_multi_operation = false)
-            : Session(database, txn, txn_multi_operation) {}
+        : Session(database, txn, txn_multi_operation) {}
 
-    explicit ExecuteSession(Session *resolve_session) :
-            Session(*resolve_session), stmt_(static_cast<ResolveSession *>(resolve_session)->getStmt()) {}
+    explicit ExecuteSession(Session *resolve_session) : Session(*resolve_session), stmt_(static_cast<ResolveSession *>(resolve_session)->getStmt()) {}
 
 private:
     Statement *stmt_;

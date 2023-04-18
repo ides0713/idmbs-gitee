@@ -2,22 +2,28 @@
 #include "../storage/table.h"
 #include "../resolve/tuple.h"
 
-Re TableScanOperator::init() {
-//    Re r = table_->ge(record_scanner_);
-    if (r == Re ::Success) {
-        tuple_.set_schema(table_, table_->table_meta().field_metas());
-    }
-    return rc;
+Re TableScanOperator::init()
+{
+    Re r = table_->getRecordFileScanner(record_scanner_);
+    if (r == Re ::Success)
+        tuple_.setSchema(table_, table_->getTableMeta().getFields());
+    return Re::Success;
 }
 
-Re TableScanOperator::handle() {
-    return RecordEof;
+Re TableScanOperator::handle()
+{
+    if (!record_scanner_.hasNext())
+        return Re::RecordEof;
+    return record_scanner_.next(current_record_);
 }
 
-Re TableScanOperator::destroy() {
-    return RecordEof;
+Re TableScanOperator::destroy()
+{
+    return record_scanner_.destroy();
 }
 
-Tuple *TableScanOperator::getCurrentTuple() {
-    return nullptr;
+Tuple *TableScanOperator::getCurrentTuple()
+{
+    tuple_.setRecord(&current_record_);
+    return &tuple_;
 }

@@ -3,4 +3,3 @@
 //
 
 #include "condition_filter.h"
-

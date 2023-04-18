@@ -9,11 +9,13 @@ class FieldMeta;
 
 class TableMeta;
 
-namespace Json {
+namespace Json
+{
     class Value;
-}  // namespace Json
+} // namespace Json
 
-class IndexMeta {
+class IndexMeta
+{
 public:
     IndexMeta() = default;
 
@@ -23,7 +25,7 @@ public:
 
     [[nodiscard]] std::string getFieldName() const;
 
-//    void desc(std::ostream &os) const;
+    //    void desc(std::ostream &os) const;
     void toJson(Json::Value &json_value) const;
 
     static Re fromJson(const TableMeta &table_meta, const Json::Value &json_value, IndexMeta &index_meta);
@@ -32,6 +34,6 @@ private:
     std::string index_name_, field_name_;
 };
 
-class Index {
-
+class Index
+{
 };

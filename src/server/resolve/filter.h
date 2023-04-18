@@ -10,7 +10,8 @@ class Table;
 
 class FieldMeta;
 
-class FilterUnit {
+class FilterUnit
+{
 public:
     FilterUnit() : comp_(CompOp::NoOp), left_(nullptr), right_(nullptr) {}
 
@@ -34,7 +35,8 @@ private:
     Expression *right_;
 };
 
-class Filter {
+class Filter
+{
 public:
     Filter() = default;
 
@@ -49,6 +51,7 @@ public:
 
 private:
     std::vector<FilterUnit *> filter_units_;
+
 private:
     ///@brief filter unit is filter of its corresponding condition,filter is composed of many filter unit
     static Re createFilterUnit(DataBase *db, Table *default_table, std::unordered_map<std::string, Table *> *tables,

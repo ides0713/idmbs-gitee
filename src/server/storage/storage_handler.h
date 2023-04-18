@@ -2,7 +2,8 @@
 #include "table.h"
 #include "database.h"
 
-class StorageHandler {
+class StorageHandler
+{
 public:
     void openDb();
 

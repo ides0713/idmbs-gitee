@@ -2,25 +2,32 @@
 
 PersistFileIoHandler::PersistFileIoHandler() : file_(nullptr) {}
 
-PersistFileIoHandler::~PersistFileIoHandler() {
+PersistFileIoHandler::~PersistFileIoHandler()
+{
     closeFile();
 }
 
-Re PersistFileIoHandler::createFile(const char *file_path) {
+Re PersistFileIoHandler::createFile(const char *file_path)
+{
     namespace fs = std::filesystem;
-    if (isAssociated()) {
+    if (isAssociated())
+    {
         debugPrint(
-                "PersistFileIoHandler:failed to createFilter file %s,because handler is associated with file %s now\n",
-                file_path, file_path_.c_str());
+            "PersistFileIoHandler:failed to createFilter file %s,because handler is associated with file %s now\n",
+            file_path, file_path_.c_str());
         return Re::FileAssociated;
     }
     fs::path file_path_path(file_path);
-    if (fs::exists(file_path_path)) {
+    if (fs::exists(file_path_path))
+    {
         debugPrint("PersistFileIoHandler:failed to createFilter file %s,because file already exists\n", file_path);
         return Re::FileExist;
-    } else {
+    }
+    else
+    {
         FILE *f = fopen(file_path, "w+");
-        if (f == nullptr) {
+        if (f == nullptr)
+        {
             debugPrint("PersistFileIoHandler:failed to createFilter %s, due to %s.\n", file_path, strerror(errno));
             return Re::FileCreate;
         }
@@ -31,24 +38,29 @@ Re PersistFileIoHandler::createFile(const char *file_path) {
     return Re::Success;
 }
 
-Re PersistFileIoHandler::createFile(std::filesystem::path file_path) {
+Re PersistFileIoHandler::createFile(std::filesystem::path file_path)
+{
     return createFile(file_path.c_str());
 }
 
-Re PersistFileIoHandler::openFile(const char *file_name) {
+Re PersistFileIoHandler::openFile(const char *file_name)
+{
     namespace fs = std::filesystem;
-    if (isAssociated()) {
+    if (isAssociated())
+    {
         debugPrint("PersistFileIoHandler:failed to open file %s,because handler is associated with file %s\n",
                    file_name, file_path_.c_str());
         return Re::FileAssociated;
     }
     fs::path file_path_path(file_name);
-    if (!fs::exists(file_path_path)) {
+    if (!fs::exists(file_path_path))
+    {
         debugPrint("PersistFileIoHandler:failed to open file %s,because file is not exist\n", file_name);
         return Re::FileNotExist;
     }
     FILE *f = fopen(file_name, "r+");
-    if (f == nullptr) {
+    if (f == nullptr)
+    {
         debugPrint("PersistFileIoHandler:failed to open file %s, because %s.\n",
                    file_name, strerror(errno));
         return Re::FileOpen;
@@ -59,13 +71,16 @@ Re PersistFileIoHandler::openFile(const char *file_name) {
     return Re::Success;
 }
 
-Re PersistFileIoHandler::closeFile() {
+Re PersistFileIoHandler::closeFile()
+{
     std::string file_str(file_path_.c_str());
     file_path_.clear();
-    if (file_ == nullptr) {
+    if (file_ == nullptr)
+    {
         return Re::Success;
     }
-    if (fclose(file_) != 0) {
+    if (fclose(file_) != 0)
+    {
         debugPrint("PersistFileIoHandler:failed to close file%d:%s,error %s\n",
                    fileno(file_), file_str.c_str(), strerror(errno));
         return Re::FileClose;
@@ -75,30 +90,37 @@ Re PersistFileIoHandler::closeFile() {
     return Re::Success;
 }
 
-Re PersistFileIoHandler::removeFile() {
+Re PersistFileIoHandler::removeFile()
+{
     namespace fs = std::filesystem;
-    if (!isAssociated()) {
+    if (!isAssociated())
+    {
         debugPrint("PersistFileIoHandler:remove file failed,because no file is associated with handler\n");
         return Re::FileAssociated;
     }
-    if (!fs::exists(file_path_)) {
+    if (!fs::exists(file_path_))
+    {
         debugPrint("PersistFileIoHandler:remove file failed,because associated file is not exist now\n");
         return Re::FileNotExist;
     }
-    if (!fs::remove(file_path_)) {
+    if (!fs::remove(file_path_))
+    {
         debugPrint("PersistFileIoHandler:remove file failed\n");
         return Re::FileRemove;
     }
     return closeFile();
 }
 
-Re PersistFileIoHandler::writeFile(int size, const char *data, size_t *out_size) {
-    if (!isAssociated()) {
+Re PersistFileIoHandler::writeFile(int size, const char *data, size_t *out_size)
+{
+    if (!isAssociated())
+    {
         debugPrint("PersistFileIoHandler:write file failed,because no file is associated with handler\n");
         return Re::FileAssociated;
     }
     size_t write_size = fwrite(data, 1, size, file_);
-    if (write_size != size) {
+    if (write_size != size)
+    {
         debugPrint("PersistFileIoHandler:write file %s failed.\n", file_path_.c_str());
         return Re::FileWrite;
     }
@@ -107,24 +129,29 @@ Re PersistFileIoHandler::writeFile(int size, const char *data, size_t *out_size)
     return Re::Success;
 }
 
-Re PersistFileIoHandler::writeAt(long offset, int size, const char *data, size_t *out_size) {
-    if (!isAssociated()) {
+Re PersistFileIoHandler::writeAt(long offset, int size, const char *data, size_t *out_size)
+{
+    if (!isAssociated())
+    {
         debugPrint("PersistFileIoHandler:write file at %ld failed,because no file is associated with handler\n",
                    offset);
         return Re::FileAssociated;
     }
-    if (fflush(file_) != 0) {
+    if (fflush(file_) != 0)
+    {
         debugPrint("PersistFileIoHandler:write file %s at %ld failed,because flush failed %s\n",
                    file_path_.c_str(), offset, strerror(errno));
         return Re::FileError;
     }
-    if (fseek(file_, offset, SEEK_SET) != 0) {
+    if (fseek(file_, offset, SEEK_SET) != 0)
+    {
         debugPrint("PersistFileIoHandler:write file %s at %ld failed,because seek failed\n",
                    file_path_.c_str(), offset);
         return Re::FileSeek;
     }
     size_t write_size = fwrite(data, 1, size, file_);
-    if (write_size != size) {
+    if (write_size != size)
+    {
         debugPrint("PersistFileIoHandler:write file %s at %ld failed.\n", file_path_.c_str(), offset);
         return Re::FileWrite;
     }
@@ -133,22 +160,27 @@ Re PersistFileIoHandler::writeAt(long offset, int size, const char *data, size_t
     return Re::Success;
 }
 
-Re PersistFileIoHandler::append(int size, const char *data, size_t *out_size) {
-    if (!isAssociated()) {
+Re PersistFileIoHandler::append(int size, const char *data, size_t *out_size)
+{
+    if (!isAssociated())
+    {
         debugPrint("PersistFileIoHandler:append file failed,because no file is associated with handler\n");
         return Re::FileAssociated;
     }
-    if (fflush(file_) != 0) {
+    if (fflush(file_) != 0)
+    {
         debugPrint("PersistFileIoHandler:append file %s failed,because flush failed %s\n",
                    file_path_.c_str(), strerror(errno));
         return Re::FileError;
     }
-    if (fseek(file_, 0, SEEK_END) != 0) {
+    if (fseek(file_, 0, SEEK_END) != 0)
+    {
         debugPrint("PersistFileIoHandler:append file %s failed,because seek failed\n", file_path_.c_str());
         return Re::FileSeek;
     }
     size_t write_size = fwrite(data, 1, size, file_);
-    if (write_size != size) {
+    if (write_size != size)
+    {
         debugPrint("PersistFileIoHandler:append file %s failed.\n", file_path_.c_str());
         return Re::FileWrite;
     }
@@ -157,18 +189,22 @@ Re PersistFileIoHandler::append(int size, const char *data, size_t *out_size) {
     return Re::Success;
 }
 
-Re PersistFileIoHandler::readFile(int size, char *data, size_t *out_size) {
-    if (!isAssociated()) {
+Re PersistFileIoHandler::readFile(int size, char *data, size_t *out_size)
+{
+    if (!isAssociated())
+    {
         debugPrint("PersistFileIoHandler:read file failed,because no file is associated with handler\n");
         return Re::FileAssociated;
     }
-    if (fflush(file_) != 0) {
+    if (fflush(file_) != 0)
+    {
         debugPrint("PersistFileIoHandler:read file %s failed,because flush failed %s\n",
                    file_path_.c_str(), strerror(errno));
         return Re::FileError;
     }
     size_t read_size = fread(data, 1, size, file_);
-    if (read_size != size) {
+    if (read_size != size)
+    {
         debugPrint("PersistFileIoHandler:read file %s failed.\n", file_path_.c_str());
         return Re::FileRead;
     }
@@ -177,24 +213,29 @@ Re PersistFileIoHandler::readFile(int size, char *data, size_t *out_size) {
     return Re::Success;
 }
 
-Re PersistFileIoHandler::readAt(long offset, int size, char *data, size_t *out_size) {
-    if (!isAssociated()) {
+Re PersistFileIoHandler::readAt(long offset, int size, char *data, size_t *out_size)
+{
+    if (!isAssociated())
+    {
         debugPrint("PersistFileIoHandler:read file with offset %ld failed,because no file is associated with handler\n",
                    offset);
         return Re::FileAssociated;
     }
-    if (fflush(file_) != 0) {
+    if (fflush(file_) != 0)
+    {
         debugPrint("PersistFileIoHandler:read file %s with offset %ld failed,because flush failed %s\n",
                    file_path_.c_str(), offset, strerror(errno));
         return Re::FileError;
     }
-    if (fseek(file_, offset, SEEK_SET) != 0) {
+    if (fseek(file_, offset, SEEK_SET) != 0)
+    {
         debugPrint("PersistFileIoHandler:read file %s with offset %ld failed,because seek failed\n",
                    file_path_.c_str(), offset);
         return Re::FileSeek;
     }
     size_t read_size = fread(data, 1, size, file_);
-    if (read_size != size) {
+    if (read_size != size)
+    {
         debugPrint("PersistFileIoHandler:read file %s with offset %ld failed.\n", file_path_.c_str(), offset);
         return Re::FileRead;
     }
@@ -203,13 +244,16 @@ Re PersistFileIoHandler::readAt(long offset, int size, char *data, size_t *out_s
     return RecordEof;
 }
 
-Re PersistFileIoHandler::seek(long offset) {
-    if (!isAssociated()) {
+Re PersistFileIoHandler::seek(long offset)
+{
+    if (!isAssociated())
+    {
         debugPrint(
-                "PersistFileIoHandler:seek file %s with offset %ld failed,because no file is associated with handler\n");
+            "PersistFileIoHandler:seek file %s with offset %ld failed,because no file is associated with handler\n");
         return Re::FileAssociated;
     }
-    if (fseek(file_, offset, SEEK_SET) != 0) {
+    if (fseek(file_, offset, SEEK_SET) != 0)
+    {
         debugPrint("PersistFileIoHandler:seek file %s with offset %ld failed.\n", file_path_.c_str(), offset);
         return Re::FileSeek;
     }

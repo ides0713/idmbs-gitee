@@ -7,7 +7,8 @@
 #include "../../common/common_defs.h"
 #include <filesystem>
 
-class PersistFileIoHandler {
+class PersistFileIoHandler
+{
 public:
     PersistFileIoHandler();
 
@@ -48,6 +49,7 @@ public:
 private:
     std::string file_path_;
     FILE *file_;
+
 private:
     bool isAssociated() { return (!file_path_.empty() and file_ != nullptr); }
 };

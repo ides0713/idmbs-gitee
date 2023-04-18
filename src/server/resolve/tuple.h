@@ -12,7 +12,8 @@ class FieldExpression;
 
 class ValueExpression;
 
-class TupleUnit {
+class TupleUnit
+{
 public:
     TupleUnit() : attr_type_(AttrType::Undefined), length_(-1), data_(nullptr) {}
 
@@ -34,14 +35,16 @@ public:
 
     void toString(std::ostream &os) const;
 
-    int compare(const TupleUnit& other);
+    int compare(const TupleUnit &other);
+
 private:
     AttrType attr_type_;
     int length_;
     char *data_;
 };
 
-class TupleUnitSpec {
+class TupleUnitSpec
+{
 public:
     TupleUnitSpec() : alias_(nullptr), expression_(nullptr) {}
 
@@ -62,7 +65,8 @@ private:
     Expression *expression_;
 };
 
-class Tuple {
+class Tuple
+{
 public:
     Tuple() = default;
 
@@ -77,7 +81,8 @@ public:
     virtual Re getUnitSpecAt(int index, const TupleUnitSpec *&spec) const = 0;
 };
 
-class RowTuple : public Tuple {
+class RowTuple : public Tuple
+{
 public:
     RowTuple() : record_(nullptr), table_(nullptr) {}
 
@@ -105,7 +110,8 @@ private:
     std::vector<TupleUnitSpec *> specs_;
 };
 
-class ProjectTuple : public Tuple {
+class ProjectTuple : public Tuple
+{
 public:
     ProjectTuple() : tuple_(nullptr) {}
 

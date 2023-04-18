@@ -4,10 +4,12 @@
 #include <unordered_set>
 
 ///@brief Hash= Pred= 是默认值的用法 不是using=那种
-template<typename Key, typename Value, typename Hash = std::hash<Key>, typename Pred = std::equal_to<Key>>
-class LruCache {
+template <typename Key, typename Value, typename Hash = std::hash<Key>, typename Pred = std::equal_to<Key>>
+class LruCache
+{
 private:
-    class ListNode {
+    class ListNode
+    {
     public:
         ListNode(const Key &key, const Value &value) : key_(key), value_(value) {}
 
@@ -21,7 +23,8 @@ private:
         friend class LruCache;
     };
 
-    class PListNodeHash {
+    class PListNodeHash
+    {
     public:
         size_t operator()(ListNode *node) const;
 
@@ -29,7 +32,8 @@ private:
         Hash hash_;
     };
 
-    class PListNodePredicator {
+    class PListNodePredicator
+    {
     public:
         bool operator()(ListNode *const node_1, ListNode *const node_2) const;
 
@@ -52,7 +56,7 @@ public:
 
     void remove(const Key &key);
 
-    void foreach(std::function<bool(const Key &, const Value &)> func);
+    void foreach (std::function<bool(const Key &, const Value &)> func);
 
     void foreachReverse(std::function<bool(const Key &, const Value &)> func);
 
@@ -72,17 +76,19 @@ private:
     ListNode *lru_tail_ = nullptr;
 };
 
-template<typename Key, typename Value, typename Hash, typename Pred>
-inline size_t LruCache<Key, Value, Hash, Pred>::PListNodeHash::operator()(ListNode *node) const {
+template <typename Key, typename Value, typename Hash, typename Pred>
+inline size_t LruCache<Key, Value, Hash, Pred>::PListNodeHash::operator()(ListNode *node) const
+{
     if (node == nullptr)
         return 0;
     return hash_(node->key_);
 }
 
-template<typename Key, typename Value, typename Hash, typename Pred>
+template <typename Key, typename Value, typename Hash, typename Pred>
 inline bool
 LruCache<Key, Value, Hash, Pred>::PListNodePredicator::operator()(ListNode *const node_1,
-                                                                  ListNode *const node_2) const {
+                                                                  ListNode *const node_2) const
+{
     if (node_1 == node_2)
         return true;
     if (node_1 == nullptr || node_2 == nullptr)
@@ -90,24 +96,27 @@ LruCache<Key, Value, Hash, Pred>::PListNodePredicator::operator()(ListNode *cons
     return pred_(node_1->key_, node_2->key_);
 }
 
-template<typename Key, typename Value, typename Hash, typename Pred>
-inline LruCache<Key, Value, Hash, Pred>::LruCache(size_t reserve) {
+template <typename Key, typename Value, typename Hash, typename Pred>
+inline LruCache<Key, Value, Hash, Pred>::LruCache(size_t reserve)
+{
     if (reserve > 0)
         searcher_.reserve(reserve);
 }
 
-template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LruCache<Key, Value, Hash, Pred>::destroy() {
-    for (ListNode *node: searcher_)
+template <typename Key, typename Value, typename Hash, typename Pred>
+inline void LruCache<Key, Value, Hash, Pred>::destroy()
+{
+    for (ListNode *node : searcher_)
         delete node;
     searcher_.clear();
     lru_front_ = nullptr;
     lru_tail_ = nullptr;
 }
 
-template<typename Key, typename Value, typename Hash, typename Pred>
-inline bool LruCache<Key, Value, Hash, Pred>::get(const Key &key, Value &value) {
-    auto iter = searcher_.find((ListNode *) &key);
+template <typename Key, typename Value, typename Hash, typename Pred>
+inline bool LruCache<Key, Value, Hash, Pred>::get(const Key &key, Value &value)
+{
+    auto iter = searcher_.find((ListNode *)&key);
     if (iter == searcher_.end())
         return false;
     lruTouch(*iter);
@@ -115,10 +124,12 @@ inline bool LruCache<Key, Value, Hash, Pred>::get(const Key &key, Value &value) 
     return true;
 }
 
-template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LruCache<Key, Value, Hash, Pred>::put(const Key &key, const Value &value) {
-    auto iter = searcher_.find((ListNode *) &key);
-    if (iter != searcher_.end()) {
+template <typename Key, typename Value, typename Hash, typename Pred>
+inline void LruCache<Key, Value, Hash, Pred>::put(const Key &key, const Value &value)
+{
+    auto iter = searcher_.find((ListNode *)&key);
+    if (iter != searcher_.end())
+    {
         ListNode *ln = *iter;
         ln->value_ = value;
         lruTouch(ln);
@@ -128,33 +139,39 @@ inline void LruCache<Key, Value, Hash, Pred>::put(const Key &key, const Value &v
     lruPush(ln);
 }
 
-template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LruCache<Key, Value, Hash, Pred>::remove(const Key &key) {
-    auto iter = searcher_.find((ListNode *) &key);
+template <typename Key, typename Value, typename Hash, typename Pred>
+inline void LruCache<Key, Value, Hash, Pred>::remove(const Key &key)
+{
+    auto iter = searcher_.find((ListNode *)&key);
     if (iter != searcher_.end())
         lruRemove(*iter);
 }
 
-template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LruCache<Key, Value, Hash, Pred>::foreach(std::function<bool(const Key &, const Value &)> func) {
-    for (ListNode *node = lru_front_; node != nullptr; node = node->next_) {
+template <typename Key, typename Value, typename Hash, typename Pred>
+inline void LruCache<Key, Value, Hash, Pred>::foreach (std::function<bool(const Key &, const Value &)> func)
+{
+    for (ListNode *node = lru_front_; node != nullptr; node = node->next_)
+    {
         bool ret = func(node->key_, node->value_);
         if (!ret)
             break;
     }
 }
 
-template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LruCache<Key, Value, Hash, Pred>::foreachReverse(std::function<bool(const Key &, const Value &)> func) {
-    for (ListNode *node = lru_tail_; node != nullptr; node = node->prev_) {
+template <typename Key, typename Value, typename Hash, typename Pred>
+inline void LruCache<Key, Value, Hash, Pred>::foreachReverse(std::function<bool(const Key &, const Value &)> func)
+{
+    for (ListNode *node = lru_tail_; node != nullptr; node = node->prev_)
+    {
         bool ret = func(node->key_, node->value_);
         if (!ret)
             break;
     }
 }
 
-template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LruCache<Key, Value, Hash, Pred>::lruTouch(ListNode *node) {
+template <typename Key, typename Value, typename Hash, typename Pred>
+inline void LruCache<Key, Value, Hash, Pred>::lruTouch(ListNode *node)
+{
     if (nullptr == node->prev_)
         return;
     node->prev_->next_ = node->next_;
@@ -169,8 +186,9 @@ inline void LruCache<Key, Value, Hash, Pred>::lruTouch(ListNode *node) {
     lru_front_ = node;
 }
 
-template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LruCache<Key, Value, Hash, Pred>::lruPush(ListNode *node) {
+template <typename Key, typename Value, typename Hash, typename Pred>
+inline void LruCache<Key, Value, Hash, Pred>::lruPush(ListNode *node)
+{
     if (nullptr == lru_tail_)
         lru_tail_ = node;
     node->prev_ = nullptr;
@@ -181,8 +199,9 @@ inline void LruCache<Key, Value, Hash, Pred>::lruPush(ListNode *node) {
     searcher_.insert(node);
 }
 
-template<typename Key, typename Value, typename Hash, typename Pred>
-inline void LruCache<Key, Value, Hash, Pred>::lruRemove(ListNode *node) {
+template <typename Key, typename Value, typename Hash, typename Pred>
+inline void LruCache<Key, Value, Hash, Pred>::lruRemove(ListNode *node)
+{
     if (node->prev_ != nullptr)
         node->prev_->next_ = node->next_;
     if (node->next_ != nullptr)

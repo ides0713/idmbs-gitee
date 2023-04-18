@@ -6,7 +6,8 @@
 
 class Query;
 
-class ParseMain {
+class ParseMain
+{
 public:
     ParseMain() : query_(nullptr), parse_session_(nullptr) {}
 

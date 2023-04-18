@@ -5,7 +5,8 @@
 #include "resolve_defs.h"
 #include "../common/re.h"
 #include <unordered_map>
-class ResolveMain {
+class ResolveMain
+{
 public:
     explicit ResolveMain(Session *parse_session) : stmt_(nullptr), parse_session_(parse_session),
                                                    resolve_session_(nullptr) {}

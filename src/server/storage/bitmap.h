@@ -1,7 +1,8 @@
 #pragma once
 
 ///@brief a bitmap@n(NOTE:char's size is 1 byte and use it to stands for 1 bit)
-class BitMap {
+class BitMap
+{
 public:
     BitMap() : bit_map_(nullptr), size_(0) {}
 

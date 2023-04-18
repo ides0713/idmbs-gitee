@@ -5,8 +5,8 @@
 #include "../common/re.h"
 #include "../storage/clog_manager.h"
 
-
-class ExecuteMain {
+class ExecuteMain
+{
 public:
     explicit ExecuteMain(Session *resolve_session) : resolve_session_(resolve_session), execute_session_(nullptr) {}
 
@@ -15,6 +15,7 @@ public:
     Session *callBack();
 
     void response();
+
 private:
     Re doSelect(Statement *stmt);
 

@@ -10,13 +10,15 @@
 
 class Session;
 
-enum StatementType {
+enum StatementType
+{
     Select = 0,
     CreateTable,
     Insert
 };
 
-class Statement {
+class Statement
+{
 public:
     explicit Statement(SqlCommandFlag flag) : flag_(flag) {}
 
@@ -36,7 +38,8 @@ private:
     SqlCommandFlag flag_;
 };
 
-class SelectStatement : public Statement {
+class SelectStatement : public Statement
+{
 public:
     explicit SelectStatement(Query *query);
 
@@ -64,7 +67,8 @@ private:
     std::vector<Field> fields_;
 };
 
-class CreateTableStatement : public Statement {
+class CreateTableStatement : public Statement
+{
 public:
     CreateTableStatement(Query *query);
 
@@ -88,7 +92,8 @@ private:
     int attr_infos_num_;
 };
 
-class InsertStatement : public Statement {
+class InsertStatement : public Statement
+{
 public:
     InsertStatement(Query *query);
 

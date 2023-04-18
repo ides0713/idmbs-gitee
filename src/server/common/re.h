@@ -5,7 +5,8 @@
 
 #define RE_SIMPLE_STR(re) #re
 
-enum ReBufferPool {
+enum ReBufferPool
+{
     BpExist = 1,
     BpFileErr,
     BpInvalidName,
@@ -21,7 +22,8 @@ enum ReBufferPool {
     BpIllegalFileId,
 };
 
-enum ReRecord {
+enum ReRecord
+{
     RdClosed = 1,
     RdOpened,
     RdInvalidRecSize,
@@ -38,7 +40,8 @@ enum ReRecord {
     RdNotExist,
 };
 
-enum ReSchema {
+enum ReSchema
+{
     DbExist = 1,
     DbNotExist,
     DbNotOpened,
@@ -57,11 +60,13 @@ enum ReSchema {
     IndexNameIllegal,
 };
 
-enum ReSql {
+enum ReSql
+{
     SqlSelect = 1
 };
 
-enum ReIoError {
+enum ReIoError
+{
     Read = 1,
     ShortRead,
     Write,
@@ -93,7 +98,8 @@ enum ReIoError {
     OpenTooManyFiles,
 };
 
-enum ReLock {
+enum ReLock
+{
     Lock = 1,
     Unlock,
     SharedCache,
@@ -102,13 +108,15 @@ enum ReLock {
     ResourceDeleted,
 };
 
-enum ReBusy {
+enum ReBusy
+{
     BRecovery = 1,
     Snapshot,
     Timeout,
 };
 
-enum ReCantOpen {
+enum ReCantOpen
+{
     NotEmpDir = 1,
     Isdir,
     FullPath,
@@ -117,13 +125,15 @@ enum ReCantOpen {
     Symlink,
 };
 
-enum ReCorrupt {
+enum ReCorrupt
+{
     CorruptVirt = 1,
     CorruptSequence,
     CorruptIndex
 };
 
-enum ReReadOnly {
+enum ReReadOnly
+{
     RoRecovery = 1,
     CantLock,
     RoRollBack,
@@ -132,11 +142,13 @@ enum ReReadOnly {
     Directory,
 };
 
-enum ReAbort {
+enum ReAbort
+{
     ARollBack = 1,
 };
 
-enum ReConstraint {
+enum ReConstraint
+{
     Check = 1,
     CommitHook,
     Foreignkey,
@@ -150,17 +162,20 @@ enum ReConstraint {
     Pinned,
 };
 
-enum ReNotice {
+enum ReNotice
+{
     RecoverWal = 1,
     RecoverRollBack,
     AutoIndex,
 };
 
-enum ReAuth {
+enum ReAuth
+{
     User = 1,
 };
 
-enum ReFile {
+enum ReFile
+{
     FExist = 1,
     FNotExist,
     FName,
@@ -175,48 +190,50 @@ enum ReFile {
     FWrite,
 };
 
-enum ReLogBuf {
+enum ReLogBuf
+{
     LbFull = 1,
     LbEmpty,
 };
 
-enum Re {
+enum Re
+{
     Success = 0, /* Successful result */
     /* beginning-of-error-codes */
     GenericError,    /* Generic error */
     InvalidArgument, /* Invalid argument */
-    NotImplement,     /* not implement yet */
+    NotImplement,    /* not implement yet */
     SqlSyntax,       /* SQL Syntax error */
-    BufferPool,       /* Buffer pool error*/
-    Record,           /* Record error */
-    Internal,         /* Internal logic error in SQL */
-    Permission,             /* Access permission denied */
-    Abort,            /* Callback routine requested an abort */
-    Busy,             /* The database file is locked */
-    Locked,           /* A table in the database is locked */
-    NoMem,            /* A malloc() failed */
-    ReadOnly,         /* Attempt to write a readonly database */
-    Interrupt,        /* Operation terminated by interrupt()*/
-    IoErr,            /* Some kind of disk I/O error occurred */
-    Corrupt,          /* The database disk image is malformed */
-    NotFound,         /* Unknown opcode in file control() */
-    Full,             /* Insertion failed because database is full */
-    CantOpen,         /* Unable to open the database file */
-    Protocol,         /* Database lock protocol error */
-    Empty,            /* Internal use only */
-    Schema,           /* The database schema error */
-    TooBig,           /* String or BLOB exceeds size limit */
-    Constraint,       /* Abort due to constraint violation */
-    Mismatch,         /* Data type mismatch */
-    Misuse,           /* Library used incorrectly */
-    NoLfs,            /* Uses OS features not supported on host */
-    Auth,             /* Authorization denied */
-    Format,           /* Not used */
-    Range,            /* 2nd parameter to bind out of range */
-    NotADb,           /* File opened that is not a database file */
+    BufferPool,      /* Buffer pool error*/
+    Record,          /* Record error */
+    Internal,        /* Internal logic error in SQL */
+    Permission,      /* Access permission denied */
+    Abort,           /* Callback routine requested an abort */
+    Busy,            /* The database file is locked */
+    Locked,          /* A table in the database is locked */
+    NoMem,           /* A malloc() failed */
+    ReadOnly,        /* Attempt to write a readonly database */
+    Interrupt,       /* Operation terminated by interrupt()*/
+    IoErr,           /* Some kind of disk I/O error occurred */
+    Corrupt,         /* The database disk image is malformed */
+    NotFound,        /* Unknown opcode in file control() */
+    Full,            /* Insertion failed because database is full */
+    CantOpen,        /* Unable to open the database file */
+    Protocol,        /* Database lock protocol error */
+    Empty,           /* Internal use only */
+    Schema,          /* The database schema error */
+    TooBig,          /* String or BLOB exceeds size limit */
+    Constraint,      /* Abort due to constraint violation */
+    Mismatch,        /* Data type mismatch */
+    Misuse,          /* Library used incorrectly */
+    NoLfs,           /* Uses OS features not supported on host */
+    Auth,            /* Authorization denied */
+    Format,          /* Not used */
+    Range,           /* 2nd parameter to bind out of range */
+    NotADb,          /* File opened that is not a database file */
     FileError,       /* File error */
-    LogBuf,           /* clog buffer error */
-    Notice = 100,     /* Notifications from log() */
+    LogBuf,          /* clog buffer error */
+    Notice = 100,    /* Notifications from log() */
 
     /* buffer pool part */
     BufferPoolExist = (BufferPool | (ReBufferPool::BpExist << 8)),
@@ -319,7 +336,7 @@ enum Re {
     CantOpenDirtyWal = (CantOpen | (ReCantOpen::DirtyWal << 8)),
     CantOpenSymlink = (CantOpen | (ReCantOpen::Symlink << 8)),
 
-    /* corrupt part */  // compile error
+    /* corrupt part */ // compile error
     // CorruptVirt = (CORRUPT | (RECorrupt::CorruptVirt << 8)),
     // CorruptSequence = (CORRUPT | (RECorrupt::CorruptSequence << 8)),
     // CorruptIndex = (CORRUPT | (RECorrupt::CorruptIndex << 8)),
@@ -375,4 +392,3 @@ enum Re {
 };
 
 const char *strRe(Re re);
-

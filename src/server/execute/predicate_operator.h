@@ -7,7 +7,8 @@ class Filter;
 class RowTuple;
 
 ///@brief filter predicate for only one table
-class PredicateOperator : public Operator {
+class PredicateOperator : public Operator
+{
 public:
     PredicateOperator() : filter_(nullptr) {}
 
@@ -25,6 +26,7 @@ public:
 
 private:
     Filter *filter_;
+
 private:
     bool predicate(RowTuple &row_tuple);
 };

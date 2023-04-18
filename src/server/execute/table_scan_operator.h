@@ -7,7 +7,8 @@
 
 class Table;
 
-class TableScanOperator : public Operator {
+class TableScanOperator : public Operator
+{
 public:
     TableScanOperator(Table *table) : table_(table) {}
 

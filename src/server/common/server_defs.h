@@ -7,7 +7,8 @@
 
 const int MAX_CONNECTS = 10;
 
-class GlobalParamsManager {
+class GlobalParamsManager
+{
 public:
     GlobalParamsManager() = default;
 
@@ -24,4 +25,3 @@ public:
 private:
     std::filesystem::path project_path_, project_binary_path_, project_bin_path_;
 };
-

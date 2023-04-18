@@ -18,9 +18,11 @@ int pageBitmapSize(int record_capacity);
 
 int pageHeaderSize(int record_capacity);
 
-struct RecordId {
+struct RecordId
+{
 public:
     int32_t page_id, slot_id;
+
 public:
     RecordId() = default;
 
@@ -40,7 +42,8 @@ public:
     static RecordId *max();
 };
 
-class Record {
+class Record
+{
 public:
     Record() : data_(nullptr) {}
 
@@ -49,7 +52,8 @@ public:
 
     void setRecordId(const RecordId &record_id) { record_id_ = record_id; }
 
-    void setRecordId(const int32_t page_id, const int32_t slot_id) {
+    void setRecordId(const int32_t page_id, const int32_t slot_id)
+    {
         this->record_id_.page_id = page_id;
         this->record_id_.slot_id = slot_id;
     }
@@ -58,7 +62,7 @@ public:
 
     [[nodiscard]] RecordId &getRecordId() { return record_id_; }
 
-    [[nodiscard]] char *getData(){ return data_; }
+    [[nodiscard]] char *getData() { return data_; }
 
 private:
     RecordId record_id_;
@@ -70,18 +74,20 @@ class ConditionFilter;
 ///@brief there are some meta params in page header
 ///@NOTE page header is part of page's data
 ///@n actually,page header is composed of 2 parts--struct PageHeader and bitmap of the page
-struct PageHeader {
-    int32_t record_num;           // 当前页面记录的个数
-    int32_t record_capacity;      // 最大记录个数
-    int32_t record_real_size;     // 每条记录的实际大小
-    int32_t record_size;          // 每条记录占用实际空间大小(可能对齐)
-    int32_t first_record_offset;  // 第一条记录的偏移量
+struct PageHeader
+{
+    int32_t record_num;          // 当前页面记录的个数
+    int32_t record_capacity;     // 最大记录个数
+    int32_t record_real_size;    // 每条记录的实际大小
+    int32_t record_size;         // 每条记录占用实际空间大小(可能对齐)
+    int32_t first_record_offset; // 第一条记录的偏移量
 };
 
 class RecordPageHandler;
 
 ///@brief iterator of records in a page
-class RecordPageIterator {
+class RecordPageIterator
+{
 public:
     RecordPageIterator() : record_page_handler_(nullptr), page_id_(BP_INVALID_PAGE_NUM), next_slot_id_(0) {}
 
@@ -95,14 +101,15 @@ public:
 
 private:
     RecordPageHandler *record_page_handler_;
-    int32_t page_id_;//current page's page id
-    int32_t next_slot_id_;//next slot id to return by func:next
+    int32_t page_id_;      // current page's page id
+    int32_t next_slot_id_; // next slot id to return by func:next
     BitMap bitmap_;
 };
 
 class RecordFileHandler;
 
-class RecordPageHandler {
+class RecordPageHandler
+{
 public:
     RecordPageHandler() : disk_buffer_pool_(nullptr), frame_(nullptr), page_header_(nullptr), bitmap_(nullptr) {}
 
@@ -145,7 +152,7 @@ public:
     ///@brief recover insert record
     Re recoverInsertRecord(const char *data, RecordId *rid);
 
-    template<class RecordUpdater>
+    template <class RecordUpdater>
     Re updateRecordInPlace(const RecordId *rid, RecordUpdater updater);
 
 private:
@@ -159,7 +166,8 @@ private:
 };
 
 ///@brief use record page handler
-class RecordFileHandler {
+class RecordFileHandler
+{
 public:
     RecordFileHandler() = default;
 
@@ -185,7 +193,7 @@ public:
     ///@brief get record with given record id and pass it by param:rec
     Re getRecord(const RecordId *rid, class Record *rec);
 
-    template<class RecordUpdater>
+    template <class RecordUpdater>
     Re updateRecordInPlace(const RecordId *rid, RecordUpdater updater);
 
 private:
@@ -197,7 +205,8 @@ private:
     Re initFreePages();
 };
 
-class RecordFileScanner {
+class RecordFileScanner
+{
 public:
     RecordFileScanner() : disk_buffer_pool_(nullptr), condition_filter_(nullptr) {}
 

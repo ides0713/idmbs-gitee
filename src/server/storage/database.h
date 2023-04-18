@@ -14,7 +14,8 @@ class CLogManager;
 
 #define DATABASE_NAME_MAX_LEN 20
 
-class DataBase {
+class DataBase
+{
 public:
     DataBase() = default;
 
@@ -31,26 +32,26 @@ public:
     Re createTable(const std::string &table_name, const size_t attr_infos_num, const AttrInfo *attr_infos);
 
     ///@brief existed table will be opened when database constructed,when table is creating,
-    ///it will be added into opened_tables automatically,so all exist valid tables can be find in opened_tables
+    /// it will be added into opened_tables automatically,so all exist valid tables can be find in opened_tables
     Table *getTable(const std::string &table_name);
 
     CLogManager *getCLogManager() { return clog_manager_; }
 
 private:
-//    Re create();
+    //    Re create();
     Re openAllTables();
 
     Re destruction();
 
-//    bool isExists();
+    //    bool isExists();
     CLogManager *clog_manager_;
     std::string database_name_;
     std::filesystem::path database_path_;
     std::unordered_map<std::string, Table *> opened_tables_;
 };
 
-
-class GlobalDataBaseManager {
+class GlobalDataBaseManager
+{
 public:
     GlobalDataBaseManager() = default;
 
@@ -78,8 +79,6 @@ public:
     static Re createDb(const std::filesystem::path database_path);
 
 private:
-
     std::filesystem::path project_default_database_path_, project_bin_path_;
     std::map<std::string, DataBase *> opened_databases_;
 };
-

@@ -1,7 +1,9 @@
 #include "session.h"
 
-Txn *Session::getTxn() {
-    if (txn_ == nullptr) {
+Txn *Session::getTxn()
+{
+    if (txn_ == nullptr)
+    {
         txn_ = new Txn();
         return txn_;
     }

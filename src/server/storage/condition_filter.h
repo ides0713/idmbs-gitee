@@ -7,28 +7,30 @@
 #include "../parse/parse_defs.h"
 #include "../common/re.h"
 
-
 class Record;
 
 class Table;
 
-struct ConDesc {
+struct ConDesc
+{
 public:
     bool is_attr;
     int attr_length, attr_offset;
     void *value;
+
 public:
-    
 };
 
-class ConditionFilter {
+class ConditionFilter
+{
 public:
     virtual ~ConditionFilter();
 
     virtual bool filter(const class Record &rec) const = 0;
 };
 
-class DefaultConditionFilter : public ConditionFilter {
+class DefaultConditionFilter : public ConditionFilter
+{
 public:
     DefaultConditionFilter() : attr_type_(AttrType::Undefined), comp_op_(CompOp::NoOp) {}
 
@@ -55,7 +57,8 @@ private:
     CompOp comp_op_ = CompOp::NoOp;
 };
 
-class CompositeConditionFilter : public ConditionFilter {
+class CompositeConditionFilter : public ConditionFilter
+{
 public:
     CompositeConditionFilter() : filters_(nullptr), filter_num_(0), memory_owner_(false) {}
 

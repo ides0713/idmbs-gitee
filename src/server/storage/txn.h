@@ -13,43 +13,51 @@ struct RecordId;
 
 class Record;
 
-class Operation {
+class Operation
+{
 public:
-    enum class Type : int {
+    enum class Type : int
+    {
         Insert,
         Update,
         Delete,
         Undefined
     };
+
 public:
     Operation(Type type, const RecordId &rid);
 
-    [[nodiscard]]Type getType() const { return type_; }
+    [[nodiscard]] Type getType() const { return type_; }
 
-    [[nodiscard]]int32_t getPageId() const { return page_id_; }
+    [[nodiscard]] int32_t getPageId() const { return page_id_; }
 
-    [[nodiscard]]int32_t getSlotId() const { return slot_id_; }
+    [[nodiscard]] int32_t getSlotId() const { return slot_id_; }
 
 private:
     Type type_;
     int32_t page_id_, slot_id_;
 };
 
-class OperationHash {
+class OperationHash
+{
 public:
-    size_t operator()(const Operation &op) const {
-        return (((size_t) op.getPageId()) << 32) | (op.getSlotId());
+    size_t operator()(const Operation &op) const
+    {
+        return (((size_t)op.getPageId()) << 32) | (op.getSlotId());
     }
 };
 
-class OperationPred {
+class OperationPred
+{
 public:
-    bool operator()(const Operation &op_1, const Operation &op_2) const {
+    bool operator()(const Operation &op_1, const Operation &op_2) const
+    {
         return op_1.getPageId() == op_2.getPageId() && op_1.getSlotId() == op_2.getSlotId();
     }
 };
 
-class Txn {
+class Txn
+{
 public:
     Txn() : txn_id_(0) { start(); }
 
@@ -70,8 +78,8 @@ public:
 
 public:
     static std::atomic<int32_t> global_txn_id;
-public:
 
+public:
     static int32_t getDefaultTxnId();
 
     static int32_t getNextGlobalTxnId();
@@ -88,6 +96,7 @@ private:
     using OperationSet = std::unordered_set<Operation, OperationHash, OperationPred>;
     int32_t txn_id_;
     std::unordered_map<Table *, OperationSet> operations_;
+
 private:
     void start();
 
@@ -98,5 +107,4 @@ private:
     void insertOperation(Table *table, Operation::Type type, const RecordId &rid);
 
     void deleteOperation(Table *table, const RecordId &rid);
-
 };

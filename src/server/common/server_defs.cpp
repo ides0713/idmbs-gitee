@@ -2,7 +2,8 @@
 #include "../../common/params_deliver.h"
 #include "../../common/common_defs.h"
 
-void GlobalParamsManager::init() {
+void GlobalParamsManager::init()
+{
     using Path = std::filesystem::path;
     project_path_ = Path(PROJECT_PATH);
     project_binary_path_ = Path(PROJECT_BINARY_PATH);
@@ -14,5 +15,6 @@ void GlobalParamsManager::init() {
     debugPrint("GlobalParamsManager:initialized done\n");
 }
 
-void GlobalParamsManager::destroy() {
+void GlobalParamsManager::destroy()
+{
 }

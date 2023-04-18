@@ -17,7 +17,8 @@ void debugPrint(const char *format, ...);
 
 char *substr(const char *s, int n_1, int n_2);
 
-struct Message {
+struct Message
+{
     Message() = default;
 
     Message(int type, const char *message);

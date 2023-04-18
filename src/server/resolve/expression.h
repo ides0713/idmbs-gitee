@@ -5,14 +5,15 @@
 #include "../storage/field.h"
 #include "tuple.h"
 
-enum class ExprType {
+enum class ExprType
+{
     None,
     Field,
     Value
 };
 
-
-class Expression {
+class Expression
+{
 public:
     Expression() = default;
 
@@ -23,7 +24,8 @@ public:
     virtual ExprType getExprType() const = 0;
 };
 
-class FieldExpression : public Expression {
+class FieldExpression : public Expression
+{
 public:
     FieldExpression() = default;
 
@@ -47,7 +49,8 @@ private:
     Field field_;
 };
 
-class ValueExpression : public Expression {
+class ValueExpression : public Expression
+{
 public:
     ValueExpression() = default;
 

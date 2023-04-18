@@ -3,7 +3,8 @@
 
 class Tuple;
 
-class Operator {
+class Operator
+{
 public:
     Operator() = default;
 
