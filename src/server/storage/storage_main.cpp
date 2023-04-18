@@ -10,5 +10,5 @@ Re StorageMain::handle()
 
 void StorageMain::response()
 {
-    printf("%s\n", execute_session_->getResponse());
+    printf("%s", execute_session_->getResponse().c_str());
 }

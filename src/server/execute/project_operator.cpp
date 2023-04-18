@@ -2,9 +2,19 @@
 #include "../resolve/tuple.h"
 #include "../storage/table.h"
 #include "../storage/field.h"
+#include "../resolve/expression.h"
+
 ProjectOperator::ProjectOperator()
 {
     tuple_ = new ProjectTuple;
+}
+
+void ProjectOperator::addProjection(const Table *table, const FieldMeta *field)
+{
+    TupleUnitSpec *spec = new TupleUnitSpec(new FieldExpression(table,field));
+    char * a =strNew(field->getFieldName().c_str());
+    spec->setAlias(a);
+    tuple_->addUnitSpec(spec);
 }
 
 Re ProjectOperator::init()

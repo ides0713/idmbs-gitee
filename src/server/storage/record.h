@@ -226,12 +226,10 @@ private:
     ConditionFilter *condition_filter_;
     RecordPageHandler record_page_handler_;
     RecordPageIterator record_page_iterator_;
-
     class Record next_record_;
 
 private:
     ///@brief fetch record
-    ///@NOTE if current page is ended,switch no next page;if there's no more page,return false
     Re fetchNextRecord();
 
     ///@brief fetch record in current page

@@ -279,19 +279,19 @@ Re Table::init(std::filesystem::path database_path, const char *table_name, cons
     r = bpm.createFile(data_file_path.c_str());
     if (r != Re::Success)
     {
-        debugPrint("Table:failed to createFilter disk buffer pool of data file. file name=%s\n", data_file_name.c_str());
+        debugPrint("Table:failed to create disk buffer pool of data file. file name=%s\n", data_file_name.c_str());
         return r;
     }
     r = initRecordHandler(database_path);
     if (r != Re::Success)
     {
-        debugPrint("Table:failed to createFilter table %s due to init record handler failed.", data_file_name.c_str());
+        debugPrint("Table:failed to create table %s due to init record handler failed.", data_file_name.c_str());
         // don't need to remove the data_file
         return r;
     }
     database_path_ = database_path;
     clog_manager_ = clog_manager;
-    debugPrint("Table:successfully createFilter table %s:%s", database_path_.c_str(), table_meta_.getTableName().c_str());
+    debugPrint("Table:successfully create table %s:%s", database_path_.c_str(), table_meta_.getTableName().c_str());
     return Re::Success;
 }
 

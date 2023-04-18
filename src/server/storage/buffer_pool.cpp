@@ -180,7 +180,7 @@ Re DiskBufferPool::openFile(std::string file_name)
         file_desc_ = -1;
         return r;
     }
-    file_header_ = (BufferPoolFileHeader *)header_frame_->getPageData();
+    file_header_ = reinterpret_cast<BufferPoolFileHeader *>(header_frame_->getPageData());
     debugPrint("DiskBufferPool:successfully open %s. file_desc=%d, hdr_frame=%p\n", file_name.c_str(), file_desc_,
                header_frame_);
     return Re::Success;
@@ -412,6 +412,7 @@ int DiskBufferPool::getFileDesc() const
 
 Re DiskBufferPool::flushPage(Frame &frame)
 {
+    printf("flush page page_id:%d\n", frame.getPageId());
     Page &page = frame.page_;
     long long offset = ((long long)page.page_id) * sizeof(Page);
     if (lseek(file_desc_, offset, SEEK_SET) == offset - 1)
@@ -426,7 +427,7 @@ Re DiskBufferPool::flushPage(Frame &frame)
         return Re::IoErrWrite;
     }
     frame.dirty_ = false;
-    debugPrint("DiskBufferPool:Flush block. file desc=%d, page num=%d\n", file_desc_, page.page_id);
+    debugPrint("DiskBufferPool:Flush block. file desc=%d, page id=%d\n", file_desc_, page.page_id);
     return Re::Success;
 }
 
@@ -582,7 +583,7 @@ Re GlobalBufferPoolManager::createFile(const char *file_name)
     // i.e. &page.page_data[0] equal to &file_header.pages_num,
     //&page_data[4] equal to &file_header.allocated_pages_num,
     //&page_data[8] equal to &file_header.bitmap and left space of page.page_data was part of array file_header.bitmap
-    BufferPoolFileHeader *file_header = (BufferPoolFileHeader *)page.page_data;
+    BufferPoolFileHeader *file_header = reinterpret_cast<BufferPoolFileHeader *>(page.page_data);
     file_header->pages_num = 1, file_header->allocated_pages_num = 1;
     char *bitmap = file_header->bitmap;
     // set the first bit of the char(byte) to 1(NOTE:i.e. the first page was used(the file header page itself)
@@ -671,25 +672,25 @@ void GlobalBufferPoolManager::destroy()
 Re BufferPoolIterator::init(DiskBufferPool &bp, int32_t start_page /* = 0 */)
 {
     bit_map_.init(bp.file_header_->bitmap, bp.file_header_->pages_num);
-    current_page_num_ = std::max(0, start_page);
+    current_page_id_ = std::max(0, start_page);
     return Re::Success;
 }
 
 bool BufferPoolIterator::hasNext()
 {
-    return bit_map_.nextSetBit(current_page_num_ + 1) != -1;
+    return bit_map_.nextSetBit(current_page_id_ + 1) != -1;
 }
 
 int32_t BufferPoolIterator::next()
 {
-    int32_t next_page = bit_map_.nextSetBit(current_page_num_ + 1);
+    int32_t next_page = bit_map_.nextSetBit(current_page_id_ + 1);
     if (next_page != -1)
-        current_page_num_ = next_page;
+        current_page_id_ = next_page;
     return next_page;
 }
 
 Re BufferPoolIterator::reset()
 {
-    current_page_num_ = 0;
+    current_page_id_ = 0;
     return Re::Success;
 }

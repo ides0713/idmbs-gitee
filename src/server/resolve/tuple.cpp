@@ -2,15 +2,33 @@
 #include "../../common/common_defs.h"
 #include "expression.h"
 
+std::string double2string(double v)
+{
+  char buf[256];
+  snprintf(buf, sizeof(buf), "%.2f", v);
+  size_t len = strlen(buf);
+  while (buf[len - 1] == '0') {
+    len--;
+      
+  }
+  if (buf[len - 1] == '.') {
+    len--;
+  }
+
+  return std::string(buf, len);
+}
+
 void TupleUnit::toString(std::ostream &os) const
 {
     switch (attr_type_)
     {
     case AttrType::Ints:
         os << *reinterpret_cast<int *>(data_);
+        printf("ints:%d\n",*reinterpret_cast<int*>(data_));
         break;
     case AttrType::Floats:
-        os << *reinterpret_cast<float *>(data_);
+        os << double2string(*reinterpret_cast<float *>(data_));
+        printf("floats:%f\n",*reinterpret_cast<float*>(data_));
         break;
     case AttrType::Chars:
         for (int i = 0; i < length_; i++)
@@ -18,6 +36,7 @@ void TupleUnit::toString(std::ostream &os) const
             if (data_[i] == '\0')
                 break;
             os << data_[i];
+            printf("%c\n",data_[i]);
         }
         break;
     case AttrType::Dates:

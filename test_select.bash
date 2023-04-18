@@ -6,5 +6,6 @@
 ./server "INSERT INTO Select_tables_1 VALUES (2,21,'c');"
 ./server "INSERT INTO Select_tables_1 VALUES (1,35,'a');"
 ./server "INSERT INTO Select_tables_1 VALUES (2,37,'a');"
+./server "INSERT INTO Select_tables_1 VALUES (1,35,'a');"
 ./server "SELECT * FROM Select_tables_1 WHERE id=1;"
 

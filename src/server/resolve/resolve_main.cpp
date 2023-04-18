@@ -10,7 +10,7 @@ Re ResolveMain::handle()
     if (default_db == nullptr)
     {
         debugPrint("ResolveMain:open default db failed,get nullptr,getFrame default db failed\n");
-        parse_session_->setResponse("CAN NOT OPEN CURRENT DATABASE");
+        parse_session_->setResponse("CAN NOT OPEN CURRENT DATABASE.\n");
         return Re::GenericError;
     }
     parse_session_->setDb(default_db);
@@ -18,7 +18,7 @@ Re ResolveMain::handle()
     if (stmt_ == nullptr)
     {
         debugPrint("ResolveMain:createFilter statement failed\n");
-        parse_session_->setResponse("CAN NOT RESOLVE SQL STATEMENT");
+        parse_session_->setResponse("CAN NOT RESOLVE SQL STATEMENT.\n");
         return Re::GenericError;
     }
     stmt_->init(q);
@@ -40,7 +40,7 @@ Session *ResolveMain::callBack()
 
 void ResolveMain::response()
 {
-    printf("%s\n", parse_session_->getResponse());
+    printf("%s", parse_session_->getResponse().c_str());
 }
 
 void ResolveMain::stmtSucceed()

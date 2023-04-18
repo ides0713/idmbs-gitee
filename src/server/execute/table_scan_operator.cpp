@@ -7,7 +7,7 @@ Re TableScanOperator::init()
     Re r = table_->getRecordFileScanner(record_scanner_);
     if (r == Re ::Success)
         tuple_.setSchema(table_, table_->getTableMeta().getFields());
-    return Re::Success;
+    return r;
 }
 
 Re TableScanOperator::handle()

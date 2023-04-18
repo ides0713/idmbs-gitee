@@ -209,7 +209,7 @@ attr_def:
 			CONTEXT->query=new CreateTableQuery();
 			CONTEXT->query->init();
 		}
-		AttrInfo attribute(CONTEXT->id,(AttrType)$2,1);
+		AttrInfo attribute(CONTEXT->id,(AttrType)$2,4);
 		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);
 	}
     ;

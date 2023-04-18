@@ -10,9 +10,7 @@ class Session
 public:
     explicit Session(DataBase *database = nullptr, Txn *txn = nullptr, bool txn_multi_operation = false)
         : database_(database), txn_(txn), txn_multi_operation_(txn_multi_operation)
-    {
-        strcpy(response_, "response not set");
-    }
+    {}
 
     ~Session() = default;
 
@@ -28,15 +26,16 @@ public:
 
     void setTmo(bool txn_multi_operation) { txn_multi_operation_ = txn_multi_operation; }
 
-    void setResponse(const char *msg) { strcpy(response_, msg); }
+    void setResponse(const char *response) { response_ = std::string(response); }
 
-    char *getResponse() { return response_; }
+    void setResponse(std::string &&response) { response_ = std::move(response); }
+    const std::string getResponse() { return response_; }
 
 private:
     DataBase *database_;
     Txn *txn_;
     bool txn_multi_operation_;
-    char response_[MSG_MSG_LEN];
+    std::string response_;
 };
 
 class ParseSession : public Session

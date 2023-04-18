@@ -8,7 +8,7 @@ Re ParseMain::handle(const char *st)
     {
         query_->destroy();
         query_ = nullptr;
-        setResponse("PARSE SQL FAILED");
+        setResponse("PARSE SQL FAILED.\n");
         return Re::SqlSyntax;
     }
     else
@@ -25,5 +25,5 @@ Session *ParseMain::callBack()
 
 void ParseMain::response()
 {
-    printf("%s\n", response_);
+    printf("%s", response_);
 }

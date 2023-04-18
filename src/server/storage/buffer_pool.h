@@ -290,7 +290,7 @@ private:
 class BufferPoolIterator
 {
 public:
-    BufferPoolIterator() : current_page_num_(-1) {}
+    BufferPoolIterator() : current_page_id_(-1) {}
 
     Re init(DiskBufferPool &bp, int32_t start_page = 0);
 
@@ -300,7 +300,10 @@ public:
 
     Re reset();
 
+    ///@brief debug use
+    int32_t getCurrentPageId() { return current_page_id_; }
+
 private:
     BitMap bit_map_;
-    int32_t current_page_num_ = -1;
+    int32_t current_page_id_;
 };

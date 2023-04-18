@@ -109,8 +109,10 @@ Re RecordPageHandler::init(DiskBufferPool &buffer_pool, int32_t page_id)
     }
     char *data = frame_->getPageData();
     disk_buffer_pool_ = &buffer_pool;
-    page_header_ = (PageHeader *)(data);
+    page_header_ = reinterpret_cast<PageHeader *>(data);
     bitmap_ = data + pageHeaderSize();
+    printf("page header:\nrecord_num:%d record_capacity:%d record_real_size:%d record_size:%d first_record_offset:%d\n",
+           page_header_->record_num, page_header_->record_capacity, page_header_->record_real_size, page_header_->record_size, page_header_->first_record_offset);
     debugPrint("RecordPageHandler:successfully init page_id %d.\n", page_id);
     return Re::Success;
 }
@@ -164,6 +166,7 @@ Re RecordPageHandler::initEmptyPage(DiskBufferPool &buffer_pool, int32_t page_id
 
 Re RecordPageHandler::insertRecord(const char *data, RecordId *rid)
 {
+    printf("insert record into memory current page id is %d\n",frame_->getPageId());
     if (page_header_->record_num == page_header_->record_capacity)
     {
         debugPrint("RecordPageHandler:page is full, page_id %d.\n", frame_->getPageId());
@@ -174,9 +177,9 @@ Re RecordPageHandler::insertRecord(const char *data, RecordId *rid)
     bitmap.setBit(slot_id);
     page_header_->record_num++;
     char *record_data = getRecordData(slot_id);
-    memcpy(record_data, data, page_header_->record_real_size);
+    memmove(record_data, data, page_header_->record_real_size);
     frame_->dirtyMark();
-    if (rid)
+    if (rid != nullptr)
     {
         rid->page_id = getPageId();
         rid->slot_id = slot_id;
@@ -494,7 +497,7 @@ Re RecordFileScanner::destroy()
 
 bool RecordFileScanner::hasNext()
 {
-    return false;
+    return next_record_.getRecordId().slot_id != -1;
 }
 
 Re RecordFileScanner::next(class Record &record)
@@ -518,7 +521,9 @@ Re RecordFileScanner::fetchNextRecord()
     while (buffer_pool_iterator_.hasNext())
     {
         int32_t page_id = buffer_pool_iterator_.next();
+        printf("page_id we get is %d\n", page_id);
         record_page_handler_.destroy();
+        // todo check here
         Re r = record_page_handler_.init(*disk_buffer_pool_, page_id);
         if (r != Re::Success)
         {
@@ -527,7 +532,7 @@ Re RecordFileScanner::fetchNextRecord()
         }
         record_page_iterator_.init(record_page_handler_);
         r = fetchNextRecordInPage();
-        if (r != Re::RecordEof)
+        if (r != Re::RecordEof or r == Re::Success)
             return r;
     }
     next_record_.getRecordId().slot_id = -1;
@@ -543,7 +548,7 @@ Re RecordFileScanner::fetchNextRecordInPage()
             return r;
         if (condition_filter_ == nullptr or condition_filter_->filter(next_record_))
             return Re::Success;
-        next_record_.getRecordId().slot_id = -1;
-        return Re::RecordEof;
     }
+    next_record_.getRecordId().slot_id = -1;
+    return Re::RecordEof;
 }

@@ -4,7 +4,7 @@
 #include "table.h"
 
 const static Json::StaticString FIELD_NAME("name");
-const static Json::StaticString FIELD_TYPE("getExprType");
+const static Json::StaticString FIELD_TYPE("type");
 const static Json::StaticString FIELD_OFFSET("offset");
 const static Json::StaticString FIELD_LEN("len");
 const static Json::StaticString FIELD_VISIBLE("visible");
