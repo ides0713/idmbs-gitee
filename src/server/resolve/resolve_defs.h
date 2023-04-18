@@ -55,6 +55,9 @@ public:
 
     Filter *getFilter() { return filter_; }
 
+    const std::vector<Table *> *getTables() { return &tables_; }
+    const std::vector<Field> *getFields() { return &fields_; }
+
 private:
     char **table_names_;
     int table_names_num_;

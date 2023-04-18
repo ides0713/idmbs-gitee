@@ -10,6 +10,7 @@ class Table;
 class TableScanOperator : public Operator
 {
 public:
+    TableScanOperator() : table_(nullptr) {}
     TableScanOperator(Table *table) : table_(table) {}
 
     ~TableScanOperator() override = default;
@@ -23,7 +24,7 @@ public:
     Tuple *getCurrentTuple() override;
 
 private:
-    Table *table_ = nullptr;
+    Table *table_;
     RecordFileScanner record_scanner_;
     class Record current_record_;
     RowTuple tuple_;

@@ -1,3 +1,4 @@
+#pragma once
 #include "../common/re.h"
 #include <vector>
 

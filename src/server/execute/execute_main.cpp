@@ -1,6 +1,14 @@
 #include "execute_main.h"
 #include <cassert>
+#include "table_scan_operator.h"
+#include "predicate_operator.h"
+#include "index_scan_operator.h"
 
+IndexScanOperator *createIndexScanOperator(Filter *filter)
+{
+    // TODO: implement index
+    return nullptr;
+}
 Re ExecuteMain::handle()
 {
     auto rs = static_cast<ResolveSession *>(resolve_session_);
@@ -36,6 +44,16 @@ Re ExecuteMain::doSelect(Statement *stmt)
 {
     auto s = static_cast<SelectStatement *>(stmt);
     resolve_session_->setResponse("do select not implemented yet");
+    if (s->getTables()->size() != 1)
+    {
+        debugPrint("ExecuteMain:select more than 1 tables is not supported\n");
+        return Re::NotImplement;
+    }
+    Table *const table = (*s->getTables())[0];
+    Operator *scan_oper = createIndexScanOperator(s->getFilter());
+    if (scan_oper == nullptr)
+        scan_oper = new TableScanOperator(table);
+
     return Re::GenericError;
 }
 
