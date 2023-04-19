@@ -111,8 +111,6 @@ Re RecordPageHandler::init(DiskBufferPool &buffer_pool, int32_t page_id)
     disk_buffer_pool_ = &buffer_pool;
     page_header_ = reinterpret_cast<PageHeader *>(data);
     bitmap_ = data + pageHeaderSize();
-    printf("page header:\nrecord_num:%d record_capacity:%d record_real_size:%d record_size:%d first_record_offset:%d\n",
-           page_header_->record_num, page_header_->record_capacity, page_header_->record_real_size, page_header_->record_size, page_header_->first_record_offset);
     debugPrint("RecordPageHandler:successfully init page_id %d.\n", page_id);
     return Re::Success;
 }
@@ -426,6 +424,7 @@ Re RecordFileHandler::insertRecord(const char *data, int record_size, RecordId *
     }
     disk_buffer_pool_->unpinPage(frame);
     free_pages_.insert(current_page_id);
+    printf("before page handler handle(insert record)\n");
     return record_page_handler.insertRecord(data, rid);
 }
 

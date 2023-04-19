@@ -103,6 +103,7 @@ public:
 
     Re getRecordFileScanner(RecordFileScanner &scanner);
 
+    void destroy();
 private:
     std::filesystem::path database_path_;
     TableMeta table_meta_;

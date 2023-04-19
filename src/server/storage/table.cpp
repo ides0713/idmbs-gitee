@@ -11,6 +11,7 @@
 #include "buffer_pool.h"
 #include "record.h"
 #include "txn.h"
+#include "storage_defs.h"
 
 static const Json::StaticString FIELD_TABLE_NAME("table_name");
 static const Json::StaticString FIELD_FIELDS("fields");
@@ -378,6 +379,22 @@ Re Table::getRecordFileScanner(RecordFileScanner &scanner)
     return Re::Success;
 }
 
+void Table::destroy()
+{
+    if (record_handler_ != nullptr)
+    {
+        record_handler_->destroy();
+        record_handler_ = nullptr;
+    }
+    if (data_buffer_pool_ != nullptr)
+    {
+        std::filesystem::path p = getTableDataFilePath(database_path_, table_meta_.getTableName().c_str());
+        GlobalManagers::globalBufferPoolManager().closeFile(std::string(p.c_str()));
+        data_buffer_pool_ = nullptr;
+    }
+    debugPrint("Table:table has been destroyed\n");
+}
+
 Re Table::insertRecord(Txn *txn, class Record *rec)
 {
     if (txn != nullptr)
@@ -439,7 +456,7 @@ Re Table::makeRecord(int values_num, const Value *values, char *&record_data)
             if (len > data_len + 1)
                 len = data_len + 1;
         }
-        memcpy(record_data + offset, values[i].data, len);
+        memmove(record_data + offset, values[i].data, len);
     }
     return Re::Success;
 }

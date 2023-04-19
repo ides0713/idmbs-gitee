@@ -258,8 +258,7 @@ Re DiskBufferPool::allocatePage(Frame **frame)
     int byte, bit;
     if (file_header_->allocated_pages_num < file_header_->pages_num)
     {
-        // some page was unlinked with the frame and because we do not free the frame,
-        // so frame represented by the first 0 bit was 'empty',we can just set page there
+        // load page from on-disk file
         for (int i = 0; i < file_header_->pages_num; i++)
         {
             byte = i / 8, bit = i % 8;
@@ -302,7 +301,6 @@ Re DiskBufferPool::allocatePage(Frame **frame)
     allocated_frame->acc_time_ = getCurrentTime();
     allocated_frame->resetPage();
     allocated_frame->page_.page_id = file_header_->pages_num - 1;
-
     // Use flush operation to extension file
     r = flushPage(*allocated_frame);
     if (r != Re::Success)
@@ -503,14 +501,12 @@ Re DiskBufferPool::purgeFrame(int32_t page_id, Frame *used_frame)
         if (r != Re::Success)
         {
             debugPrint("DiskBufferPool:failed to flush page %d of %d(file desc) during purge page.\n",
-                       used_frame->getPageId(),
-                       used_frame->file_desc_);
+                       used_frame->getPageId(), used_frame->file_desc_);
             return r;
         }
     }
     debugPrint("DiskBufferPool:successfully purge frame =%p, page %d of %d(file desc)\n", used_frame,
-               used_frame->getPageId(),
-               used_frame->file_desc_);
+               used_frame->getPageId(), used_frame->file_desc_);
     frame_manager_.free(file_desc_, page_id, used_frame);
     return Re::Success;
 }
