@@ -1,68 +1,58 @@
 #include "resolve_main.h"
 #include "../storage/storage_handler.h"
+#include "../parse/parse_main.h"
+
+Re ResolveMain::init(BaseMain *last_main)
+{
+    baseSet(*last_main);
+    auto parse_main = static_cast<ParseMain *>(last_main);
+    query_ = parse_main->getQuery();
+    if (query_ == nullptr)
+        return Re::GenericError;
+    return Re::Success;
+}
 
 Re ResolveMain::handle()
 {
-    auto *ps = static_cast<ParseSession *>(parse_session_);
-    Query *q = ps->getQuery();
-    GlobalDataBaseManager dbm = GlobalManagers::globalDataBaseManager();
+    GlobalDataBaseManager &dbm = GlobalManagers::globalDataBaseManager();
     DataBase *default_db = dbm.getDb(dbm.getProjectDefaultDatabasePath());
+    GlobalMainManager &gmm = GlobalManagers::globalMainManager();
     if (default_db == nullptr)
     {
         debugPrint("ResolveMain:open default db failed,get nullptr,getFrame default db failed\n");
-        parse_session_->setResponse("CAN NOT OPEN CURRENT DATABASE.\n");
+        gmm.setResponse("CAN NOT OPEN CURRENT DATABASE.\n");
         return Re::GenericError;
     }
-    parse_session_->setDb(default_db);
-    Statement::createStatement(q, stmt_);
+    database_ = default_db;
+    Statement::createStatement(query_, stmt_);
     if (stmt_ == nullptr)
     {
         debugPrint("ResolveMain:createFilter statement failed\n");
-        parse_session_->setResponse("CAN NOT RESOLVE SQL STATEMENT.\n");
+        gmm.setResponse("CAN NOT RESOLVE SQL STATEMENT.\n");
         return Re::GenericError;
     }
-    stmt_->init(q);
-    Re r = stmt_->handle(q, parse_session_);
+    stmt_->init(query_);
+    Re r = stmt_->handle(query_, this);
     if (r != Re::Success)
     {
         debugPrint("ResolveMain:statement initialize and handle failed re=%d\n", r);
         return r;
     }
-    resolve_session_ = new ResolveSession(parse_session_, stmt_);
-    q->destroy();
     return Re::Success;
 }
 
-Session *ResolveMain::callBack()
+void ResolveMain::clear()
 {
-    return resolve_session_;
-}
-
-void ResolveMain::response()
-{
-    printf("%s", parse_session_->getResponse().c_str());
-}
-
-void ResolveMain::stmtSucceed()
-{
-    switch (stmt_->getType())
+    if (query_ != nullptr)
+        query_ = nullptr;
+    if (stmt_ != nullptr)
     {
-    case StatementType::CreateTable:
-        printf("CREATE TABLE %s SUCCEEDED\n", static_cast<CreateTableStatement *>(stmt_)->getTableName());
-        break;
-    case StatementType::Insert:
-        printf("INSERT RECORD SUCCEEDED\n");
-        break;
-    case StatementType::Select:
-        printf("SELECT FINISH\n");
-        break;
-    default:
-        printf("SQL SUCCEEDED BUT NO MSG RETURNED\n");
-        break;
+        stmt_->destroy();
+        stmt_ = nullptr;
     }
 }
 
-void ResolveMain::stmtDestroyed()
+void ResolveMain::destroy()
 {
-    stmt_->destroy();
+    clear();
 }

@@ -18,7 +18,7 @@ public:
 
     Re init(const char *field_name, AttrType attr_type, int attr_offset, int attr_len, bool visible);
 
-    [[nodiscard]] std::string getFieldName() const { return field_name_; }
+    [[nodiscard]] const char *getFieldName() const { return field_name_.c_str(); }
 
     [[nodiscard]] AttrType getAttrType() const { return attr_type_; }
 
@@ -60,9 +60,9 @@ public:
 
     [[nodiscard]] AttrType getAttrType() const { return field_meta_->getAttrType(); }
 
-    [[nodiscard]] std::string getTableName() const;
+    [[nodiscard]] const char *getTableName() const;
 
-    [[nodiscard]] std::string getFieldName() const { return field_meta_->getFieldName(); }
+    [[nodiscard]] const char *getFieldName() const { return field_meta_->getFieldName(); }
 
 private:
     const Table *table_;

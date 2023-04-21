@@ -23,7 +23,7 @@ public:
 
     void destroy();
 
-    const std::string getDbName() { return database_name_; }
+    const char *getDbName() { return database_name_.c_str(); }
 
     std::filesystem::path const getDbPath() { return database_path_; }
 
@@ -36,6 +36,8 @@ public:
     Table *getTable(const std::string &table_name);
 
     CLogManager *getCLogManager() { return clog_manager_; }
+
+    int getOpenedTablesNum() { return opened_tables_.size(); }
 
 private:
     //    Re create();
@@ -75,10 +77,15 @@ public:
 
     std::filesystem::path const getProjectBinPath() { return project_bin_path_; }
 
+    int getDbNum() { return opened_databases_.size(); }
+
 public:
     static Re createDb(const std::filesystem::path database_path);
 
 private:
     std::filesystem::path project_default_database_path_, project_bin_path_;
     std::map<std::string, DataBase *> opened_databases_;
+
+private:
+    Re closeAllDb();
 };

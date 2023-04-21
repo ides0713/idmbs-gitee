@@ -7,9 +7,8 @@
 #include "../storage/database.h"
 #include "../common/global_managers.h"
 #include "filter.h"
-
 class Session;
-
+class ResolveMain;
 enum StatementType
 {
     Select = 0,
@@ -24,7 +23,7 @@ public:
 
     virtual void init(Query *query) = 0;
 
-    virtual Re handle(Query *query, Session *parse_session) = 0;
+    virtual Re handle(Query *query, ResolveMain *resolve_main) = 0;
 
     virtual void destroy() = 0;
 
@@ -45,7 +44,7 @@ public:
 
     void init(Query *query) override;
 
-    Re handle(Query *query, Session *parse_session) override;
+    Re handle(Query *query, ResolveMain *resolve_main) override;
 
     void destroy() override;
 
@@ -77,7 +76,7 @@ public:
 
     void init(Query *query) override;
 
-    Re handle(Query *query, Session *parse_session) override;
+    Re handle(Query *query, ResolveMain *resolve_main) override;
 
     void destroy() override;
 
@@ -102,7 +101,7 @@ public:
 
     void init(Query *query) override;
 
-    Re handle(Query *query, Session *parse_session) override;
+    Re handle(Query *query, ResolveMain *resolve_main) override;
 
     void destroy() override;
 

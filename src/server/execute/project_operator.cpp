@@ -9,11 +9,15 @@ ProjectOperator::ProjectOperator()
     tuple_ = new ProjectTuple;
 }
 
+ProjectOperator::~ProjectOperator()
+{
+    delete tuple_;
+}
+
 void ProjectOperator::addProjection(const Table *table, const FieldMeta *field)
 {
-    TupleUnitSpec *spec = new TupleUnitSpec(new FieldExpression(table,field));
-    char * a =strNew(field->getFieldName().c_str());
-    spec->setAlias(a);
+    TupleUnitSpec *spec = new TupleUnitSpec(new FieldExpression(table, field));
+    spec->setAlias(field->getFieldName());
     tuple_->addUnitSpec(spec);
 }
 
@@ -24,8 +28,7 @@ Re ProjectOperator::init()
         debugPrint("ProjectOperator:project operator must has 1 child\n");
         return Re::Internal;
     }
-    Operator *oper_1 = opers[0];
-    Re r = oper_1->init();
+    Re r = opers[0]->init();
     if (r != Re::Success)
     {
         debugPrint("ProjectOperator:failed to open child operator: %s\n", strRe(r));

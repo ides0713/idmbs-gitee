@@ -18,12 +18,13 @@ Re PredicateOperator::handle()
     while ((r = (oper->handle())) == Re::Success)
     {
         Tuple *tuple = oper->getCurrentTuple();
+        auto row = static_cast<RowTuple *>(tuple);
         if (tuple == nullptr)
         {
             debugPrint("PredicateOperator:failed to get tuple from operator\n");
             return Re::Internal;
         }
-        if (predicate(static_cast<RowTuple &>(*tuple)))
+        if (predicate(reinterpret_cast<RowTuple &>(*tuple)))
             return Re::Success;
     }
     return r;
@@ -37,11 +38,13 @@ Re PredicateOperator::destroy()
 
 Tuple *PredicateOperator::getCurrentTuple()
 {
-    return opers[0]->getCurrentTuple();
+    Tuple *res = opers[0]->getCurrentTuple();
+    return res;
 }
 
 bool PredicateOperator::predicate(RowTuple &row_tuple)
 {
+    const Table &t = row_tuple.getTable();
     if (filter_ == nullptr or filter_->getFilterUnits().empty())
         return true;
     for (const auto *filter_unit : filter_->getFilterUnits())
@@ -74,7 +77,9 @@ bool PredicateOperator::predicate(RowTuple &row_tuple)
             filter_result = (compare_result >= 0);
             break;
         default:
-            assert("invalid compare type");
+            debugPrint("invalid compare type\n");
+            assert(false);
+            break;
         }
         if (!filter_result)
             return false;

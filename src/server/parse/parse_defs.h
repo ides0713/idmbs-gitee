@@ -217,7 +217,7 @@ public:
     AttrInfo()
     {
         attr_name = nullptr;
-        attr_type = Undefined;
+        attr_type = AttrType::Undefined;
         attr_len = 0;
     }
 

@@ -3,24 +3,21 @@
 #include "../common/server_defs.h"
 #include "../common/session.h"
 #include "../common/re.h"
+#include "../common/base_main.h"
 
 class Query;
-
-class ParseMain
+class StartMain;
+class ParseMain : public BaseMain
 {
 public:
-    ParseMain() : query_(nullptr), parse_session_(nullptr) {}
-
-    Re handle(const char *st);
-
-    Session *callBack();
-
-    void setResponse(const char *msg) { strcpy(response_, msg); }
-
-    void response();
+    ParseMain() : sql_(nullptr), query_(nullptr) { setType(MainType::Parse); }
+    Re init(BaseMain *last_main) override;
+    Re handle() override;
+    void clear() override;
+    void destroy() override;
+    Query *getQuery() { return query_; }
 
 private:
+    char *sql_;
     Query *query_;
-    char response_[MAX_MSG_LENGTH];
-    Session *parse_session_;
 };

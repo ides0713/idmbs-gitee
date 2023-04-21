@@ -142,12 +142,6 @@ std::list<Frame *> FrameManager::findFrames(int file_desc)
     return frames;
 }
 
-// DiskBufferPool::~DiskBufferPool() {
-//     debugPrint("!!!!!!!!!!! enter destroy file in destruction function\n");
-//     closeFile();
-//     debugPrint("DiskBufferPool:disk buffer pool destructed\n");
-// }
-
 Re DiskBufferPool::openFile(std::string file_name)
 {
     int fd = open(file_name.c_str(), O_RDWR);
@@ -387,6 +381,13 @@ Re DiskBufferPool::getAllocatedPagesNum(int *page_count)
     return Re::Success;
 }
 
+void DiskBufferPool::checkAllPages()
+{
+    std::list<Frame *> frames = frame_manager_.findFrames(file_desc_);
+    for (auto &frame : frames)
+        frame->desc();
+}
+
 Re DiskBufferPool::checkAllPagesUnpinned()
 {
     std::list<Frame *> frames = frame_manager_.findFrames(file_desc_);
@@ -548,7 +549,28 @@ Re DiskBufferPool::loadPage(int32_t page_id, Frame *frame)
 
 void DiskBufferPool::destroy()
 {
-    closeFile();
+    if (file_desc_ < 0)
+        return; // has not open file,just return success
+    flushAllPages();
+    header_frame_->pin_count_--;
+    // // TODO: 理论上是在回放时回滚未提交事务，但目前没有undo log，因此不下刷数据page，只通过redo log回放
+    Re r = purgePage(0);
+    if (r != Re::Success)
+    {
+        header_frame_->pin_count_++;
+        debugPrint("DiskBufferPool:failed to destroy %s, due to failed to purge all pages.\n", file_name_.c_str());
+        return;
+    }
+    disposed_pages_.clear();
+    if (close(file_desc_) < 0)
+    {
+        debugPrint("DiskBufferPool:failed to destroy fileId:%d, fileName:%s, error:%s\n", file_desc_,
+                   file_name_.c_str(),
+                   strerror(errno));
+        return;
+    }
+    debugPrint("DiskBufferPool:successfully destroy file %d:%s.\n", file_desc_, file_name_.c_str());
+    file_desc_ = -1;
     debugPrint("DiskBufferPool:disk buffer pool destructed\n");
 }
 
@@ -659,10 +681,7 @@ void GlobalBufferPoolManager::destroy()
     std::unordered_map<std::string, DiskBufferPool *> tmp_bps;
     tmp_bps.swap(buffer_pools_);
     for (auto &iter : tmp_bps)
-    {
-        // do not destroy file in bpm,because there is nothing in the hash map now
         iter.second->destroy();
-    }
 }
 
 Re BufferPoolIterator::init(DiskBufferPool &bp, int32_t start_page /* = 0 */)
@@ -689,4 +708,9 @@ Re BufferPoolIterator::reset()
 {
     current_page_id_ = 0;
     return Re::Success;
+}
+
+void Frame::desc()
+{
+    printf("Frame: dirty_mark:%d pin_count:%d file_desc:%d page_id:%d\n", dirty_, pin_count_, file_desc_, page_.page_id);
 }

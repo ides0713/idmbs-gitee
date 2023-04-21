@@ -12,6 +12,7 @@ enum class ExprType
     Value
 };
 
+std::string strExprType(ExprType type);
 class Expression
 {
 public:
@@ -39,9 +40,9 @@ public:
 
     [[nodiscard]] const Field &getField() const { return field_; }
 
-    [[nodiscard]] std::string getTableName() const { return field_.getTableName(); }
+    [[nodiscard]] const char *getTableName() const { return field_.getTableName(); }
 
-    [[nodiscard]] std::string getFieldName() const { return field_.getFieldName(); }
+    [[nodiscard]] const char *getFieldName() const { return field_.getFieldName(); }
 
     Re getValue(const Tuple &tuple, TupleUnit &unit) const override;
 

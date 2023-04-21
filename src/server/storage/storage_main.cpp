@@ -3,12 +3,23 @@
 #include <sys/stat.h>
 #include "../../common/common_defs.h"
 
+Re StorageMain::init(BaseMain *last_main)
+{
+    baseSet(*last_main);
+    return Re::Success;
+}
+
 Re StorageMain::handle()
 {
     return Re::Success;
 }
 
-void StorageMain::response()
+void StorageMain::clear()
 {
-    printf("%s", execute_session_->getResponse().c_str());
+    return;
+}
+
+void StorageMain::destroy()
+{
+    return;
 }

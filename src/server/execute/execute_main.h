@@ -4,17 +4,16 @@
 #include "../common/session.h"
 #include "../common/re.h"
 #include "../storage/clog_manager.h"
+#include "../common/base_main.h"
 
-class ExecuteMain
+class ExecuteMain : public BaseMain
 {
 public:
-    explicit ExecuteMain(Session *resolve_session) : resolve_session_(resolve_session), execute_session_(nullptr) {}
-
-    Re handle();
-
-    Session *callBack();
-
-    void response();
+    ExecuteMain() : stmt_(nullptr) { setType(MainType::Execute); }
+    Re init(BaseMain *last_main) override;
+    Re handle() override;
+    void clear() override;
+    void destroy() override;
 
 private:
     Re doSelect(Statement *stmt);
@@ -23,5 +22,6 @@ private:
 
     Re doInsert(Statement *stmt);
 
-    Session *resolve_session_, *execute_session_;
+private:
+    Statement *stmt_;
 };

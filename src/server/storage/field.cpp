@@ -39,7 +39,7 @@ Re FieldMeta::init(const char *field_name, AttrType attr_type, int attr_offset, 
                    attr_offset, attr_len);
         return Re::InvalidArgument;
     }
-    field_name_ = field_name;
+    field_name_.assign(field_name);
     attr_type_ = attr_type, len_ = attr_len, offset_ = attr_offset;
     visible_ = visible;
     debugPrint("FieldMeta:init a field_meta with name:%s\n", field_name);
@@ -112,7 +112,7 @@ Re FieldMeta::fromJson(const Json::Value &json_value, FieldMeta &field)
     return field.init(field_name, type, attr_offset, attr_len, visible);
 }
 
-std::string Field::getTableName() const
+const char *Field::getTableName() const
 {
     return table_->getTableName();
 }

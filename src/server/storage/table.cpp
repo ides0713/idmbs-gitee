@@ -63,6 +63,7 @@ Re TableMeta::init(const char *table_name, int32_t attr_infos_num, const AttrInf
         field_offset += attr_info.attr_len;
     }
     record_size_ = field_offset, table_name_ = table_name;
+    table_name_ = std::string(table_name);
     debugPrint("TableMeta:initialized table meta.table name=%s\n", table_name);
     return Re::Success;
 }
@@ -213,7 +214,7 @@ const FieldMeta *TableMeta::getField(const char *field_name) const
         return nullptr;
     }
     for (const FieldMeta &field : fields_)
-        if (strcmp(field.getFieldName().c_str(), field_name) == 0)
+        if (strcmp(field.getFieldName(), field_name) == 0)
             return &field;
     return nullptr;
 }
@@ -292,14 +293,14 @@ Re Table::init(std::filesystem::path database_path, const char *table_name, cons
     }
     database_path_ = database_path;
     clog_manager_ = clog_manager;
-    debugPrint("Table:successfully create table %s:%s", database_path_.c_str(), table_meta_.getTableName().c_str());
+    debugPrint("Table:successfully create table %s:%s", database_path_.c_str(), table_meta_.getTableName());
     return Re::Success;
 }
 
 Re Table::initRecordHandler(const char *base_dir)
 {
     namespace fs = std::filesystem;
-    std::string data_file_name = table_meta_.getTableName() + ".data";
+    std::string data_file_name = std::string(table_meta_.getTableName()) + ".data";
     fs::path data_file_path = fs::path(base_dir).append(data_file_name);
     GlobalBufferPoolManager &bpm = GlobalManagers::globalBufferPoolManager();
     Re r = bpm.openFile(data_file_path, data_buffer_pool_);
@@ -351,10 +352,11 @@ Re Table::init(std::filesystem::path database_path, const char *table_name, CLog
     if (r != Re::Success)
     {
         debugPrint("Table:failed to open table %s due to init record handler failed.\n",
-                   table_meta_.getTableName().c_str());
+                   table_meta_.getTableName());
         // don't need to remove the data_file
         return r;
     }
+    database_path_ = database_path;
     if (clog_manager_ == nullptr)
         clog_manager_ = clog_manager;
     return Re::Success;
@@ -388,8 +390,12 @@ void Table::destroy()
     }
     if (data_buffer_pool_ != nullptr)
     {
-        std::filesystem::path p = getTableDataFilePath(database_path_, table_meta_.getTableName().c_str());
-        GlobalManagers::globalBufferPoolManager().closeFile(std::string(p.c_str()));
+        // GlobalBufferPoolManager& bpm = GlobalManagers::globalBufferPoolManager();
+        // std::filesystem::path p = getTableDataFilePath(database_path_, table_meta_.getTableName().c_str());
+        // printf("p.cstr() is %s\n",p.c_str());
+        // data_buffer_pool_->checkAllPages();
+        // bpm.closeFile(std::string(p.c_str()));
+        // data_buffer_pool_->checkAllPages();
         data_buffer_pool_ = nullptr;
     }
     debugPrint("Table:table has been destroyed\n");
@@ -403,7 +409,7 @@ Re Table::insertRecord(Txn *txn, class Record *rec)
     if (r != Re::Success)
     {
         debugPrint("Table:insert record failed. table name=%s, re=%d:%s\n",
-                   table_meta_.getTableName().c_str(), r, strRe(r));
+                   table_meta_.getTableName(), r, strRe(r));
         return r;
     }
     if (txn != nullptr)
@@ -416,7 +422,7 @@ Re Table::insertRecord(Txn *txn, class Record *rec)
             if (r_2 != Re::Success)
                 debugPrint(
                     "Table:failed to rollback record data when insert index entry failed table name=%s, rc=%d:%s\n",
-                    getTableName().c_str(), r_2, strRe(r_2));
+                    getTableName(), r_2, strRe(r_2));
             return r;
         }
     }

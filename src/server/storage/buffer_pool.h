@@ -75,6 +75,8 @@ public:
     ///@brief return true if pin_count LE 0@n(todo:what is purgeable and pin_count stand for?)
     [[nodiscard]] bool isPurgeable() const { return pin_count_ <= 0; }
 
+    void desc();
+
 private:
     bool dirty_; // a frame is set dirty,i.e. it was 'changed' in memory and we need to write it to disk
     ///@brief pin count of the frame if pin count GT 0 the page is pinned
@@ -194,6 +196,7 @@ public:
     ///@brief return allocated pages num
     Re getAllocatedPagesNum(int *page_count);
 
+    void checkAllPages();
     ///@brief use for debug
     Re checkAllPagesUnpinned();
 
@@ -206,6 +209,8 @@ public:
 
     ///@brief check if corresponding bit of page_id in bitmap was 0,set it to 1
     Re recoverPage(int32_t page_id);
+    ///@brief destroy the file/unlink the buffer pool and the on-disk file
+    Re closeFile();
 
     void destroy();
 
@@ -246,9 +251,6 @@ private:
     // todo:ascertain the relationship between allocated_page and pages_num of file header
     ///@brief as a buffer pool correspond one on-disk file,openFile is initialization of the instance indeed
     Re openFile(std::string file_name);
-
-    ///@brief destroy the file/unlink the buffer pool and the on-disk file
-    Re closeFile();
 
 private:
     friend class BufferPoolIterator;

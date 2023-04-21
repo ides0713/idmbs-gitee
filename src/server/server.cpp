@@ -13,97 +13,68 @@
 #include "execute/execute_main.h"
 #include "storage/storage_main.h"
 #include "common/re.h"
+#include <iostream>
+#include <fstream>
+#include <filesystem>
+#include <string>
 
 void pStart(const char *sql, int sock_fd);
 
 void recvFunc(int fd);
 
-int main(int argc, char *argv[]) {
+void doTest();
+void toLower(char *str);
+void toUpper(char *str);
+int main(int argc, char *argv[])
+{
     GlobalManagers::init();
-    // int listen_fd, conn_fd;
-    // sockaddr_in serve_addr;
-    // listen_fd = socket(AF_INET, SOCK_STREAM, 0);
-    // bzero(&serve_addr, sizeof(serve_addr));
-    // serve_addr.sin_family = AF_INET;
-    // serve_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    // serve_addr.sin_port = htons(SERVER_PORT);
-    // bind(listen_fd, (sockaddr *)&serve_addr, sizeof(serve_addr));
-    // listen(listen_fd, MAX_CONNECTS);
-    // printf("start listening......\n");
-    // while (true)
-    // {
-    //     conn_fd = accept(listen_fd, (sockaddr *)NULL, NULL);
-    //     printf("connect from conn_fd:%d\n", conn_fd);
-    //     // int n = read(conn_fd, reinterpret_cast<char *>(&l), sizeof(l));
-    //     std::thread recv_thread(recvFunc, conn_fd);
-    //     recv_thread.detach();
-    // }
-    char buffer[100];
-    assert(argc >= 2);
-    strcpy(buffer, argv[1]);
-    debugPrint("Main:sql_buffer:\n--\n%s\n--\n", buffer);
-    pStart(buffer, -1);
+    GlobalMainManager &gmm = GlobalManagers::globalMainManager();
+    char str[READ_BUFFER_SIZE];
+    while (true)
+    {
+        memset(str, 0, 1024);
+        scanf("%[^\n]", &str);
+        getchar();
+        toLower(str);
+        if (strcmp(str, "t") == 0)
+            doTest();
+        else if (strcmp(str, "exit;") == 0)
+            break;
+        else if (strlen(str) != 0)
+            gmm.handle(str);
+        debugPrint("read from buffer:[%s] len:%d\n", str, int(strlen(str)));
+    }
     GlobalManagers::destroy();
-//    closeLogStream();
-    debugPrint("Main:------------------------------------exit\n\n");
     return 0;
 }
-
-void pStart(const char *sql, int sock_fd) {
-    ParseMain pm;
-    Re re_parse = pm.handle(sql);
-    strRe(Re::Success);
-    if (re_parse != Re::Success) {
-        debugPrint("\nMain:parse failed\n");
-        pm.response();
-        return;
+void doTest()
+{
+    printf("test program begin ==========\n");
+    namespace fs = std::filesystem;
+    GlobalParamsManager &gpm = GlobalManagers::globalParamsManager();
+    GlobalMainManager &gmm = GlobalManagers::globalMainManager();
+    fs::path p = gpm.getProjectPath();
+    p.append("test_sqls");
+    std::string sql, file_name(p.c_str());
+    std::ifstream istream(file_name);
+    while (std::getline(istream, sql))
+    {
+        if (sql.substr(0, 2) != "--" and !sql.empty())
+            gmm.handle(sql.c_str());
     }
-    debugPrint("\nMain:sql parse succeeded\n");
-    ResolveMain rm(pm.callBack());
-    Re re_resolve = rm.handle();
-    if (re_resolve != Re::Success) {
-        debugPrint("\nMain:resolve stmt failed\n");
-        rm.response();
-        return;
-    }
-    debugPrint("\nMain:resolve stmt succeeded\n");
-    ExecuteMain em(rm.callBack());
-    Re re_execute = em.handle();
-    if (re_execute != Re::Success) {
-        debugPrint("\nMain:execute stmt failed\n");
-        em.response();
-        return;
-    }
-    debugPrint("\nMain:execute stmt succeeded\n");
-    StorageMain sm(em.callBack());
-    Re re_storage = sm.handle();
-    if (re_storage != Re::Success) {
-        debugPrint("\nMain:storage failed\n");
-        return;
-    }
-    rm.stmtSucceed();
-    rm.stmtDestroyed();
+    printf("test program end   ==========\n");
+    return;
+}
+void toLower(char *str)
+{
+    for (int i = 0; i < strlen(str); i++)
+        if (str[i] < 'Z' and str[i] > 'A')
+            str[i] = str[i] - 'A' + 'a';
 }
 
-void recvFunc(int fd) {
-    int n, ret_val;
-    Message m;
-    while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0) {
-        if (n == 0)
-            break;
-        else {
-            if (m.type == MSG_TYPE_EXIT) {
-                Message m(MSG_TYPE_EXIT, "exit");
-                write(fd, reinterpret_cast<char *>(&m), sizeof(m));
-                break;
-            } else {
-                printf("from client:%s\n", m.message);
-                // detach a thread to do sql parsing and other work
-                std::thread solve_thread(pStart, m.message, fd);
-                solve_thread.detach();
-            }
-        }
-    }
-    printf("disconnect from conn_fd:%d\n", fd);
-    close(fd);
+void toUpper(char *str)
+{
+    for (int i = 0; i < strlen(str); i++)
+        if (str[i] < 'z' and str[i] > 'a')
+            str[i] = str[i] - 'a' + 'A';
 }

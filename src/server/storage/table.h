@@ -55,13 +55,13 @@ public:
 
     [[nodiscard]] const FieldMeta *getField(std::string field_name) const;
 
-    [[nodiscard]] std::string getTableName() const { return table_name_; }
+    [[nodiscard]] const char *getTableName() const { return table_name_.c_str(); }
 
     [[nodiscard]] int getFieldsNum() const { return fields_.size(); }
 
     [[nodiscard]] int getRecordSize() const { return record_size_; }
 
-    [[nodiscard]] const std::vector<FieldMeta> *getFields() { return &fields_; }
+    [[nodiscard]] const std::vector<FieldMeta> *getFields() const { return &fields_; }
 
 public:
     static int getSysFieldsNum();
@@ -71,7 +71,7 @@ private:
     std::vector<FieldMeta> fields_; // 包含sys_fields
     std::vector<IndexMeta> indexes_;
     int record_size_;
-    // todo: why use static variable?
+
 private:
 private:
     static std::vector<FieldMeta> sys_fields_;
@@ -93,9 +93,9 @@ public:
     Re init(std::filesystem::path database_path, const char *table_name, CLogManager *clog_manager);
 
     /// @brief get table name from table(table meta)
-    std::string getTableName() const { return table_meta_.getTableName(); }
+    const char *getTableName() const { return table_meta_.getTableName(); }
 
-    TableMeta getTableMeta() const { return table_meta_; }
+    const TableMeta &getTableMeta() const { return table_meta_; }
 
     Re insertRecord(Txn *txn, int values_num, const Value *values);
 
@@ -104,6 +104,7 @@ public:
     Re getRecordFileScanner(RecordFileScanner &scanner);
 
     void destroy();
+
 private:
     std::filesystem::path database_path_;
     TableMeta table_meta_;

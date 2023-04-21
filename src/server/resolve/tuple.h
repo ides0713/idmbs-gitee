@@ -3,7 +3,6 @@
 #include "../storage/table.h"
 #include "../storage/field.h"
 #include "../storage/record.h"
-
 enum class ExprType;
 
 class Expression;
@@ -100,9 +99,11 @@ public:
 
     Re getUnitSpecAt(int index, const TupleUnitSpec *&spec) const override;
 
-    class Record &record() { return *record_; }
+    class Record &getRecord() { return *record_; }
 
-    [[nodiscard]] const class Record &record() const { return *record_; }
+    [[nodiscard]] const class Record &getRecord() const { return *record_; }
+
+    const Table &getTable() { return *table_; }
 
 private:
     class Record *record_;
@@ -128,6 +129,8 @@ public:
     Re getUnit(const Field &field, TupleUnit &unit) const override;
 
     Re getUnitSpecAt(int index, const TupleUnitSpec *&unit) const override;
+
+    Tuple *getTuple() { return tuple_; }
 
 private:
     std::vector<TupleUnitSpec *> specs_;

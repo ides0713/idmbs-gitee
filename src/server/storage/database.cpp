@@ -6,11 +6,19 @@
 
 void DataBase::destroy()
 {
+    // destroy all table of the database,remove them from the memory and
+    for (auto table : opened_tables_)
+        table.second->destroy();
+    opened_tables_.clear();
+    if (clog_manager_ != nullptr)
+    {
+        delete clog_manager_;
+        clog_manager_ = nullptr;
+    }
 }
 
 Re DataBase::init(const char *database_name, const std::filesystem::path &database_path)
 {
-    // todo:init clog_manager of the database(not implement)
     namespace fs = std::filesystem;
     if (strlen(database_name) == 0)
     {
@@ -43,7 +51,6 @@ Re DataBase::createTable(const char *table_name, const size_t attr_infos_num, co
         return Re::SchemaTableExist;
     }
     Table *new_table = new Table;
-    // todo:table.init causes segmentation fault
     Re r = new_table->init(database_path_, table_name, attr_infos_num, attr_infos, clog_manager_);
     if (r != Re::Success)
     {
@@ -86,12 +93,11 @@ Re DataBase::openAllTables()
         {
             delete table;
             debugPrint("DataBase:duplicate table with difference file name. table=%s, the other file_name=%s\n",
-                       table->getTableName().c_str(),
-                       file_name.c_str());
+                       table->getTableName(), file_name.c_str());
             return Re::GenericError;
         }
         opened_tables_[table->getTableName()] = table;
-        debugPrint("DataBase:open table: %s, file: %s\n", table->getTableName().c_str(), file_name.c_str());
+        debugPrint("DataBase:open table: %s, file: %s\n", table->getTableName(), file_name.c_str());
     }
     debugPrint("DataBase:all table have been opened. num=%d\n", opened_tables_.size());
     return Re::Success;
@@ -152,13 +158,20 @@ Re GlobalDataBaseManager::createDb(const std::filesystem::path database_path)
     }
 }
 
-void GlobalDataBaseManager::destroy()
+Re GlobalDataBaseManager::closeAllDb()
 {
+    printf("close all opened tables in the database %d\n", int(opened_databases_.size()));
     for (const auto &it : opened_databases_)
     {
-        opened_databases_.erase(it.first);
-        delete it.second;
+        it.second->destroy();
     }
+    opened_databases_.clear();
+    return Re::Success;
+}
+
+void GlobalDataBaseManager::destroy()
+{
+    closeAllDb();
 }
 
 DataBase *GlobalDataBaseManager::getDb(const char *database_name)

@@ -13,14 +13,14 @@ Re PersistFileIoHandler::createFile(const char *file_path)
     if (isAssociated())
     {
         debugPrint(
-            "PersistFileIoHandler:failed to createFilter file %s,because handler is associated with file %s now\n",
+            "PersistFileIoHandler:failed to create file %s,because handler is associated with file %s now\n",
             file_path, file_path_.c_str());
         return Re::FileAssociated;
     }
     fs::path file_path_path(file_path);
     if (fs::exists(file_path_path))
     {
-        debugPrint("PersistFileIoHandler:failed to createFilter file %s,because file already exists\n", file_path);
+        debugPrint("PersistFileIoHandler:failed to create file %s,because file already exists\n", file_path);
         return Re::FileExist;
     }
     else
@@ -28,12 +28,12 @@ Re PersistFileIoHandler::createFile(const char *file_path)
         FILE *f = fopen(file_path, "w+");
         if (f == nullptr)
         {
-            debugPrint("PersistFileIoHandler:failed to createFilter %s, due to %s.\n", file_path, strerror(errno));
+            debugPrint("PersistFileIoHandler:failed to create %s, due to %s.\n", file_path, strerror(errno));
             return Re::FileCreate;
         }
         file_path_ = file_path_path;
         file_ = f;
-        debugPrint("PersistFileIoHandler:successfully createFilter %s\n", file_path);
+        debugPrint("PersistFileIoHandler:successfully create %s\n", file_path);
     }
     return Re::Success;
 }

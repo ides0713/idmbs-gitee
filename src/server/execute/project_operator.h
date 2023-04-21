@@ -10,7 +10,7 @@ class ProjectOperator : public Operator
 public:
     ProjectOperator();
 
-    ~ProjectOperator() override = default;
+    ~ProjectOperator() override;
 
     void addProjection(const Table *table, const FieldMeta *field);
 

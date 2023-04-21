@@ -7,7 +7,7 @@
 
 void debugPrint(const char *format, ...)
 {
-#ifdef DEBUG
+    // #ifdef DEBUG
     if (LOG_STREAM == nullptr)
     {
         namespace fs = std::filesystem;
@@ -17,10 +17,14 @@ void debugPrint(const char *format, ...)
         assert(LOG_STREAM != nullptr);
     }
     va_list var_list;
+    // va_start(var_list, format);
+    // vprintf(format, var_list);
+    // va_end(var_list);
     va_start(var_list, format);
     vfprintf(LOG_STREAM, format, var_list);
+    fflush(LOG_STREAM);
     va_end(var_list);
-#endif
+    // #endif
 }
 
 char *substr(const char *s, int n_1, int n_2) /*从s中提取下标为n1~n2的字符组成一个新字符串，然后返回这个新串的首地址*/

@@ -4,18 +4,19 @@
 
 std::string double2string(double v)
 {
-  char buf[256];
-  snprintf(buf, sizeof(buf), "%.2f", v);
-  size_t len = strlen(buf);
-  while (buf[len - 1] == '0') {
-    len--;
-      
-  }
-  if (buf[len - 1] == '.') {
-    len--;
-  }
+    char buf[256];
+    snprintf(buf, sizeof(buf), "%.2f", v);
+    size_t len = strlen(buf);
+    while (buf[len - 1] == '0')
+    {
+        len--;
+    }
+    if (buf[len - 1] == '.')
+    {
+        len--;
+    }
 
-  return std::string(buf, len);
+    return std::string(buf, len);
 }
 
 void TupleUnit::toString(std::ostream &os) const
@@ -24,11 +25,9 @@ void TupleUnit::toString(std::ostream &os) const
     {
     case AttrType::Ints:
         os << *reinterpret_cast<int *>(data_);
-        printf("ints:%d\n",*reinterpret_cast<int*>(data_));
         break;
     case AttrType::Floats:
         os << double2string(*reinterpret_cast<float *>(data_));
-        printf("floats:%f\n",*reinterpret_cast<float*>(data_));
         break;
     case AttrType::Chars:
         for (int i = 0; i < length_; i++)
@@ -36,7 +35,6 @@ void TupleUnit::toString(std::ostream &os) const
             if (data_[i] == '\0')
                 break;
             os << data_[i];
-            printf("%c\n",data_[i]);
         }
         break;
     case AttrType::Dates:
@@ -135,18 +133,14 @@ Re RowTuple::getUnitAt(int index, TupleUnit &unit) const
 
 Re RowTuple::getUnit(const Field &field, TupleUnit &unit) const
 {
-    std::string table_name = field.getTableName();
-    if (strcmp(table_->getTableName().c_str(), table_name.c_str()) != 0)
+    if (strcmp(table_->getTableName(), field.getTableName()) != 0)
         return Re::NotFound;
-    std::string field_name = field.getFieldName();
-    for (size_t i = 0; i < specs_.size(); ++i)
+    for (int i = 0; i < specs_.size(); i++)
     {
         auto field_expr = static_cast<FieldExpression *>(specs_[i]->getExpression());
         const Field &temp_field = field_expr->getField();
-        if (strcmp(field_name.c_str(), temp_field.getFieldName().c_str()) == 0)
-        {
+        if (strcmp(field.getFieldName(), temp_field.getFieldName()) == 0)
             return getUnitAt(i, unit);
-        }
     }
     return Re::NotFound;
 }

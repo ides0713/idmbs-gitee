@@ -164,7 +164,7 @@ Re RecordPageHandler::initEmptyPage(DiskBufferPool &buffer_pool, int32_t page_id
 
 Re RecordPageHandler::insertRecord(const char *data, RecordId *rid)
 {
-    printf("insert record into memory current page id is %d\n",frame_->getPageId());
+    printf("insert record into memory current page id is %d\n", frame_->getPageId());
     if (page_header_->record_num == page_header_->record_capacity)
     {
         debugPrint("RecordPageHandler:page is full, page_id %d.\n", frame_->getPageId());
@@ -502,10 +502,10 @@ bool RecordFileScanner::hasNext()
 Re RecordFileScanner::next(class Record &record)
 {
     record = next_record_;
-    Re rc = fetchNextRecord();
-    if (rc == Re::RecordEof)
-        rc = Re::Success;
-    return rc;
+    Re r = fetchNextRecord();
+    if (r == Re::RecordEof)
+        r = Re::Success;
+    return r;
 }
 
 Re RecordFileScanner::fetchNextRecord()

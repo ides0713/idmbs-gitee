@@ -25,7 +25,7 @@ Re getTableAndField(DataBase *db, Table *default_table, std::unordered_map<std::
     if (field == nullptr)
     {
         debugPrint("FilterFunc:no such field in table: table %s, field %s\n",
-                   table->getTableName().c_str(), attr.attr_name);
+                   table->getTableName(), attr.attr_name);
         table = nullptr;
         return Re::SchemaFieldNotExist;
     }

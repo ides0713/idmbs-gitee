@@ -2,13 +2,15 @@
 #include <cassert>
 #include "../common/session.h"
 #include "filter.h"
+#include "resolve_main.h"
 
 void wildcardFields(Table *table, std::vector<Field> &fields)
 {
     const TableMeta &table_meta = table->getTableMeta();
-    const int field_num = table_meta.getFieldsNum();
-    for (int i = TableMeta::getSysFieldsNum(); i < field_num; i++)
+    for (int i = TableMeta::getSysFieldsNum(); i < table_meta.getFieldsNum(); i++)
+    {
         fields.emplace_back(table, table_meta.getField(i));
+    }
 }
 
 void Statement::createStatement(Query *const query, Statement *&stmt)
@@ -59,14 +61,14 @@ void SelectStatement::init(Query *query)
     filter_ = nullptr;
 }
 
-Re SelectStatement::handle(Query *query, Session *parse_session)
+Re SelectStatement::handle(Query *query, ResolveMain *resolve_main)
 {
-    auto ps = static_cast<ParseSession *>(parse_session);
-    DataBase *current_db = ps->getDb();
+    DataBase *current_db = resolve_main->getDb();
+    GlobalMainManager &gmm = GlobalManagers::globalMainManager();
     if (current_db == nullptr)
     {
         debugPrint("SelectStatement:invalid argument.can not get db\n");
-        parse_session->setResponse("SELECT ERROR,CAN NOT OPEN DATABASE.\n");
+        gmm.setResponse("SELECT ERROR,CAN NOT OPEN DATABASE.\n");
         return Re::InvalidArgument;
     }
     std::vector<Table *> tables_vec;
@@ -78,8 +80,8 @@ Re SelectStatement::handle(Query *query, Session *parse_session)
         if (table == nullptr)
         {
             debugPrint("SelectStatement:no such table. db=%s, table_name=%s\n",
-                       current_db->getDbName().c_str(), table_name.c_str());
-            parse_session->setResponse("SELECT ERROR,NO SUCH TABLE.\n");
+                       current_db->getDbName(), table_name);
+            gmm.setResponse("SELECT ERROR,NO SUCH TABLE.\n");
             return Re::SchemaTableNotExist;
         }
         tables_vec.push_back(table);
@@ -92,8 +94,10 @@ Re SelectStatement::handle(Query *query, Session *parse_session)
         const char *rel_name = attr.rel_name;
         const char *attr_name = attr.attr_name;
         if (rel_name == nullptr and strcmp(attr_name, "*") == 0)
+        {
             for (auto &t : tables_vec)
                 wildcardFields(t, fields_vec);
+        }
         else if (rel_name != nullptr)
         {
             if (strcmp(rel_name, "*") == 0)
@@ -101,7 +105,7 @@ Re SelectStatement::handle(Query *query, Session *parse_session)
                 if (strcmp(attr_name, "*") != 0)
                 {
                     debugPrint("SelectStatement:invalid field name while table is *. attr=%s\n", attr_name);
-                    parse_session->setResponse("SELECT ERROR,SQL SYNTAX ERROR.\n");
+                    gmm.setResponse("SELECT ERROR,SQL SYNTAX ERROR.\n");
                     return Re::SchemaFieldMissing;
                 }
                 for (auto &t : tables_vec)
@@ -113,7 +117,7 @@ Re SelectStatement::handle(Query *query, Session *parse_session)
                 if (it == tables_map.end())
                 {
                     debugPrint("SelectStatement:no such table in from list:%s\n", rel_name);
-                    parse_session->setResponse("SELECT ERROR,NO SUCH TABLE.\n");
+                    gmm.setResponse("SELECT ERROR,NO SUCH TABLE.\n");
                     return Re::SchemaFieldMissing;
                 }
                 Table *table = it->second;
@@ -125,7 +129,7 @@ Re SelectStatement::handle(Query *query, Session *parse_session)
                     if (field_meta == nullptr)
                     {
                         debugPrint("SelectStatement:no such field:%s in the table,invalid args\n", attr_name);
-                        parse_session->setResponse("SELECT ERROR,NO SUCH FIELD IN TABLE.\n");
+                        gmm.setResponse("SELECT ERROR,NO SUCH FIELD IN TABLE.\n");
                         return Re::SchemaFieldMissing;
                     }
                     fields_vec.emplace_back(table, field_meta);
@@ -137,7 +141,7 @@ Re SelectStatement::handle(Query *query, Session *parse_session)
             if (tables_vec.size() != 1)
             {
                 debugPrint("SelectStatement:not clearly given attrs\n");
-                parse_session->setResponse("SELECT ERROR,ATTR GIVEN NOT CLEARLY.\n");
+                gmm.setResponse("SELECT ERROR,ATTR GIVEN NOT CLEARLY.\n");
                 return Re::SchemaFieldMissing;
             }
             Table *table = tables_vec[0];
@@ -145,7 +149,7 @@ Re SelectStatement::handle(Query *query, Session *parse_session)
             if (field_meta == nullptr)
             {
                 debugPrint("SelectStatement:no such field:%s in the table,invalid args\n", attr_name);
-                parse_session->setResponse("SELECT ERROR,NO SUCH FIELD IN TABLE.\n");
+                gmm.setResponse("SELECT ERROR,NO SUCH FIELD IN TABLE.\n");
                 return Re::SchemaFieldMissing;
             }
             fields_vec.emplace_back(table, field_meta);
@@ -194,10 +198,10 @@ void CreateTableStatement::init(Query *query)
     attr_infos_ = new AttrInfo[attr_infos_num_];
     AttrInfo *attr_infos = ctq->getAttrs();
     for (int i = 0; i < attr_infos_num_; i++)
-        attr_infos_[i] = attr_infos[i];
+        attr_infos_[i].copy(attr_infos[i]);
 }
 
-Re CreateTableStatement::handle(Query *query, Session *parse_session)
+Re CreateTableStatement::handle(Query *query, ResolveMain *resolve_main)
 {
     return Re::Success;
 }
@@ -224,17 +228,17 @@ void InsertStatement::init(Query *query)
         values_[i].copy(values[i]);
 }
 
-Re InsertStatement::handle(Query *query, Session *parse_session)
+Re InsertStatement::handle(Query *query, ResolveMain *resolve_main)
 {
     Txn *txn = new Txn;
-    parse_session->setTxn(txn);
-    auto ps = static_cast<ParseSession *>(parse_session);
-    DataBase *current_db = ps->getDb();
+    resolve_main->setTxn(txn);
+    DataBase *current_db = resolve_main->getDb();
+    GlobalMainManager &gmm = GlobalManagers::globalMainManager();
     if (current_db == nullptr or table_name_ == nullptr or values_num_ <= 0)
     {
         debugPrint("InsertStatement:invalid argument. db=%p, table_name=%p,values_num=%d\n",
                    current_db, table_name_, values_num_);
-        parse_session->setResponse("INSERT ERROR,INVALID GIVEN ARGS.\n");
+        gmm.setResponse("INSERT ERROR,INVALID GIVEN ARGS.\n");
         return Re::InvalidArgument;
     }
     std::string table_name_str = std::string(table_name_);
@@ -242,8 +246,8 @@ Re InsertStatement::handle(Query *query, Session *parse_session)
     if (table == nullptr)
     {
         debugPrint("InsertStatement:no such table. db=%s, table_name=%s\n",
-                   current_db->getDbName().c_str(), table_name_);
-        parse_session->setResponse("INSERT ERROR,NO SUCH TABLE.\n");
+                   current_db->getDbName(), table_name_);
+        gmm.setResponse("INSERT ERROR,NO SUCH TABLE.\n");
         return Re::SchemaTableNotExist;
     }
     const TableMeta &table_meta = table->getTableMeta();
@@ -254,7 +258,7 @@ Re InsertStatement::handle(Query *query, Session *parse_session)
     {
         debugPrint("InsertStatement:field num not equal to values num,values_num=%d,fields_num=%d\n",
                    values_num_, table_user_field_num);
-        parse_session->setResponse("INSERT ERROR,VALUES NUM INVALID.\n");
+        gmm.setResponse("INSERT ERROR,VALUES NUM INVALID.\n");
         return Re::SchemaFieldMissing;
     }
     for (int i = 0; i < values_num_; i++)
@@ -264,8 +268,8 @@ Re InsertStatement::handle(Query *query, Session *parse_session)
         {
             debugPrint(
                 "InsertStatement:field getExprType mismatch. table=%s, field=%s, field getExprType=%d, value_type=%d\n",
-                table_name_, field_meta->getFieldName().c_str(), field_meta->getAttrType(), values_[i].type);
-            parse_session->setResponse("INSERT ERROR,VALUES TYPE INVALID.\n");
+                table_name_, field_meta->getFieldName(), field_meta->getAttrType(), values_[i].type);
+            gmm.setResponse("INSERT ERROR,VALUES TYPE INVALID.\n");
             return Re::SchemaFieldTypeMismatch;
         }
         // todo:advanced data check

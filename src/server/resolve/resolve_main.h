@@ -5,23 +5,19 @@
 #include "resolve_defs.h"
 #include "../common/re.h"
 #include <unordered_map>
-class ResolveMain
+#include "../common/base_main.h"
+
+class ResolveMain : public BaseMain
 {
 public:
-    explicit ResolveMain(Session *parse_session) : stmt_(nullptr), parse_session_(parse_session),
-                                                   resolve_session_(nullptr) {}
-
-    Re handle();
-
-    Session *callBack();
-
-    void response();
-
-    void stmtSucceed();
-
-    void stmtDestroyed();
+    ResolveMain() : query_(nullptr), stmt_(nullptr) { setType(MainType::Resolve); }
+    Re init(BaseMain *last_main) override;
+    Re handle() override;
+    void clear() override;
+    void destroy() override;
+    Statement *getStmt() { return stmt_; }
 
 private:
+    Query *query_;
     Statement *stmt_;
-    Session *parse_session_, *resolve_session_;
 };
