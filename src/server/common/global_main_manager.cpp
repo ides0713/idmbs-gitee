@@ -1,11 +1,10 @@
 #include "global_main_manager.h"
-#include "start_main.h"
+#include "../execute/execute_main.h"
 #include "../parse/parse_main.h"
 #include "../resolve/resolve_main.h"
-#include "../execute/execute_main.h"
 #include "../storage/storage_main.h"
-void GlobalMainManager::init()
-{
+#include "start_main.h"
+void GlobalMainManager::Init() {
     BaseMain *start_main = new StartMain();
     mains_.push_back(start_main);
     BaseMain *parse_main = new ParseMain();
@@ -18,69 +17,65 @@ void GlobalMainManager::init()
     mains_.push_back(storage_main);
 }
 
-void GlobalMainManager::handle(const char *sql)
-{
-    static_cast<StartMain *>(mains_[0])->setSql(sql);
-    for (int i = 1; i < mains_.size(); i++)
-    {
-        Re r = mains_[i]->init(mains_[i - 1]);
-        if (r != Re::Success)
-        {
-            debugPrint("%s main init failed\n", strMainType(mains_[i]->getType()).c_str());
-            response();
+void GlobalMainManager::Handle(const char *sql) {
+    static_cast<StartMain *>(mains_[0])->SetSql(sql);
+    for (int i = 1; i < mains_.size(); i++) {
+        Re r = mains_[i]->Init(mains_[i - 1]);
+        if (r != Re::Success) {
+            DebugPrint("%s main init failed\n", StrMainType(mains_[i]->GetType()).c_str());
+            Response();
             for (int j = 0; j <= i; j++)
-                mains_[i]->clear();
-            break;
+                mains_[i]->Clear();
+            return;
         }
-        debugPrint("%s main init succeeded\n", strMainType(mains_[i]->getType()).c_str());
-        r = mains_[i]->handle();
-        if (r != Re::Success)
-        {
-            debugPrint("%s main handle failed\n", strMainType(mains_[i]->getType()).c_str());
-            response();
+        DebugPrint("%s main init succeeded\n", StrMainType(mains_[i]->GetType()).c_str());
+        r = mains_[i]->Handle();
+        if (r != Re::Success) {
+            DebugPrint("%s main handle failed\n", StrMainType(mains_[i]->GetType()).c_str());
+            Response();
             for (int j = 0; j <= i; j++)
-                mains_[i]->clear();
-            break;
+                mains_[i]->Clear();
+            return;
         }
-        debugPrint("%s main handle succeeded\n", strMainType(mains_[i]->getType()).c_str());
+        DebugPrint("%s main handle succeeded\n", StrMainType(mains_[i]->GetType()).c_str());
     }
-    doneResponse();
+    DoneResponse();
 }
 
-void GlobalMainManager::destroy()
-{
+void GlobalMainManager::Destroy() {
     for (int i = 0; i < mains_.size(); i++)
-        mains_[i]->destroy();
+        mains_[i]->Destroy();
     mains_.clear();
 }
 
-void GlobalMainManager::setResponse(const char *str)
-{
+void GlobalMainManager::SetResponse(std::string str) {
     response_.assign(str);
 }
 
-void GlobalMainManager::setResponse(std::string str)
-{
-    response_.assign(str);
+void GlobalMainManager::SetResponse(const char *format, ...) {
+    va_list var_list;
+    va_start(var_list, format);
+    char *a = new char[100];
+    vsprintf(a, format, var_list);
+    response_.assign(a);
+    delete[] a;
+    va_end(var_list);
 }
 
-void GlobalMainManager::response()
-{
+void GlobalMainManager::Response() {
     if (response_.empty())
-        setResponse("SQL ended and response is empty\n");
+        SetResponse("SQL ended and response is empty\n");
     printf("%s", response_.c_str());
 }
 
-void GlobalMainManager::doneResponse()
-{
+void GlobalMainManager::DoneResponse() {
     if (response_.empty())
         printf("SQL SUCCEEDED\n");
     else
-        response();
+        Response();
 }
 
-void GlobalMainManager::clear()
-{
+void GlobalMainManager::Clear() {
     for (int i = 0; i < mains_.size(); i++)
-        mains_[i]->clear();
+        mains_[i]->Clear();
 }

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <atomic>
-#include <unordered_set>
-#include <unordered_map>
-#include <cstddef>
 #include "../common/re.h"
 #include "../parse/parse_defs.h"
+#include <atomic>
+#include <cstddef>
+#include <unordered_map>
+#include <unordered_set>
 
 class Table;
 
@@ -13,11 +13,9 @@ struct RecordId;
 
 class Record;
 
-class Operation
-{
+class Operation {
 public:
-    enum class Type : int
-    {
+    enum class Type : int {
         Insert,
         Update,
         Delete,
@@ -27,70 +25,65 @@ public:
 public:
     Operation(Type type, const RecordId &rid);
 
-    [[nodiscard]] Type getType() const { return type_; }
+    [[nodiscard]] Type GetType() const { return type_; }
 
-    [[nodiscard]] int32_t getPageId() const { return page_id_; }
+    [[nodiscard]] int32_t GetPageId() const { return page_id_; }
 
-    [[nodiscard]] int32_t getSlotId() const { return slot_id_; }
+    [[nodiscard]] int32_t GetSlotId() const { return slot_id_; }
 
 private:
     Type type_;
     int32_t page_id_, slot_id_;
 };
 
-class OperationHash
-{
+class OperationHash {
 public:
-    size_t operator()(const Operation &op) const
-    {
-        return (((size_t)op.getPageId()) << 32) | (op.getSlotId());
+    size_t operator()(const Operation &op) const {
+        return (((size_t) op.GetPageId()) << 32) | (op.GetSlotId());
     }
 };
 
-class OperationPred
-{
+class OperationPred {
 public:
-    bool operator()(const Operation &op_1, const Operation &op_2) const
-    {
-        return op_1.getPageId() == op_2.getPageId() && op_1.getSlotId() == op_2.getSlotId();
+    bool operator()(const Operation &op_1, const Operation &op_2) const {
+        return op_1.GetPageId() == op_2.GetPageId() && op_1.GetSlotId() == op_2.GetSlotId();
     }
 };
 
-class Txn
-{
+class Txn {
 public:
-    Txn() : txn_id_(0) { start(); }
+    Txn() : txn_id_(0) { Start(); }
 
 public:
-    void init(Table *table, class Record &rec);
+    void Init(Table *table, class Record &rec);
 
-    Re insertRecord(Table *table, class Record *rec);
+    Re InsertRecord(Table *table, class Record *rec);
 
-    Re updateRecord(Table *table, class Record *rec);
+    Re UpdateRecord(Table *table, class Record *rec);
 
-    Re deleteRecord(Table *table, class Record *rec);
+    Re DeleteRecord(Table *table, class Record *rec);
 
-    int32_t getTxnId() { return txn_id_; }
+    int32_t GetTxnId() { return txn_id_; }
 
-    void setTxnId(int32_t txn_id) { txn_id_ = txn_id; }
+    void SetTxnId(int32_t txn_id) { txn_id_ = txn_id; }
 
-    void nextCurrentId();
+    void NextCurrentId();
 
 public:
     static std::atomic<int32_t> global_txn_id;
 
 public:
-    static int32_t getDefaultTxnId();
+    static int32_t GetDefaultTxnId();
 
-    static int32_t getNextGlobalTxnId();
+    static int32_t GetNextGlobalTxnId();
 
-    static void setGlobalTxnId(int32_t id);
+    static void SetGlobalTxnId(int32_t id);
 
-    static const char *getTxnFieldName();
+    static const char *GetTxnFieldName();
 
-    static AttrType getTxnFieldType();
+    static AttrType GetTxnFieldType();
 
-    static int getTxnFieldLen();
+    static int GetTxnFieldLen();
 
 private:
     using OperationSet = std::unordered_set<Operation, OperationHash, OperationPred>;
@@ -98,13 +91,13 @@ private:
     std::unordered_map<Table *, OperationSet> operations_;
 
 private:
-    void start();
+    void Start();
 
-    void setRecordTxnId(Table *table, class Record &rec, int32_t txn_id, bool deleted);
+    void SetRecordTxnId(Table *table, class Record &rec, int32_t txn_id, bool deleted);
 
-    Operation *findOperation(Table *table, const RecordId &record_id);
+    Operation *FindOperation(Table *table, const RecordId &record_id);
 
-    void insertOperation(Table *table, Operation::Type type, const RecordId &rid);
+    void InsertOperation(Table *table, Operation::Type type, const RecordId &rid);
 
-    void deleteOperation(Table *table, const RecordId &rid);
+    void DeleteOperation(Table *table, const RecordId &rid);
 };

@@ -1,24 +1,21 @@
 #pragma once
 
-#include "server_defs.h"
-#include "../storage/database.h"
 #include "../storage/buffer_pool.h"
+#include "../storage/database.h"
 #include "global_main_manager.h"
+#include "server_defs.h"
 
-class GlobalManagers
-{
+class GlobalManagers {
 public:
-    static void init();
+    static void Init();
 
-    static GlobalMainManager &globalMainManager();
+    static GlobalMainManager &GetGlobalMainManager();
 
-    static GlobalParamsManager &globalParamsManager();
+    static GlobalParamsManager &GetGlobalParamsManager();
 
-    static GlobalDataBaseManager &globalDataBaseManager();
+    static GlobalDataBaseManager &GetGlobalDataBaseManager();
 
-    static GlobalBufferPoolManager &globalBufferPoolManager();
+    static GlobalBufferPoolManager &GetGlobalBufferPoolManager();
 
-    static void destroy();
-
-private:
+    static void Destroy();
 };

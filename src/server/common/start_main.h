@@ -1,19 +1,17 @@
 #pragma once
-#include "base_main.h"
 #include "../../common/common_defs.h"
+#include "../parse/parse_defs.h"
+#include "base_main.h"
 
-extern char *strNew(const char *str);
-
-class StartMain : public BaseMain
-{
+class StartMain : public BaseMain {
 public:
-    StartMain() : sql_(nullptr) { setType(MainType::Start); }
-    Re init(BaseMain *last_main) override;
-    Re handle() override;
-    void clear() override;
-    void destroy() override;
-    char *getSql();
-    void setSql(const char *sql);
+    StartMain() : sql_(nullptr) { SetType(MainType::Start); }
+    Re Init(BaseMain *last_main) override;
+    Re Handle() override;
+    void Clear() override;
+    void Destroy() override;
+    char *GetSql();
+    void SetSql(const char *sql);
 
 private:
     char *sql_;

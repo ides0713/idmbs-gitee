@@ -1,42 +1,36 @@
 #include "global_managers.h"
 
-void GlobalManagers::init()
-{
-    globalParamsManager().init();
-    globalDataBaseManager().init();
-    globalBufferPoolManager().init();
-    globalMainManager().init();
-    debugPrint("GlobalManagers initialized done\n");
+void GlobalManagers::Init() {
+    GetGlobalParamsManager().Init();
+    GetGlobalDataBaseManager().Init();
+    GetGlobalBufferPoolManager().Init();
+    GetGlobalMainManager().Init();
+    DebugPrint("GlobalManagers initialized done\n");
 }
 
-GlobalMainManager &GlobalManagers::globalMainManager()
-{
+GlobalMainManager &GlobalManagers::GetGlobalMainManager() {
     static GlobalMainManager instance;
     return instance;
 }
 
-void GlobalManagers::destroy()
-{
-    globalParamsManager().destroy();
-    globalDataBaseManager().destroy();
-    globalBufferPoolManager().destroy();
-    globalMainManager().destroy();
+void GlobalManagers::Destroy() {
+    GetGlobalParamsManager().Destroy();
+    GetGlobalDataBaseManager().Destroy();
+    GetGlobalBufferPoolManager().Destroy();
+    GetGlobalMainManager().Destroy();
 }
 
-GlobalParamsManager &GlobalManagers::globalParamsManager()
-{
+GlobalParamsManager &GlobalManagers::GetGlobalParamsManager() {
     static GlobalParamsManager instance;
     return instance;
 }
 
-GlobalDataBaseManager &GlobalManagers::globalDataBaseManager()
-{
+GlobalDataBaseManager &GlobalManagers::GetGlobalDataBaseManager() {
     static GlobalDataBaseManager instance;
     return instance;
 }
 
-GlobalBufferPoolManager &GlobalManagers::globalBufferPoolManager()
-{
+GlobalBufferPoolManager &GlobalManagers::GetGlobalBufferPoolManager() {
     static GlobalBufferPoolManager instance;
     return instance;
 }

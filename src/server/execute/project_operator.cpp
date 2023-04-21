@@ -1,65 +1,54 @@
 #include "project_operator.h"
-#include "../resolve/tuple.h"
-#include "../storage/table.h"
-#include "../storage/field.h"
 #include "../resolve/expression.h"
+#include "../resolve/tuple.h"
+#include "../storage/field.h"
+#include "../storage/table.h"
 
-ProjectOperator::ProjectOperator()
-{
+ProjectOperator::ProjectOperator() {
     tuple_ = new ProjectTuple;
 }
 
-ProjectOperator::~ProjectOperator()
-{
+ProjectOperator::~ProjectOperator() {
     delete tuple_;
 }
 
-void ProjectOperator::addProjection(const Table *table, const FieldMeta *field)
-{
+void ProjectOperator::AddProjection(const Table *table, const FieldMeta *field) {
     TupleUnitSpec *spec = new TupleUnitSpec(new FieldExpression(table, field));
-    spec->setAlias(field->getFieldName());
-    tuple_->addUnitSpec(spec);
+    spec->SetAlias(field->GetFieldName());
+    tuple_->AddUnitSpec(spec);
 }
 
-Re ProjectOperator::init()
-{
-    if (opers.size() != 1)
-    {
-        debugPrint("ProjectOperator:project operator must has 1 child\n");
+Re ProjectOperator::Init() {
+    if (opers_.size() != 1) {
+        DebugPrint("ProjectOperator:project operator must has 1 child\n");
         return Re::Internal;
     }
-    Re r = opers[0]->init();
-    if (r != Re::Success)
-    {
-        debugPrint("ProjectOperator:failed to open child operator: %s\n", strRe(r));
+    Re r = opers_[0]->Init();
+    if (r != Re::Success) {
+        DebugPrint("ProjectOperator:failed to open child operator: %s\n", StrRe(r));
         return r;
     }
     return Re::Success;
 }
 
-Re ProjectOperator::handle()
-{
-    return opers[0]->handle();
+Re ProjectOperator::Handle() {
+    return opers_[0]->Handle();
 }
 
-Re ProjectOperator::destroy()
-{
-    opers[0]->destroy();
+Re ProjectOperator::Destroy() {
+    opers_[0]->Destroy();
     return Re::Success;
 }
 
-int ProjectOperator::getTupleUnitsNum() const
-{
-    return tuple_->getUnitsNum();
+int ProjectOperator::GetTupleUnitsNum() const {
+    return tuple_->GetUnitsNum();
 }
 
-Re ProjectOperator::getTupleUnitAt(int index, const TupleUnitSpec *&spec) const
-{
-    return tuple_->getUnitSpecAt(index, spec);
+Re ProjectOperator::GetTupleUnitAt(int index, const TupleUnitSpec *&spec) const {
+    return tuple_->GetUnitSpecAt(index, spec);
 }
 
-Tuple *ProjectOperator::getCurrentTuple()
-{
-    tuple_->setTuple(opers[0]->getCurrentTuple());
+Tuple *ProjectOperator::GetCurrentTuple() {
+    tuple_->SetTuple(opers_[0]->GetCurrentTuple());
     return tuple_;
 }

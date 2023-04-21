@@ -4,23 +4,22 @@
 
 class Tuple;
 
-class Operator
-{
+class Operator {
 public:
     Operator() = default;
 
     virtual ~Operator() = default;
 
-    virtual Re init() = 0;
+    virtual Re Init() = 0;
 
-    virtual Re handle() = 0;
+    virtual Re Handle() = 0;
 
-    virtual Re destroy() = 0;
+    virtual Re Destroy() = 0;
 
-    virtual Tuple *getCurrentTuple() = 0;
+    virtual Tuple *GetCurrentTuple() = 0;
 
-    void addOper(Operator *oper);
+    void AddOper(Operator *oper);
 
 protected:
-    std::vector<Operator *> opers;
+    std::vector<Operator *> opers_;
 };

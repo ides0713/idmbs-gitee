@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cstdarg>
-#include <iostream>
-#include <cstdio>
 #include <bitset>
+#include <cstdarg>
+#include <cstdio>
+#include <iostream>
 const int MSG_TYPE_TEST = -1, MSG_TYPE_EXIT = 0, MSG_TYPE_REPLY = 1, MSG_TYPE_REQUEST = 2;
 const int MSG_MSG_LEN = 100, RI_MSG_LEN = 100;
 const int DP_STATUS_OFF = 0, DP_STATUS_ON = 1;
@@ -13,12 +13,14 @@ const int BUFFER_SIZE = 100;
 
 static FILE *LOG_STREAM = nullptr;
 
-void debugPrint(const char *format, ...);
+void DebugPrint(const char *format, ...);
 
-char *substr(const char *s, int n_1, int n_2);
+char *SubStr(const char *s, int n_1, int n_2);
 
-struct Message
-{
+class Abc {
+};
+
+struct Message {
     Message() = default;
 
     Message(int type, const char *message);

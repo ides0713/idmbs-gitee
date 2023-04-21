@@ -1,18 +1,17 @@
 #pragma once
 
+#include "../common/base_main.h"
 #include "../common/re.h"
 #include "../parse/parse.h"
-#include "../common/base_main.h"
 
-class StorageMain : public BaseMain
-{
+class StorageMain : public BaseMain {
 public:
     //    explicit ExecuteMain(Session *resolve_session) : resolve_session_(resolve_session), execute_session_(nullptr) {}
-    StorageMain() { setType(MainType::Storage); }
-    Re init(BaseMain *last_main) override;
-    Re handle() override;
-    void clear() override;
-    void destroy() override;
+    StorageMain() { SetType(MainType::Storage); }
+    Re Init(BaseMain *last_main) override;
+    Re Handle() override;
+    void Clear() override;
+    void Destroy() override;
 
 private:
 };

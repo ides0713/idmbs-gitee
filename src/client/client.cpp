@@ -1,32 +1,26 @@
-#include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <thread>
-#include <strings.h>
-#include <cstring>
 #include "../common/common_defs.h"
+#include <arpa/inet.h>
+#include <cstring>
+#include <iostream>
+#include <netinet/in.h>
+#include <strings.h>
+#include <sys/socket.h>
+#include <thread>
+#include <unistd.h>
 
-void recvFunc(int fd)
-{
-    int n;
+void RecvFunc(int fd) {
     Message m;
-    while ((n = read(fd, reinterpret_cast<char *>(&m), sizeof(m))) > 0)
-    {
-        if (m.type == MSG_TYPE_EXIT)
-        {
+    while (read(fd, reinterpret_cast<char *>(&m), sizeof(m)) > 0) {
+        if (m.type == MSG_TYPE_EXIT) {
             printf("exit success\n");
             break;
-        }
-        else
+        } else
             printf("recv_message:%s\n", m.message);
     }
     close(fd);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     int sock_fd, n;
     char buffer[BUFFER_SIZE];
     sockaddr_in server_addr;
@@ -37,24 +31,19 @@ int main(int argc, char **argv)
     server_addr.sin_port = htons(SERVER_PORT);
     if (inet_pton(AF_INET, argv[1], &server_addr.sin_addr) <= 0)
         return EXIT_FAILURE;
-    if (connect(sock_fd, (sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+    if (connect(sock_fd, (sockaddr *) &server_addr, sizeof(server_addr)) < 0)
         return EXIT_FAILURE;
-    std::thread recv_thread(recvFunc, sock_fd);
+    std::thread recv_thread(RecvFunc, sock_fd);
     recv_thread.detach();
-    while (true)
-    {
+    while (true) {
         printf("client:");
         std::cin.getline(buffer, BUFFER_SIZE);
-        if (strcmp(buffer, "") != 0)
-        {
-            if (strcmp(buffer, "exit") == 0 or strcmp(buffer, "EXIT") == 0)
-            {
+        if (strcmp(buffer, "") != 0) {
+            if (strcmp(buffer, "exit") == 0 or strcmp(buffer, "EXIT") == 0) {
                 Message m(MSG_TYPE_EXIT, "exit");
                 write(sock_fd, reinterpret_cast<char *>(&m), sizeof(m));
                 break;
-            }
-            else
-            {
+            } else {
                 Message m(MSG_TYPE_REQUEST, "");
                 strcpy(m.message, buffer);
                 write(sock_fd, reinterpret_cast<char *>(&m), sizeof(m));

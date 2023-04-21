@@ -1,21 +1,19 @@
 #pragma once
 
-#include "../common/server_defs.h"
-#include "../common/session.h"
-#include "resolve_defs.h"
-#include "../common/re.h"
-#include <unordered_map>
 #include "../common/base_main.h"
+#include "../common/re.h"
+#include "../common/server_defs.h"
+#include "resolve_defs.h"
+#include <unordered_map>
 
-class ResolveMain : public BaseMain
-{
+class ResolveMain : public BaseMain {
 public:
-    ResolveMain() : query_(nullptr), stmt_(nullptr) { setType(MainType::Resolve); }
-    Re init(BaseMain *last_main) override;
-    Re handle() override;
-    void clear() override;
-    void destroy() override;
-    Statement *getStmt() { return stmt_; }
+    ResolveMain() : query_(nullptr), stmt_(nullptr) { SetType(MainType::Resolve); }
+    Re Init(BaseMain *last_main) override;
+    Re Handle() override;
+    void Clear() override;
+    void Destroy() override;
+    Statement *GetStmt() { return stmt_; }
 
 private:
     Query *query_;

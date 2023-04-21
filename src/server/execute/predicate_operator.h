@@ -7,8 +7,7 @@ class Filter;
 class RowTuple;
 
 ///@brief filter predicate for only one table
-class PredicateOperator : public Operator
-{
+class PredicateOperator : public Operator {
 public:
     PredicateOperator() : filter_(nullptr) {}
 
@@ -16,17 +15,17 @@ public:
 
     ~PredicateOperator() override = default;
 
-    Re init() override;
+    Re Init() override;
 
-    Re handle() override;
+    Re Handle() override;
 
-    Re destroy() override;
+    Re Destroy() override;
 
-    Tuple *getCurrentTuple() override;
+    Tuple *GetCurrentTuple() override;
 
 private:
     Filter *filter_;
 
 private:
-    bool predicate(RowTuple &row_tuple);
+    bool Predicate(RowTuple &row_tuple);
 };

@@ -1,20 +1,19 @@
 #pragma once
 #include "operator.h"
 
-class IndexScanOperator : public Operator
-{
+class IndexScanOperator : public Operator {
 public:
     IndexScanOperator() = default;
 
     ~IndexScanOperator() override = default;
 
-    Re init() override;
+    Re Init() override;
 
-    Re handle() override;
+    Re Handle() override;
 
-    Re destroy() override;
+    Re Destroy() override;
 
-    Tuple *getCurrentTuple() override;
+    Tuple *GetCurrentTuple() override;
 
 private:
 };

@@ -1,46 +1,45 @@
 #pragma once
 
+#include "../../common/common_defs.h"
+#include <cassert>
 #include <cstdio>
 #include <list>
-#include <set>
-#include <thread>
 #include <mutex>
-#include <string>
+#include <set>
 #include <sstream>
-#include <cassert>
-#include "../../common/common_defs.h"
+#include <string>
+#include <thread>
 
 #define MP_NAME_MAX_SIZE 20
 #define DEFAULT_ITEM_NUM_PER_POOL 128
 #define DEFAULT_POOL_NUM 1
 
 // 接管new/delete
-template <typename T>
-class MemoryPool
-{
+template<typename T>
+class MemoryPool {
 public:
     explicit MemoryPool(const char *name);
 
     ~MemoryPool();
 
-    bool init(bool is_dynamic = true, int pool_num = DEFAULT_POOL_NUM,
+    bool Init(bool is_dynamic = true, int pool_num = DEFAULT_POOL_NUM,
               int item_num_per_pool = DEFAULT_ITEM_NUM_PER_POOL);
 
-    void cleanUp();
+    void CleanUp();
 
-    bool extend();
+    bool Extend();
 
-    T *alloc();
+    T *Alloc();
 
-    void free(T *item);
+    void Free(T *item);
 
-    std::string toString();
+    std::string ToString();
 
-    [[nodiscard]] std::string getName() const { return name_; }
+    [[nodiscard]] std::string GetName() const { return name_; }
 
-    [[nodiscard]] int getSize() const { return size_; }
+    [[nodiscard]] int GetSize() const { return size_; }
 
-    [[nodiscard]] int getUsedSize();
+    [[nodiscard]] int GetUsedSize();
 
 private:
     bool is_dynamic_;
@@ -55,38 +54,31 @@ private:
     int item_num_per_pool_;
 };
 
-template <class T>
-inline MemoryPool<T>::MemoryPool(const char *name) : name_(name)
-{
+template<class T>
+inline MemoryPool<T>::MemoryPool(const char *name) : name_(name) {
     size_ = 0, is_dynamic_ = false, item_num_per_pool_ = 0;
 }
 
-template <class T>
-inline MemoryPool<T>::~MemoryPool()
-{
-    cleanUp();
+template<class T>
+inline MemoryPool<T>::~MemoryPool() {
+    CleanUp();
 }
 
-template <class T>
-inline bool MemoryPool<T>::init(bool is_dynamic, int pool_num, int item_num_per_pool)
-{
-    if (!pools_.empty())
-    {
-        debugPrint("MemoryPool:pool is not empty,the memory pool is already initialized\n");
+template<class T>
+inline bool MemoryPool<T>::Init(bool is_dynamic, int pool_num, int item_num_per_pool) {
+    if (!pools_.empty()) {
+        DebugPrint("MemoryPool:pool is not empty,the memory pool is already initialized\n");
         return true;
     }
-    if (pool_num <= 0 or item_num_per_pool <= 0)
-    {
-        debugPrint("MemoryPool:invalid args:pool_num:%d item_num_per_pool%d\n", pool_num, item_num_per_pool);
+    if (pool_num <= 0 or item_num_per_pool <= 0) {
+        DebugPrint("MemoryPool:invalid args:pool_num:%d item_num_per_pool%d\n", pool_num, item_num_per_pool);
         return false;
     }
     item_num_per_pool_ = item_num_per_pool;
     is_dynamic_ = true;
-    for (int i = 0; i < pool_num; i++)
-    {
-        if (!extend())
-        {
-            cleanUp();
+    for (int i = 0; i < pool_num; i++) {
+        if (!Extend()) {
+            CleanUp();
             return false;
         }
     }
@@ -94,14 +86,12 @@ inline bool MemoryPool<T>::init(bool is_dynamic, int pool_num, int item_num_per_
     return true;
 }
 
-template <class T>
-inline void MemoryPool<T>::cleanUp()
-{
+template<class T>
+inline void MemoryPool<T>::CleanUp() {
     free_.clear();
     used_.clear();
     lock_.lock();
-    for (auto it = pools_.begin(); it != pools_.end(); it++)
-    {
+    for (auto it = pools_.begin(); it != pools_.end(); it++) {
         T *ptr = *it;
         delete[] ptr;
     }
@@ -109,19 +99,16 @@ inline void MemoryPool<T>::cleanUp()
     lock_.unlock();
 }
 
-template <class T>
-inline bool MemoryPool<T>::extend()
-{
-    if (!is_dynamic_)
-    {
-        debugPrint("MemoryPool:not a dynamic pool\n");
+template<class T>
+inline bool MemoryPool<T>::Extend() {
+    if (!is_dynamic_) {
+        DebugPrint("MemoryPool:not a dynamic pool\n");
         return false;
     }
     lock_.lock();
     T *new_items = new T[item_num_per_pool_];
-    if (new_items == nullptr)
-    {
-        debugPrint("MemoryPool:extend failed;number of items is %d\n", item_num_per_pool_);
+    if (new_items == nullptr) {
+        DebugPrint("MemoryPool:extend failed;number of items is %d\n", item_num_per_pool_);
         return false;
     }
     pools_.push_back(new_items);
@@ -131,14 +118,12 @@ inline bool MemoryPool<T>::extend()
     return true;
 }
 
-template <class T>
-inline T *MemoryPool<T>::alloc()
-{
-    if (free_.empty())
-    {
+template<class T>
+inline T *MemoryPool<T>::Alloc() {
+    if (free_.empty()) {
         if (!is_dynamic_)
             return nullptr;
-        if (!extend())
+        if (!Extend())
             return nullptr;
     }
     lock_.lock();
@@ -149,13 +134,11 @@ inline T *MemoryPool<T>::alloc()
     return res;
 }
 
-template <class T>
-inline void MemoryPool<T>::free(T *item)
-{
+template<class T>
+inline void MemoryPool<T>::Free(T *item) {
     lock_.lock();
     size_t temp = used_.erase(item);
-    if (temp == 0)
-    {
+    if (temp == 0) {
         lock_.unlock();
         return;
     }
@@ -163,9 +146,8 @@ inline void MemoryPool<T>::free(T *item)
     lock_.unlock();
 }
 
-template <class T>
-inline std::string MemoryPool<T>::toString()
-{
+template<class T>
+inline std::string MemoryPool<T>::ToString() {
     std::stringstream ss;
     ss << "name:" << name_ << ","
        << "dyanmic:" << is_dynamic_ << ","
@@ -176,9 +158,8 @@ inline std::string MemoryPool<T>::toString()
     return ss.str();
 }
 
-template <class T>
-inline int MemoryPool<T>::getUsedSize()
-{
+template<class T>
+inline int MemoryPool<T>::GetUsedSize() {
     lock_.lock();
     int res = used_.size();
     lock_.unlock();

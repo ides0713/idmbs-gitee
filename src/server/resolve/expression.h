@@ -1,32 +1,29 @@
 #pragma once
 
-#include <cstring>
-#include <string>
 #include "../storage/field.h"
 #include "tuple.h"
+#include <cstring>
+#include <string>
 
-enum class ExprType
-{
+enum class ExprType {
     None,
     Field,
     Value
 };
 
-std::string strExprType(ExprType type);
-class Expression
-{
+std::string StrExprType(ExprType type);
+class Expression {
 public:
     Expression() = default;
 
     virtual ~Expression() = default;
 
-    virtual Re getValue(const Tuple &tuple, TupleUnit &unit) const = 0;
+    virtual Re GetValue(const Tuple &tuple, TupleUnit &unit) const = 0;
 
-    virtual ExprType getExprType() const = 0;
+    virtual ExprType GetExprType() const = 0;
 };
 
-class FieldExpression : public Expression
-{
+class FieldExpression : public Expression {
 public:
     FieldExpression() = default;
 
@@ -34,24 +31,23 @@ public:
 
     ~FieldExpression() override = default;
 
-    [[nodiscard]] ExprType getExprType() const override { return ExprType::Field; }
+    [[nodiscard]] ExprType GetExprType() const override { return ExprType::Field; }
 
-    Field &getField() { return field_; }
+    Field &GetField() { return field_; }
 
-    [[nodiscard]] const Field &getField() const { return field_; }
+    [[nodiscard]] const Field &GetField() const { return field_; }
 
-    [[nodiscard]] const char *getTableName() const { return field_.getTableName(); }
+    [[nodiscard]] const char *GetTableName() const { return field_.GetTableName(); }
 
-    [[nodiscard]] const char *getFieldName() const { return field_.getFieldName(); }
+    [[nodiscard]] const char *GetFieldName() const { return field_.GetFieldName(); }
 
-    Re getValue(const Tuple &tuple, TupleUnit &unit) const override;
+    Re GetValue(const Tuple &tuple, TupleUnit &unit) const override;
 
 private:
     Field field_;
 };
 
-class ValueExpression : public Expression
-{
+class ValueExpression : public Expression {
 public:
     ValueExpression() = default;
 
@@ -59,11 +55,11 @@ public:
 
     ~ValueExpression() override = default;
 
-    [[nodiscard]] ExprType getExprType() const override { return ExprType::Value; }
+    [[nodiscard]] ExprType GetExprType() const override { return ExprType::Value; }
 
-    void getTupleUnit(TupleUnit &unit) const { unit = tuple_unit_; }
+    void GetTupleUnit(TupleUnit &unit) const { unit = tuple_unit_; }
 
-    Re getValue(const Tuple &tuple, TupleUnit &unit) const override;
+    Re GetValue(const Tuple &tuple, TupleUnit &unit) const override;
 
 private:
     TupleUnit tuple_unit_;

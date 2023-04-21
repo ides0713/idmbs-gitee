@@ -1,45 +1,39 @@
 #include "parse_main.h"
-#include "parse.h"
+#include "../common/global_managers.h"
 #include "../common/start_main.h"
-
-Re ParseMain::init(BaseMain *last_main)
-{
-    baseSet(*last_main);
+#include "parse.h"
+Re ParseMain::Init(BaseMain *last_main) {
+    BaseSet(*last_main);
     auto start_main = static_cast<StartMain *>(last_main);
     // last_main.
-    sql_ = start_main->getSql();
+    sql_ = start_main->GetSql();
     if (sql_ == nullptr or strlen(sql_) == 0)
         return Re::GenericError;
     return Re::Success;
 }
 
-Re ParseMain::handle()
-{
-    int rv = parse(sql_, query_);
-    if (!rv)
-    {
-        query_->destroy();
+Re ParseMain::Handle() {
+    int rv = Parse(sql_, query_);
+    if (!rv) {
+        query_->Destroy();
         query_ = nullptr;
-        GlobalMainManager &gmm = GlobalManagers::globalMainManager();
-        gmm.setResponse("SQL PARSE ERROR\n");
+        GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
+        gmm.SetResponse("SQL PARSE ERROR\n");
         return Re::SqlSyntax;
     }
     return Re::Success;
 }
 
-void ParseMain::clear()
-{
-    if (query_ != nullptr)
-    {
-        query_->destroy();
+void ParseMain::Clear() {
+    if (query_ != nullptr) {
+        query_->Destroy();
         query_ = nullptr;
     }
     if (sql_ != nullptr)
         sql_ = nullptr;
 }
 
-void ParseMain::destroy()
-{
+void ParseMain::Destroy() {
 }
 
 // Re ParseMain::handle(const char *st)

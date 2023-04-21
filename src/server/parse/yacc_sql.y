@@ -41,7 +41,7 @@ void yyerror(yyscan_t scanner, const char *str)
 {
   ParserContext *context = (ParserContext *)(yyget_extra(scanner));
   if(context->query!=nullptr){
-	context->query->destroy();
+	context->query->Destroy();
 	context->query=nullptr;
   }
   context->query=new ErrorQuery(str);
@@ -186,7 +186,7 @@ drop_index:			/*drop index 语句的语法解析树*/
     ;
 create_table:		/*create table 语句的语法解析树*/
     CREATE TABLE ID LBRACE attr_def attr_def_list RBRACE SEMICOLON {
-		(static_cast<CreateTableQuery*>(CONTEXT->query))->setRelName($3);
+		(static_cast<CreateTableQuery*>(CONTEXT->query))->SetRelName($3);
 	}
     ;
 attr_def_list:
@@ -198,19 +198,19 @@ attr_def:
     ID_get type LBRACE number RBRACE {
 		if(CONTEXT->query==nullptr){
 			CONTEXT->query=new CreateTableQuery();
-			CONTEXT->query->init();
+			CONTEXT->query->Init();
 		}
 		AttrInfo attribute(CONTEXT->id,(AttrType)$2,$4);
-		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);
+		static_cast<CreateTableQuery*>(CONTEXT->query)->AddAttr(attribute);
 	}
     |ID_get type{
 		//attr with default length
 		if(CONTEXT->query==nullptr){
 			CONTEXT->query=new CreateTableQuery();
-			CONTEXT->query->init();
+			CONTEXT->query->Init();
 		}
 		AttrInfo attribute(CONTEXT->id,(AttrType)$2,4);
-		static_cast<CreateTableQuery*>(CONTEXT->query)->addAttr(attribute);
+		static_cast<CreateTableQuery*>(CONTEXT->query)->AddAttr(attribute);
 	}
     ;
 number:
@@ -244,10 +244,10 @@ insert:
     INSERT INTO ID VALUES LBRACE value value_list RBRACE value_unit SEMICOLON {
         if(CONTEXT->query==nullptr){
             CONTEXT->query=new InsertQuery();
-            CONTEXT->query->init();
+            CONTEXT->query->Init();
         }
-        static_cast<InsertQuery*>(CONTEXT->query)->setRelName($3);
-        static_cast<InsertQuery*>(CONTEXT->query)->addValues(CONTEXT->value_length,CONTEXT->values);
+        static_cast<InsertQuery*>(CONTEXT->query)->SetRelName($3);
+        static_cast<InsertQuery*>(CONTEXT->query)->AddValues(CONTEXT->value_length,CONTEXT->values);
         //临时变量清零
 		CONTEXT->value_tuple_num=0;
         CONTEXT->value_length=0;
@@ -267,7 +267,7 @@ value_list:
 value:
     NUMBER{
     	CONTEXT->values[CONTEXT->value_length].type=AttrType::Ints;
-    	CONTEXT->values[CONTEXT->value_length++].data=initIntsValue($1);
+    	CONTEXT->values[CONTEXT->value_length++].data=InitIntsValue($1);
 	}
 	|DATE_STR{
 		//$1=substr($1,1,strlen($1)-2);
@@ -276,12 +276,12 @@ value:
 	}
     |FLOAT{
     	CONTEXT->values[CONTEXT->value_length].type=AttrType::Floats;
-    	CONTEXT->values[CONTEXT->value_length++].data=initFloatValue($1);
+    	CONTEXT->values[CONTEXT->value_length++].data=InitFloatValue($1);
 	}
     |SSS {
-    	$1 = substr($1,1,strlen($1)-2);
+    	$1 = SubStr($1,1,strlen($1)-2);
         CONTEXT->values[CONTEXT->value_length].type=AttrType::Chars;
-        CONTEXT->values[CONTEXT->value_length++].data=initCharsValue($1);
+        CONTEXT->values[CONTEXT->value_length++].data=InitCharsValue($1);
 	}
     ;
     
@@ -292,6 +292,7 @@ delete:		/*  delete 语句的语法解析树*/
         // deletes_set_conditions(&CONTEXT->ssql->sstr.deletion,
         // 		CONTEXT->conditions, CONTEXT->condition_length);
         // CONTEXT->condition_length = 0;
+        printf("delete sql recognize\n");
     }
     ;
 update:			/*  update 语句的语法解析树*/
@@ -305,8 +306,8 @@ update:			/*  update 语句的语法解析树*/
     ;
 select:				/*  select 语句的语法解析树*/
     SELECT select_attr FROM ID rel_list where SEMICOLON{
-        static_cast<SelectQuery*>(CONTEXT->query)->addRelName($4);
-        static_cast<SelectQuery*>(CONTEXT->query)->addConditions(CONTEXT->condition_length,CONTEXT->conditions);
+        static_cast<SelectQuery*>(CONTEXT->query)->AddRelName($4);
+        static_cast<SelectQuery*>(CONTEXT->query)->AddConditions(CONTEXT->condition_length,CONTEXT->conditions);
         //临时变量清零
         CONTEXT->condition_length=0;
         // CONTEXT->from_length=0;
@@ -320,44 +321,44 @@ select_attr:
     STAR {
         if(CONTEXT->query==nullptr){
             CONTEXT->query=new SelectQuery();
-            CONTEXT->query->init();
+            CONTEXT->query->Init();
         }
         RelAttr attr(nullptr,"*");
-        static_cast<SelectQuery*>(CONTEXT->query)->addRelAttr(attr);
+        static_cast<SelectQuery*>(CONTEXT->query)->AddRelAttr(attr);
 		}
     | ID attr_list {
         if(CONTEXT->query==nullptr){
             CONTEXT->query=new SelectQuery();
-            CONTEXT->query->init();
+            CONTEXT->query->Init();
         }
         RelAttr attr(nullptr,$1);
-        static_cast<SelectQuery*>(CONTEXT->query)->addRelAttr(attr);
+        static_cast<SelectQuery*>(CONTEXT->query)->AddRelAttr(attr);
 		}
   	| ID DOT ID attr_list {
         if(CONTEXT->query==nullptr){
             CONTEXT->query=new SelectQuery();
-            CONTEXT->query->init();
+            CONTEXT->query->Init();
         }
         RelAttr attr($1,$3);
-        static_cast<SelectQuery*>(CONTEXT->query)->addRelAttr(attr);
+        static_cast<SelectQuery*>(CONTEXT->query)->AddRelAttr(attr);
 		}
     ;
 attr_list:
     /* empty */
     | COMMA ID attr_list {
         RelAttr attr(nullptr,$2);
-        static_cast<SelectQuery*>(CONTEXT->query)->addRelAttr(attr);
+        static_cast<SelectQuery*>(CONTEXT->query)->AddRelAttr(attr);
     }
     | COMMA ID DOT ID attr_list {
         RelAttr attr($2, $4);
-        static_cast<SelectQuery*>(CONTEXT->query)->addRelAttr(attr);
+        static_cast<SelectQuery*>(CONTEXT->query)->AddRelAttr(attr);
   	}
   	;
 
 rel_list:
     /* empty */
     | COMMA ID rel_list {
-        static_cast<SelectQuery*>(CONTEXT->query)->addRelName($2);
+        static_cast<SelectQuery*>(CONTEXT->query)->AddRelName($2);
 	}
     ;
 where:
@@ -377,49 +378,49 @@ condition:
 			RelAttr left_attr(NULL, $1);
 			Value *right_value = &CONTEXT->values[CONTEXT->value_length - 1];
 			Condition condition;
-			condition.init(CONTEXT->comp, 1, &left_attr,nullptr, 0, nullptr, right_value);
+			condition.Init(CONTEXT->comp, 1, &left_attr,nullptr, 0, nullptr, right_value);
 			CONTEXT->conditions[CONTEXT->condition_length++] = condition;
 		}
 	|value comOp value {
         Value *left_value = &CONTEXT->values[CONTEXT->value_length - 2];
         Value *right_value = &CONTEXT->values[CONTEXT->value_length - 1];
         Condition condition;
-        condition.init(CONTEXT->comp, 0,nullptr, left_value, 0,nullptr, right_value);
+        condition.Init(CONTEXT->comp, 0,nullptr, left_value, 0,nullptr, right_value);
         CONTEXT->conditions[CONTEXT->condition_length++] = condition;
 		}
 	|ID comOp ID {
         RelAttr left_attr(nullptr,$1);
         RelAttr right_attr(nullptr,$3);
         Condition condition;
-        condition.init(CONTEXT->comp, 1, &left_attr,nullptr, 1, &right_attr,nullptr);
+        condition.Init(CONTEXT->comp, 1, &left_attr,nullptr, 1, &right_attr,nullptr);
         CONTEXT->conditions[CONTEXT->condition_length++] = condition;
 		}
     |value comOp ID{
         Value *left_value = &CONTEXT->values[CONTEXT->value_length - 1];
         RelAttr right_attr(nullptr, $3);
         Condition condition;
-        condition.init(CONTEXT->comp, 0,nullptr, left_value, 1, &right_attr,nullptr);
+        condition.Init(CONTEXT->comp, 0,nullptr, left_value, 1, &right_attr,nullptr);
         CONTEXT->conditions[CONTEXT->condition_length++] = condition;
 		}
     |ID DOT ID comOp value{
         RelAttr left_attr($1, $3);
         Value *right_value = &CONTEXT->values[CONTEXT->value_length - 1];
         Condition condition;
-        condition.init(CONTEXT->comp, 1, &left_attr,nullptr, 0, nullptr, right_value);
+        condition.Init(CONTEXT->comp, 1, &left_attr,nullptr, 0, nullptr, right_value);
         CONTEXT->conditions[CONTEXT->condition_length++] = condition;
     }
     |value comOp ID DOT ID{
         Value *left_value = &CONTEXT->values[CONTEXT->value_length - 1];
         RelAttr right_attr($3,$5);
         Condition condition;
-        condition.init(CONTEXT->comp, 0,nullptr, left_value, 1, &right_attr, nullptr);
+        condition.Init(CONTEXT->comp, 0,nullptr, left_value, 1, &right_attr, nullptr);
         CONTEXT->conditions[CONTEXT->condition_length++] = condition;
     }
     |ID DOT ID comOp ID DOT ID{
         RelAttr left_attr($1, $3);
         RelAttr right_attr($5, $7);
         Condition condition;
-        condition.init(CONTEXT->comp, 1, &left_attr,nullptr, 1, &right_attr,nullptr);
+        condition.Init(CONTEXT->comp, 1, &left_attr,nullptr, 1, &right_attr,nullptr);
         CONTEXT->conditions[CONTEXT->condition_length++] = condition;
     }
     ;
@@ -457,7 +458,7 @@ load_data:
 //_____________________________________________________________________
 extern void scan_string(const char *str, yyscan_t scanner);
 // int sql_parse(const char *s, Query *sqls)
-int sqlParse(const char *s,Query* & res){
+int SqlParse(const char *s,Query* & res){
 	ParserContext context;
 	memset(&context, 0, sizeof(context));
 	yyscan_t scanner;

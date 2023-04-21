@@ -1,58 +1,50 @@
 #include "resolve_main.h"
-#include "../storage/storage_handler.h"
 #include "../parse/parse_main.h"
+#include "../storage/storage_handler.h"
 
-Re ResolveMain::init(BaseMain *last_main)
-{
-    baseSet(*last_main);
+Re ResolveMain::Init(BaseMain *last_main) {
+    BaseSet(*last_main);
     auto parse_main = static_cast<ParseMain *>(last_main);
-    query_ = parse_main->getQuery();
+    query_ = parse_main->GetQuery();
     if (query_ == nullptr)
         return Re::GenericError;
     return Re::Success;
 }
 
-Re ResolveMain::handle()
-{
-    GlobalDataBaseManager &dbm = GlobalManagers::globalDataBaseManager();
-    DataBase *default_db = dbm.getDb(dbm.getProjectDefaultDatabasePath());
-    GlobalMainManager &gmm = GlobalManagers::globalMainManager();
-    if (default_db == nullptr)
-    {
-        debugPrint("ResolveMain:open default db failed,get nullptr,getFrame default db failed\n");
-        gmm.setResponse("CAN NOT OPEN CURRENT DATABASE.\n");
+Re ResolveMain::Handle() {
+    GlobalDataBaseManager &dbm = GlobalManagers::GetGlobalDataBaseManager();
+    DataBase *default_db = dbm.GetDb(dbm.GetProjectDefaultDatabasePath());
+    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
+    if (default_db == nullptr) {
+        DebugPrint("ResolveMain:open default db failed,get nullptr,getFrame default db failed\n");
+        gmm.SetResponse("CAN NOT OPEN CURRENT DATABASE.\n");
         return Re::GenericError;
     }
     database_ = default_db;
-    Statement::createStatement(query_, stmt_);
-    if (stmt_ == nullptr)
-    {
-        debugPrint("ResolveMain:createFilter statement failed\n");
-        gmm.setResponse("CAN NOT RESOLVE SQL STATEMENT.\n");
+    Statement::CreateStatement(query_, stmt_);
+    if (stmt_ == nullptr) {
+        DebugPrint("ResolveMain:createFilter statement failed\n");
+        gmm.SetResponse("CAN NOT RESOLVE SQL STATEMENT.\n");
         return Re::GenericError;
     }
-    stmt_->init(query_);
-    Re r = stmt_->handle(query_, this);
-    if (r != Re::Success)
-    {
-        debugPrint("ResolveMain:statement initialize and handle failed re=%d\n", r);
+    stmt_->Init(query_);
+    Re r = stmt_->Handle(query_, this);
+    if (r != Re::Success) {
+        DebugPrint("ResolveMain:statement initialize and handle failed re=%d\n", r);
         return r;
     }
     return Re::Success;
 }
 
-void ResolveMain::clear()
-{
+void ResolveMain::Clear() {
     if (query_ != nullptr)
         query_ = nullptr;
-    if (stmt_ != nullptr)
-    {
-        stmt_->destroy();
+    if (stmt_ != nullptr) {
+        stmt_->Destroy();
         stmt_ = nullptr;
     }
 }
 
-void ResolveMain::destroy()
-{
-    clear();
+void ResolveMain::Destroy() {
+    Clear();
 }

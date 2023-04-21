@@ -1,56 +1,46 @@
 #include "bitmap.h"
 
-int findFirstZero(char byte, int start)
-{
+int FindFirstZero(char byte, int start) {
     for (int i = start; i < 8; i++)
         if ((byte & (1 << i)) == 0)
             return i;
     return -1;
 }
 
-int findFirstSet(char byte, int start)
-{
+int FindFirstSet(char byte, int start) {
     for (int i = start; i < 8; i++)
         if ((byte & (1 << i)) != 0)
             return i;
     return -1;
 }
 
-void BitMap::init(char *bitmap, int size)
-{
+void BitMap::Init(char *bitmap, int size) {
     bit_map_ = bitmap;
     size_ = size;
 }
 
-bool BitMap::getBit(int index)
-{
+bool BitMap::GetBit(int index) {
     char bits = bit_map_[index / 8];
     return (bits & (1 << (index % 8))) != 0;
 }
 
-void BitMap::setBit(int index)
-{
+void BitMap::SetBit(int index) {
     char &bits = bit_map_[index / 8];
     bits |= (1 << (index % 8));
 }
 
-void BitMap::clearBit(int index)
-{
+void BitMap::ClearBit(int index) {
     char &bits = bit_map_[index / 8];
     bits &= ~(1 << (index % 8));
 }
 
-int BitMap::nextUnsetBit(int start)
-{
+int BitMap::NextUnsetBit(int start) {
     int ret = -1, start_in_byte = start % 8;
-    for (int iter = start / 8, end = (size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1); iter <= end; iter++)
-    {
+    for (int iter = start / 8, end = (size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1); iter <= end; iter++) {
         char byte = bit_map_[iter];
-        if (byte != -1)
-        {
-            int index_in_byte = findFirstZero(byte, start_in_byte);
-            if (index_in_byte >= 0)
-            {
+        if (byte != -1) {
+            int index_in_byte = FindFirstZero(byte, start_in_byte);
+            if (index_in_byte >= 0) {
                 ret = iter * 8 + index_in_byte;
                 break;
             }
@@ -62,17 +52,13 @@ int BitMap::nextUnsetBit(int start)
     return ret;
 }
 
-int BitMap::nextSetBit(int start)
-{
+int BitMap::NextSetBit(int start) {
     int ret = -1, start_in_byte = start % 8;
-    for (int iter = start / 8, end = (size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1); iter <= end; iter++)
-    {
+    for (int iter = start / 8, end = (size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1); iter <= end; iter++) {
         char byte = bit_map_[iter];
-        if (byte != 0x00)
-        {
-            int index_in_byte = findFirstSet(byte, start_in_byte);
-            if (index_in_byte >= 0)
-            {
+        if (byte != 0x00) {
+            int index_in_byte = FindFirstSet(byte, start_in_byte);
+            if (index_in_byte >= 0) {
                 ret = iter * 8 + index_in_byte;
                 break;
             }

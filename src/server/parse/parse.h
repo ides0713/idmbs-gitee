@@ -2,4 +2,4 @@
 
 #include "parse_defs.h"
 
-int parse(const char *st, Query *&res);
+int Parse(const char *st, Query *&res);

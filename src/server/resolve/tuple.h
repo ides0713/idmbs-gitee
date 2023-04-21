@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../storage/table.h"
 #include "../storage/field.h"
 #include "../storage/record.h"
+#include "../storage/table.h"
 enum class ExprType;
 
 class Expression;
@@ -11,30 +11,29 @@ class FieldExpression;
 
 class ValueExpression;
 
-class TupleUnit
-{
+class TupleUnit {
 public:
     TupleUnit() : attr_type_(AttrType::Undefined), length_(-1), data_(nullptr) {}
 
     TupleUnit(AttrType type, char *data) : attr_type_(type), length_(-1), data_(data) {}
 
-    TupleUnit(FieldMeta *meta, char *data) : TupleUnit(meta->getAttrType(), data) {}
+    TupleUnit(FieldMeta *meta, char *data) : TupleUnit(meta->GetAttrType(), data) {}
 
-    void setAttrType(AttrType type) { attr_type_ = type; }
+    void SetAttrType(AttrType type) { attr_type_ = type; }
 
-    void setLength(int length) { length_ = length; }
+    void SetLength(int length) { length_ = length; }
 
-    void setData(char *data) { data_ = data; }
+    void SetData(char *data) { data_ = data; }
 
-    [[nodiscard]] AttrType getAttrType() const { return attr_type_; }
+    [[nodiscard]] AttrType GetAttrType() const { return attr_type_; }
 
-    [[nodiscard]] int getLength() const { return length_; }
+    [[nodiscard]] int GetLength() const { return length_; }
 
-    [[nodiscard]] const char *getData() const { return data_; }
+    [[nodiscard]] const char *GetData() const { return data_; }
 
-    void toString(std::ostream &os) const;
+    void ToString(std::ostream &os) const;
 
-    int compare(const TupleUnit &other);
+    int Compare(const TupleUnit &other);
 
 private:
     AttrType attr_type_;
@@ -42,8 +41,7 @@ private:
     char *data_;
 };
 
-class TupleUnitSpec
-{
+class TupleUnitSpec {
 public:
     TupleUnitSpec() : alias_(nullptr), expression_(nullptr) {}
 
@@ -51,59 +49,57 @@ public:
 
     ~TupleUnitSpec();
 
-    void setAlias(const char *alias) { this->alias_ = alias; }
+    void SetAlias(const char *alias) { this->alias_ = alias; }
 
-    void setExpression(Expression *expr) { expression_ = expr; }
+    void SetExpression(Expression *expr) { expression_ = expr; }
 
-    [[nodiscard]] const char *getAlias() const { return alias_; }
+    [[nodiscard]] const char *GetAlias() const { return alias_; }
 
-    [[nodiscard]] Expression *getExpression() const { return expression_; }
+    [[nodiscard]] Expression *GetExpression() const { return expression_; }
 
 private:
     const char *alias_;
     Expression *expression_;
 };
 
-class Tuple
-{
+class Tuple {
 public:
     Tuple() = default;
 
     virtual ~Tuple() = default;
 
-    [[nodiscard]] virtual int getUnitsNum() const = 0;
+    [[nodiscard]] virtual int GetUnitsNum() const = 0;
 
-    virtual Re getUnitAt(int index, TupleUnit &unit) const = 0;
+    virtual Re GetUnitAt(int index, TupleUnit &unit) const = 0;
 
-    virtual Re getUnit(const Field &field, TupleUnit &unit) const = 0;
+    virtual Re GetUnit(const Field &field, TupleUnit &unit) const = 0;
 
-    virtual Re getUnitSpecAt(int index, const TupleUnitSpec *&spec) const = 0;
+    virtual Re GetUnitSpecAt(int index, const TupleUnitSpec *&spec) const = 0;
 };
 
-class RowTuple : public Tuple
-{
+class RowTuple : public Tuple {
 public:
     RowTuple() : record_(nullptr), table_(nullptr) {}
 
     ~RowTuple() override;
 
-    void setRecord(class Record *record) { record_ = record; }
+    void SetRecord(class Record *record) { record_ = record; }
 
-    void setSchema(const Table *table, const std::vector<FieldMeta> *fields);
+    void SetSchema(const Table *table, const std::vector<FieldMeta> *fields);
 
-    [[nodiscard]] int getUnitsNum() const override { return specs_.size(); }
+    [[nodiscard]] int GetUnitsNum() const override { return specs_.size(); }
 
-    Re getUnitAt(int index, TupleUnit &unit) const override;
+    Re GetUnitAt(int index, TupleUnit &unit) const override;
 
-    Re getUnit(const Field &field, TupleUnit &unit) const override;
+    Re GetUnit(const Field &field, TupleUnit &unit) const override;
 
-    Re getUnitSpecAt(int index, const TupleUnitSpec *&spec) const override;
+    Re GetUnitSpecAt(int index, const TupleUnitSpec *&spec) const override;
 
-    class Record &getRecord() { return *record_; }
+    class Record &GetRecord() { return *record_; }
 
-    [[nodiscard]] const class Record &getRecord() const { return *record_; }
+    [[nodiscard]] const class Record &GetRecord() const { return *record_; }
 
-    const Table &getTable() { return *table_; }
+    const Table &GetTable() { return *table_; }
 
 private:
     class Record *record_;
@@ -111,26 +107,25 @@ private:
     std::vector<TupleUnitSpec *> specs_;
 };
 
-class ProjectTuple : public Tuple
-{
+class ProjectTuple : public Tuple {
 public:
     ProjectTuple() : tuple_(nullptr) {}
 
     ~ProjectTuple() override;
 
-    void setTuple(Tuple *tuple) { tuple_ = tuple; }
+    void SetTuple(Tuple *tuple) { tuple_ = tuple; }
 
-    void addUnitSpec(TupleUnitSpec *spec) { specs_.push_back(spec); }
+    void AddUnitSpec(TupleUnitSpec *spec) { specs_.push_back(spec); }
 
-    [[nodiscard]] int getUnitsNum() const override { return specs_.size(); }
+    [[nodiscard]] int GetUnitsNum() const override { return specs_.size(); }
 
-    Re getUnitAt(int index, TupleUnit &unit) const override;
+    Re GetUnitAt(int index, TupleUnit &unit) const override;
 
-    Re getUnit(const Field &field, TupleUnit &unit) const override;
+    Re GetUnit(const Field &field, TupleUnit &unit) const override;
 
-    Re getUnitSpecAt(int index, const TupleUnitSpec *&unit) const override;
+    Re GetUnitSpecAt(int index, const TupleUnitSpec *&unit) const override;
 
-    Tuple *getTuple() { return tuple_; }
+    Tuple *GetTuple() { return tuple_; }
 
 private:
     std::vector<TupleUnitSpec *> specs_;

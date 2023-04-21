@@ -1,27 +1,26 @@
 #pragma once
 
-#include "operator.h"
-#include "../storage/record.h"
 #include "../common/re.h"
 #include "../resolve/tuple.h"
+#include "../storage/record.h"
+#include "operator.h"
 
 class Table;
 
-class TableScanOperator : public Operator
-{
+class TableScanOperator : public Operator {
 public:
     TableScanOperator() : table_(nullptr) {}
     TableScanOperator(Table *table) : table_(table) {}
 
     ~TableScanOperator() override = default;
 
-    Re init() override;
+    Re Init() override;
 
-    Re handle() override;
+    Re Handle() override;
 
-    Re destroy() override;
+    Re Destroy() override;
 
-    Tuple *getCurrentTuple() override;
+    Tuple *GetCurrentTuple() override;
 
 private:
     Table *table_;

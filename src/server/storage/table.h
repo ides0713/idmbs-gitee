@@ -1,12 +1,12 @@
 #pragma once
 
-#include <cstring>
-#include <string>
-#include <filesystem>
-#include <jsoncpp/json/json.h>
 #include "../parse/parse_defs.h"
 #include "field.h"
 #include "index.h"
+#include <cstring>
+#include <filesystem>
+#include <jsoncpp/json/json.h>
+#include <string>
 
 struct RecordId;
 
@@ -32,93 +32,91 @@ class CLogManager;
 
 #define TABLE_NAME_MAX_LEN 20
 
-class TableMeta
-{
+class TableMeta {
 public:
     TableMeta() : record_size_(0) {}
 
     TableMeta(const TableMeta &other);
 
-    Re init(const char *table_name, int32_t attr_infos_num, const AttrInfo *attr_infos);
+    Re Init(const char *table_name, int32_t attr_infos_num, const AttrInfo *attr_infos);
 
-    int serialize(std::ostream &ostream) const;
+    int Serialize(std::ostream &ostream) const;
 
-    int deserialize(std::istream &istream);
+    int Deserialize(std::istream &istream);
 
-    [[nodiscard]] int getSerialSize() const;
+    [[nodiscard]] int GetSerialSize() const;
 
-    [[nodiscard]] const FieldMeta *getTxnField() const;
+    [[nodiscard]] const FieldMeta *GetTxnField() const;
 
-    [[nodiscard]] const FieldMeta *getField(int index) const;
+    [[nodiscard]] const FieldMeta *GetField(int index) const;
 
-    const FieldMeta *getField(const char *field_name) const;
+    const FieldMeta *GetField(const char *field_name) const;
 
-    [[nodiscard]] const FieldMeta *getField(std::string field_name) const;
+    [[nodiscard]] const FieldMeta *GetField(std::string field_name) const;
 
-    [[nodiscard]] const char *getTableName() const { return table_name_.c_str(); }
+    [[nodiscard]] const char *GetTableName() const { return table_name_.c_str(); }
 
-    [[nodiscard]] int getFieldsNum() const { return fields_.size(); }
+    [[nodiscard]] int GetFieldsNum() const { return fields_.size(); }
 
-    [[nodiscard]] int getRecordSize() const { return record_size_; }
+    [[nodiscard]] int GetRecordSize() const { return record_size_; }
 
-    [[nodiscard]] const std::vector<FieldMeta> *getFields() const { return &fields_; }
+    [[nodiscard]] const std::vector<FieldMeta> *GetFields() const { return &fields_; }
 
 public:
-    static int getSysFieldsNum();
+    static int GetSysFieldsNum();
 
 private:
     std::string table_name_;
-    std::vector<FieldMeta> fields_; // 包含sys_fields
+    std::vector<FieldMeta> fields_;// 包含sys_fields
     std::vector<IndexMeta> indexes_;
     int record_size_;
 
 private:
 private:
-    static std::vector<FieldMeta> sys_fields_;
+    static std::vector<FieldMeta> sys_fields;
 
 private:
-    static Re initializeSysFields();
+    static Re InitializeSysFields();
 };
 
-class Table
-{
+class Table {
 public:
     Table() : data_buffer_pool_(nullptr), record_handler_(nullptr), clog_manager_(nullptr) {}
 
     /// @brief create an not existed table within params
-    Re init(std::filesystem::path database_path, const char *table_name, const size_t attr_infos_num,
+    Re Init(std::filesystem::path database_path, const char *table_name, const size_t attr_infos_num,
             const AttrInfo *attr_infos, CLogManager *clog_manager);
 
     /// @brief open an exist table from existed table meta file(open table)
-    Re init(std::filesystem::path database_path, const char *table_name, CLogManager *clog_manager);
+    Re Init(std::filesystem::path database_path, const char *table_name, CLogManager *clog_manager);
 
     /// @brief get table name from table(table meta)
-    const char *getTableName() const { return table_meta_.getTableName(); }
+    const char *GetTableName() const { return table_meta_.GetTableName(); }
 
-    const TableMeta &getTableMeta() const { return table_meta_; }
+    const TableMeta &GetTableMeta() const { return table_meta_; }
 
-    Re insertRecord(Txn *txn, int values_num, const Value *values);
+    Re InsertRecord(Txn *txn, int values_num, const Value *values);
 
-    RecordFileHandler *getRecordFileHandler() { return record_handler_; }
+    RecordFileHandler *GetRecordFileHandler() { return record_handler_; }
 
-    Re getRecordFileScanner(RecordFileScanner &scanner);
+    Re GetRecordFileScanner(RecordFileScanner &scanner);
 
-    void destroy();
+    void Destroy();
 
 private:
     std::filesystem::path database_path_;
     TableMeta table_meta_;
-    DiskBufferPool *data_buffer_pool_;  /// 数据文件关联的buffer pool
-    RecordFileHandler *record_handler_; /// 记录操作
+    DiskBufferPool *data_buffer_pool_; /// 数据文件关联的buffer pool
+    RecordFileHandler *record_handler_;/// 记录操作
     std::vector<Index *> indexes_;
     CLogManager *clog_manager_;
 
 private:
-    Re initRecordHandler(const char *base_dir);
+    Re InitRecordHandler(const char *base_dir);
 
-    Re initRecordHandler(std::filesystem::path base_dir);
+    Re InitRecordHandler(std::filesystem::path base_dir);
 
-    Re makeRecord(int values_num, const Value *values, char *&record_data);
+    Re MakeRecord(int values_num, const Value *values, char *&record_data);
 
-    Re insertRecord(Txn *txn, class Record *rec);
+    Re InsertRecord(Txn *txn, class Record *rec);
 };

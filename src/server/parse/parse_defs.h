@@ -1,8 +1,8 @@
 #pragma once
 
+#include <cassert>
 #include <cstdio>
 #include <cstring>
-#include <cassert>
 #include <iostream>
 
 const int MAX_ID_LENGTH = 20;
@@ -14,16 +14,15 @@ const int MAX_ATTR_LENGTH = 20;
 const int MAX_MSG_LENGTH = 50;
 const int MAX_VALUES_NUM = 20;
 
-char *strNew(const char *str);
+char *StrNew(const char *str);
 
-int *initIntsValue(int value);
+int *InitIntsValue(int value);
 
-float *initFloatValue(float value);
+float *InitFloatValue(float value);
 
-char *initCharsValue(const char *value);
+char *InitCharsValue(const char *value);
 
-enum SqlCommandFlag
-{
+enum SqlCommandFlag {
     // SCF_ERROR 解析失败
     ScfError = 0,
     ScfSelect,
@@ -46,8 +45,7 @@ enum SqlCommandFlag
     ScfExit
 };
 
-enum AttrType
-{
+enum AttrType {
     Undefined = 0,
     Chars,
     Ints,
@@ -55,46 +53,42 @@ enum AttrType
     Dates
 };
 
-std::string strAttrType(AttrType type);
+std::string StrAttrType(AttrType type);
 
-enum CompOp
-{
-    EqualTo = 0, //"="     0
-    LessEqual,   //"<="    1
-    NotEqual,    //"<>"    2
-    LessThan,    //"<"     3
-    GreatEqual,  //">="    4
-    GreatThan,   //">"     5
+enum CompOp {
+    EqualTo = 0,//"="     0
+    LessEqual,  //"<="    1
+    NotEqual,   //"<>"    2
+    LessThan,   //"<"     3
+    GreatEqual, //">="    4
+    GreatThan,  //">"     5
     NoOp
 };
 
-std::string strCompOp(CompOp cmp);
+std::string StrCompOp(CompOp cmp);
 
-struct Value
-{
+struct Value {
 public:
-    AttrType type; // 属性类型(数据类型)
-    void *data;    // 数据内容(值)
+    AttrType type;// 属性类型(数据类型)
+    void *data;   // 数据内容(值)
 public:
     ///@brief debug
-    void desc(std::ostream &stream) const
-    {
-        stream << "[type: " << strAttrType(type) << " data: ";
-        switch (type)
-        {
-        case AttrType::Ints:
-            stream << *reinterpret_cast<int *>(data);
-            break;
-        case AttrType::Floats:
-            stream << *reinterpret_cast<float *>(data);
-            break;
-        case AttrType::Chars:
-            stream << reinterpret_cast<char *>(data);
-            break;
-        case AttrType::Undefined:
-        case AttrType::Dates:
-        default:
-            assert(false);
+    void Desc(std::ostream &stream) const {
+        stream << "[type: " << StrAttrType(type) << " data: ";
+        switch (type) {
+            case AttrType::Ints:
+                stream << *reinterpret_cast<int *>(data);
+                break;
+            case AttrType::Floats:
+                stream << *reinterpret_cast<float *>(data);
+                break;
+            case AttrType::Chars:
+                stream << reinterpret_cast<char *>(data);
+                break;
+            case AttrType::Undefined:
+            case AttrType::Dates:
+            default:
+                assert(false);
         }
         stream << "]";
     }
@@ -103,71 +97,64 @@ public:
 
     Value(AttrType t, void *d) : type(t), data(d) {}
 
-    void copy(const Value &value)
-    {
-        if (data != nullptr)
-        {
-            destroy();
+    void Copy(const Value &value) {
+        if (data != nullptr) {
+            Destroy();
             data = nullptr;
         }
-        switch (value.type)
-        {
-        case AttrType::Undefined:
-            type = AttrType::Undefined;
-            data = nullptr;
-            break;
-        case AttrType::Ints:
-            type = AttrType::Ints;
-            data = new int;
-            memcpy(data, value.data, sizeof(int));
-            break;
-        case AttrType::Floats:
-            type = AttrType::Floats;
-            data = new float;
-            memcpy(data, value.data, sizeof(float));
-            break;
-        case AttrType::Chars:
-            type = AttrType::Chars;
-            data = strNew(reinterpret_cast<char *>(value.data));
-            break;
-        case AttrType::Dates:
-            assert(false);
-            break;
+        switch (value.type) {
+            case AttrType::Undefined:
+                type = AttrType::Undefined;
+                data = nullptr;
+                break;
+            case AttrType::Ints:
+                type = AttrType::Ints;
+                data = new int;
+                memcpy(data, value.data, sizeof(int));
+                break;
+            case AttrType::Floats:
+                type = AttrType::Floats;
+                data = new float;
+                memcpy(data, value.data, sizeof(float));
+                break;
+            case AttrType::Chars:
+                type = AttrType::Chars;
+                data = StrNew(reinterpret_cast<char *>(value.data));
+                break;
+            case AttrType::Dates:
+                assert(false);
+                break;
         }
     }
 
-    void destroy()
-    {
+    void Destroy() {
         if (data == nullptr)
             return;
-        switch (type)
-        {
-        case AttrType::Undefined:
-            break;
-        case AttrType::Ints:
-            delete reinterpret_cast<int *>(data);
-            break;
-        case AttrType::Floats:
-            delete reinterpret_cast<float *>(data);
-            break;
-        case AttrType::Chars:
-            delete reinterpret_cast<char *>(data);
-            break;
-        case AttrType::Dates:
-            break;
+        switch (type) {
+            case AttrType::Undefined:
+                break;
+            case AttrType::Ints:
+                delete reinterpret_cast<int *>(data);
+                break;
+            case AttrType::Floats:
+                delete reinterpret_cast<float *>(data);
+                break;
+            case AttrType::Chars:
+                delete reinterpret_cast<char *>(data);
+                break;
+            case AttrType::Dates:
+                break;
         }
         data = nullptr;
     }
 };
 
-struct RelAttr
-{
+struct RelAttr {
 public:
-    char *rel_name;  // 关系名(表名)
-    char *attr_name; // 属性名
+    char *rel_name; // 关系名(表名)
+    char *attr_name;// 属性名
 public:
-    void desc(std::ostream &stream) const
-    {
+    void Desc(std::ostream &stream) const {
         stream << "[rel_name: ";
         if (rel_name == nullptr)
             stream << "null";
@@ -178,88 +165,76 @@ public:
 
     RelAttr() : rel_name(nullptr), attr_name(nullptr) {}
 
-    RelAttr(const char *r_name, const char *a_name)
-    {
+    RelAttr(const char *r_name, const char *a_name) {
         if (r_name == nullptr)
             rel_name = nullptr;
-        attr_name = strNew(a_name);
+        attr_name = StrNew(a_name);
     }
 
-    void copy(const RelAttr &attr)
-    {
-        destroy();
+    void Copy(const RelAttr &attr) {
+        Destroy();
         if (attr.rel_name != nullptr)
-            rel_name = strNew(attr.rel_name);
+            rel_name = StrNew(attr.rel_name);
         if (attr.attr_name != nullptr)
-            attr_name = strNew(attr.attr_name);
+            attr_name = StrNew(attr.attr_name);
     }
 
-    void destroy()
-    {
+    void Destroy() {
         delete[] rel_name;
         delete[] attr_name;
     }
 };
 
-struct AttrInfo
-{
+struct AttrInfo {
 public:
-    char *attr_name;    // 属性名
-    AttrType attr_type; // 属性类型(数据类型)
-    size_t attr_len;    // 属性长度(占空间大小)
+    char *attr_name;   // 属性名
+    AttrType attr_type;// 属性类型(数据类型)
+    size_t attr_len;   // 属性长度(占空间大小)
 public:
-    void desc(std::ostream &stream) const
-    {
-        stream << "[attr_name: " << attr_name << " attr_type: " << strAttrType(attr_type) << " attr_len: " << attr_len
+    void Desc(std::ostream &stream) const {
+        stream << "[attr_name: " << attr_name << " attr_type: " << StrAttrType(attr_type) << " attr_len: " << attr_len
                << "]";
     }
 
-    AttrInfo()
-    {
+    AttrInfo() {
         attr_name = nullptr;
         attr_type = AttrType::Undefined;
         attr_len = 0;
     }
 
-    AttrInfo(const char *name, AttrType type, size_t len = 1)
-    {
-        attr_name = strNew(name);
+    AttrInfo(const char *name, AttrType type, size_t len = 1) {
+        attr_name = StrNew(name);
         attr_type = type;
         attr_len = len;
     }
 
-    AttrInfo(const AttrInfo &attr_info)
-    {
-        attr_name = strNew(attr_info.attr_name);
+    AttrInfo(const AttrInfo &attr_info) {
+        attr_name = StrNew(attr_info.attr_name);
         attr_type = attr_info.attr_type;
         attr_len = attr_info.attr_len;
     }
 
-    void copy(const AttrInfo &attr_info)
-    {
-        attr_name = strNew(attr_info.attr_name);
+    void Copy(const AttrInfo &attr_info) {
+        attr_name = StrNew(attr_info.attr_name);
         attr_type = attr_info.attr_type;
         attr_len = attr_info.attr_len;
     }
 
-    void destroy() const
-    {
+    void Destroy() const {
         delete[] attr_name;
     }
 
-    AttrInfo &operator=(const AttrInfo &attr_info)
-    {
+    AttrInfo &operator=(const AttrInfo &attr_info) {
         if (this == &attr_info)
             return *this;
-        attr_name = strNew(attr_info.attr_name);
+        attr_name = StrNew(attr_info.attr_name);
         attr_type = attr_info.attr_type;
         attr_len = attr_info.attr_len;
         return *this;
     }
 };
 
-struct Condition
-{
+struct Condition {
 public:
     // *is_attr 用于标识比较符两侧是否为属性名(可以为具体值)
     int left_is_attr;
@@ -272,36 +247,28 @@ public:
     Value right_value;
 
 public:
-    void desc(std::ostream &stream) const
-    {
+    void Desc(std::ostream &stream) const {
         stream << "LEFT ";
-        if (left_is_attr)
-        {
+        if (left_is_attr) {
             stream << "RelAttr: ";
-            left_attr.desc(stream);
-        }
-        else
-        {
+            left_attr.Desc(stream);
+        } else {
             stream << "Value: ";
-            left_value.desc(stream);
+            left_value.Desc(stream);
         }
         stream << '\n'
                << "RIGHT ";
-        if (right_is_attr)
-        {
+        if (right_is_attr) {
             stream << "RelAttr: ";
-            right_attr.desc(stream);
-        }
-        else
-        {
+            right_attr.Desc(stream);
+        } else {
             stream << "Value: ";
-            right_value.desc(stream);
+            right_value.Desc(stream);
         }
     }
 
-    void init(CompOp c, int l_is_attr, RelAttr *l_attr, Value *l_value,
-              int r_is_attr, RelAttr *r_attr, Value *r_value)
-    {
+    void Init(CompOp c, int l_is_attr, RelAttr *l_attr, Value *l_value,
+              int r_is_attr, RelAttr *r_attr, Value *r_value) {
         comp = c;
         left_is_attr = l_is_attr;
         if (l_is_attr)
@@ -315,98 +282,91 @@ public:
             right_value = *r_value;
     }
 
-    void copy(const Condition &c)
-    {
+    void Copy(const Condition &c) {
         comp = c.comp;
         left_is_attr = c.left_is_attr, right_is_attr = c.right_is_attr;
         if (left_is_attr)
-            left_attr.copy(c.left_attr);
+            left_attr.Copy(c.left_attr);
         else
-            left_value.copy(c.left_value);
+            left_value.Copy(c.left_value);
         if (right_is_attr)
-            right_attr.copy(c.right_attr);
+            right_attr.Copy(c.right_attr);
         else
-            right_value.copy(c.right_value);
+            right_value.Copy(c.right_value);
     }
 
-    void destroy()
-    {
+    void Destroy() {
         if (left_is_attr)
-            left_attr.destroy();
+            left_attr.Destroy();
         else
-            left_value.destroy();
+            left_value.Destroy();
         if (right_is_attr)
-            right_attr.destroy();
+            right_attr.Destroy();
         else
-            right_value.destroy();
+            right_value.Destroy();
     }
 };
 
-class Query
-{
+class Query {
 public:
     Query() : flag_(ScfError) {}
 
     explicit Query(SqlCommandFlag flag) : flag_(flag) {}
 
-    virtual void init() = 0;
+    virtual void Init() = 0;
 
     //~query()
-    virtual void destroy() = 0;
+    virtual void Destroy() = 0;
 
-    SqlCommandFlag getScf() { return flag_; }
+    SqlCommandFlag GetScf() { return flag_; }
 
 private:
     SqlCommandFlag flag_;
 };
 
-class SelectQuery : public Query
-{
+class SelectQuery : public Query {
 public:
-    SelectQuery() : Query(ScfSelect), attrs_(nullptr), rel_names_(nullptr), conditions_(nullptr) {}
+    SelectQuery() : Query(SqlCommandFlag::ScfSelect), attrs_(nullptr), rel_names_(nullptr), conditions_(nullptr) {}
 
-    void init() override
-    {
+    void Init() override {
         attrs_num_ = 0, rel_names_num_ = 0, conditions_num_ = 0;
         attrs_ = new RelAttr[MAX_ATTRS_NUM];
         conditions_ = new Condition[MAX_CONDITIONS_NUM];
         rel_names_ = new char *[MAX_RELS_NUM];
     }
 
-    void destroy() override
-    {
+    void Destroy() override {
         for (int i = 0; i < rel_names_num_; i++)
             delete[] rel_names_[i];
         delete[] rel_names_;
         for (int i = 0; i < attrs_num_; i++)
-            attrs_[i].destroy();
+            attrs_[i].Destroy();
         delete[] attrs_;
         for (int i = 0; i < conditions_num_; i++)
-            conditions_[i].destroy();
+            conditions_[i].Destroy();
         delete[] conditions_;
     }
 
-    void addRelAttr(const RelAttr &rel_attr) { attrs_[attrs_num_++] = rel_attr; }
+    void AddRelAttr(const RelAttr &rel_attr) { attrs_[attrs_num_++] = rel_attr; }
 
-    void addRelName(const char *str) { rel_names_[rel_names_num_++] = strNew(str); }
+    void AddRelName(const char *str) { rel_names_[rel_names_num_++] = StrNew(str); }
 
-    void addConditions(size_t conditions_num, const Condition *conditions)
-    {
+    void AddConditions(size_t conditions_num, const Condition *conditions) {
         for (int i = 0; i < conditions_num; i++)
             conditions_[conditions_num_++] = conditions[i];
     }
 
-    int getAttrsNum() { return attrs_num_; }
+    int GetAttrsNum() { return attrs_num_; }
 
-    int getRelNamesNum() { return rel_names_num_; }
+    int GetRelNamesNum() { return rel_names_num_; }
 
-    int getConditionsNum() { return conditions_num_; }
+    int GetConditionsNum() { return conditions_num_; }
 
-    RelAttr *getAttrs() { return attrs_; }
+    RelAttr *GetAttrs() { return attrs_; }
 
-    Condition *getConditions() { return conditions_; }
+    Condition *GetConditions() { return conditions_; }
 
-    char **getRelNames() { return rel_names_; }
+    char **GetRelNames() { return rel_names_; }
 
 private:
     int attrs_num_, rel_names_num_, conditions_num_;
@@ -415,41 +375,37 @@ private:
     Condition *conditions_;
 };
 
-class InsertQuery : public Query
-{
+class InsertQuery : public Query {
 public:
-    InsertQuery() : Query(ScfInsert), rel_name_(nullptr), values_(nullptr) {}
+    InsertQuery() : Query(SqlCommandFlag::ScfInsert), rel_name_(nullptr), values_(nullptr) {}
 
-    void init() override
-    {
+    void Init() override {
         rel_name_ = nullptr;
         values_num_ = 0;
         values_ = new Value[MAX_VALUES_NUM];
     }
 
-    void destroy() override
-    {
+    void Destroy() override {
         delete[] rel_name_;
         for (int i = 0; i < values_num_; i++)
-            values_[i].destroy();
+            values_[i].Destroy();
         delete[] values_;
     }
 
-    void setRelName(const char *str) { rel_name_ = strNew(str); }
+    void SetRelName(const char *str) { rel_name_ = StrNew(str); }
 
-    void addValue(const Value &value) { values_[values_num_++] = value; }
+    void AddValue(const Value &value) { values_[values_num_++] = value; }
 
-    void addValues(const size_t value_num, const Value *values)
-    {
+    void AddValues(const size_t value_num, const Value *values) {
         for (int i = 0; i < value_num; i++)
             values_[values_num_++] = values[i];
     }
 
-    char *getRelName() { return rel_name_; }
+    char *GetRelName() { return rel_name_; }
 
-    [[nodiscard]] int getValuesNum() const { return values_num_; }
+    [[nodiscard]] int GetValuesNum() const { return values_num_; }
 
-    Value *getValues() { return values_; }
+    Value *GetValues() { return values_; }
 
 private:
     char *rel_name_;
@@ -457,34 +413,31 @@ private:
     Value *values_;
 };
 
-class CreateTableQuery : public Query
-{
+class CreateTableQuery : public Query {
 public:
-    CreateTableQuery() : Query(ScfCreateTable) { rel_name_ = nullptr, attrs_num_ = 0, attrs_ = nullptr; }
+    CreateTableQuery() : Query(SqlCommandFlag::ScfCreateTable), rel_name_(nullptr), attrs_num_(0), attrs_(nullptr) {}
 
-    void init() override
-    {
+    void Init() override {
         rel_name_ = nullptr;
         attrs_num_ = 0;
         attrs_ = new AttrInfo[MAX_ATTRS_NUM];
     }
 
-    void destroy() override
-    {
+    void Destroy() override {
         delete[] rel_name_;
         for (int i = 0; i < attrs_num_; i++)
-            attrs_[i].destroy();
+            attrs_[i].Destroy();
     }
 
-    void setRelName(const char *str) { rel_name_ = strNew(str); }
+    void SetRelName(const char *str) { rel_name_ = StrNew(str); }
 
-    void addAttr(const AttrInfo &attr) { attrs_[attrs_num_++] = attr; }
+    void AddAttr(const AttrInfo &attr) { attrs_[attrs_num_++] = attr; }
 
-    char *getRelName() { return rel_name_; }
+    char *GetRelName() { return rel_name_; }
 
-    [[nodiscard]] int getAttrNum() const { return attrs_num_; }
+    [[nodiscard]] int GetAttrNum() const { return attrs_num_; }
 
-    AttrInfo *getAttrs() { return attrs_; }
+    AttrInfo *GetAttrs() { return attrs_; }
 
 private:
     char *rel_name_;
@@ -492,18 +445,32 @@ private:
     AttrInfo *attrs_;
 };
 
-class ErrorQuery : public Query
-{
+class DeleteQuery : public Query {
 public:
-    explicit ErrorQuery(const char *str) : Query(ScfError)
-    {
+    DeleteQuery() : Query(SqlCommandFlag::ScfDelete), rel_name_(nullptr), conditions_(nullptr) {}
+    void Init() override {
+        rel_name_ = nullptr;
+        conditions_num_ = 0;
+    }
+    void Destroy() override;
+    void SetRelName(const char *str) { rel_name_ = StrNew(str); }
+
+private:
+    int conditions_num_;
+    char *rel_name_;
+    Condition *conditions_;
+    int abcd_;
+};
+class ErrorQuery : public Query {
+public:
+    explicit ErrorQuery(const char *str) : Query(SqlCommandFlag::ScfError) {
         error_message_ = new char[MAX_MSG_LENGTH];
         strcpy(error_message_, str);
     }
 
-    void init() override {}
+    void Init() override {}
 
-    void destroy() override { delete[] error_message_; }
+    void Destroy() override { delete[] error_message_; }
 
 private:
     char *error_message_;

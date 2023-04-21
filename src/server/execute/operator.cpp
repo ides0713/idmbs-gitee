@@ -1,6 +1,5 @@
 #include "operator.h"
 
-void Operator::addOper(Operator *oper)
-{
-    opers.push_back(oper);
+void Operator::AddOper(Operator *oper) {
+    opers_.push_back(oper);
 }

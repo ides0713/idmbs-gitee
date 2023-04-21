@@ -1,25 +1,21 @@
 #include "storage_main.h"
+#include "../../common/common_defs.h"
 #include "storage_defs.h"
 #include <sys/stat.h>
-#include "../../common/common_defs.h"
 
-Re StorageMain::init(BaseMain *last_main)
-{
-    baseSet(*last_main);
+Re StorageMain::Init(BaseMain *last_main) {
+    BaseSet(*last_main);
     return Re::Success;
 }
 
-Re StorageMain::handle()
-{
+Re StorageMain::Handle() {
     return Re::Success;
 }
 
-void StorageMain::clear()
-{
+void StorageMain::Clear() {
     return;
 }
 
-void StorageMain::destroy()
-{
+void StorageMain::Destroy() {
     return;
 }

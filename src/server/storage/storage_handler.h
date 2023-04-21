@@ -1,13 +1,12 @@
+#include "database.h"
 #include "record.h"
 #include "table.h"
-#include "database.h"
 
-class StorageHandler
-{
+class StorageHandler {
 public:
-    void openDb();
+    void OpenDb();
 
-    void getDefaultDb();
+    void GetDefaultDb();
 
 private:
 };

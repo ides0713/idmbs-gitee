@@ -1,24 +1,23 @@
 #pragma once
-#include <vector>
+#include "base_main.h"
+#include <cstdarg>
 #include <cstring>
 #include <string>
-#include "base_main.h"
-
-class GlobalMainManager
-{
+#include <vector>
+class GlobalMainManager {
 public:
-    void init();
-    void handle(const char *sql);
-    void destroy();
-    void setResponse(const char *str);
-    void setResponse(std::string str);
-    void response();
-    void doneResponse();
+    void Init();
+    void Handle(const char *sql);
+    void Destroy();
+    void SetResponse(std::string str);
+    void SetResponse(const char *format, ...);
+    void Response();
+    void DoneResponse();
 
 private:
     std::vector<BaseMain *> mains_;
     std::string response_;
 
 private:
-    void clear();
+    void Clear();
 };

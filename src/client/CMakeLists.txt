@@ -1,5 +1,5 @@
 project(client)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 MESSAGE("Begin to build " client)
 file(GLOB_RECURSE ALL_SOURCE ../common/*.cpp *.cpp)
 file(GLOB_RECURSE ALL_HEAD "*.hpp" "*.h")

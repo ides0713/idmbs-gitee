@@ -1,8 +1,8 @@
 #pragma once
 
-#include "expression.h"
-#include "../parse/parse_defs.h"
 #include "../common/re.h"
+#include "../parse/parse_defs.h"
+#include "expression.h"
 
 class DataBase;
 
@@ -10,24 +10,23 @@ class Table;
 
 class FieldMeta;
 
-class FilterUnit
-{
+class FilterUnit {
 public:
     FilterUnit() : comp_(CompOp::NoOp), left_(nullptr), right_(nullptr) {}
 
     ~FilterUnit();
 
-    void setComp(CompOp cmp) { comp_ = cmp; }
+    void SetComp(CompOp cmp) { comp_ = cmp; }
 
-    void setLeft(Expression *expr) { left_ = expr; }
+    void SetLeft(Expression *expr) { left_ = expr; }
 
-    void setRight(Expression *expr) { right_ = expr; }
+    void SetRight(Expression *expr) { right_ = expr; }
 
-    [[nodiscard]] CompOp getComp() const { return comp_; }
+    [[nodiscard]] CompOp GetComp() const { return comp_; }
 
-    [[nodiscard]] Expression *getLeft() const { return left_; }
+    [[nodiscard]] Expression *GetLeft() const { return left_; }
 
-    [[nodiscard]] Expression *getRight() const { return right_; }
+    [[nodiscard]] Expression *GetRight() const { return right_; }
 
 private:
     CompOp comp_;
@@ -35,18 +34,17 @@ private:
     Expression *right_;
 };
 
-class Filter
-{
+class Filter {
 public:
     Filter() = default;
 
     ~Filter();
 
-    [[nodiscard]] const std::vector<FilterUnit *> &getFilterUnits() const { return filter_units_; }
+    [[nodiscard]] const std::vector<FilterUnit *> &GetFilterUnits() const { return filter_units_; }
 
 public:
     ///@brief create filter succeed means value or field in the condition is comparable and exists in table at least now
-    static Re createFilter(DataBase *db, Table *default_table, std::unordered_map<std::string, Table *> *tables,
+    static Re CreateFilter(DataBase *db, Table *default_table, std::unordered_map<std::string, Table *> *tables,
                            int conditions_num, const Condition *conditions, Filter *&filter);
 
 private:
@@ -54,6 +52,6 @@ private:
 
 private:
     ///@brief filter unit is filter of its corresponding condition,filter is composed of many filter unit
-    static Re createFilterUnit(DataBase *db, Table *default_table, std::unordered_map<std::string, Table *> *tables,
+    static Re CreateFilterUnit(DataBase *db, Table *default_table, std::unordered_map<std::string, Table *> *tables,
                                const Condition &condition, FilterUnit *&filter_unit);
 };
