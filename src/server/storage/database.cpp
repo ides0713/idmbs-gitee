@@ -3,7 +3,6 @@
 #include "clog_manager.h"
 #include "storage_defs.h"
 #include "storage_handler.h"
-
 void DataBase::Destroy() {
     // destroy all table of the database,remove them from the memory and
     for (auto table: opened_tables_)
@@ -14,7 +13,6 @@ void DataBase::Destroy() {
         clog_manager_ = nullptr;
     }
 }
-
 Re DataBase::Init(const char *database_name, const std::filesystem::path &database_path) {
     namespace fs = std::filesystem;
     if (strlen(database_name) == 0) {
@@ -34,7 +32,6 @@ Re DataBase::Init(const char *database_name, const std::filesystem::path &databa
     database_path_ = database_path;
     return OpenAllTables();
 }
-
 Re DataBase::CreateTable(const char *table_name, const size_t attr_infos_num, const AttrInfo *attr_infos) {
     namespace fs = std::filesystem;
     if (opened_tables_.count(std::string(table_name))) {
@@ -53,11 +50,9 @@ Re DataBase::CreateTable(const char *table_name, const size_t attr_infos_num, co
     DebugPrint("DataBase:createFilter table success. table name=%s\n", table_name);
     return Re::Success;
 }
-
 Re DataBase::CreateTable(const std::string &table_name, const size_t attr_infos_num, const AttrInfo *attr_infos) {
     return CreateTable(table_name.c_str(), attr_infos_num, attr_infos);
 }
-
 Re DataBase::OpenAllTables() {
     std::vector<std::string> table_meta_files;
     std::string regx_table_meta_file_name = "^\\w*\\.(table)$";
@@ -87,14 +82,12 @@ Re DataBase::OpenAllTables() {
     DebugPrint("DataBase:all table have been opened. num=%d\n", opened_tables_.size());
     return Re::Success;
 }
-
 Table *DataBase::GetTable(const std::string &table_name) {
     auto it = opened_tables_.find(table_name);
     if (it != opened_tables_.end())
         return it->second;
     return nullptr;
 }
-
 void GlobalDataBaseManager::Init() {
     namespace fs = std::filesystem;
     GlobalParamsManager &gpm = GlobalManagers::GetGlobalParamsManager();
@@ -107,13 +100,11 @@ void GlobalDataBaseManager::Init() {
     DebugPrint("bin path is %s\n", project_bin_path_.c_str());
     DebugPrint("GlobalDataBaseManager:initialized done\n");
 }
-
 Re GlobalDataBaseManager::CreateDb(const char *database_name) {
     namespace fs = std::filesystem;
     fs::path directory_path = fs::path(project_bin_path_.c_str()).append(database_name);
     return CreateDb(directory_path);
 }
-
 Re GlobalDataBaseManager::CreateDb(const std::filesystem::path database_path) {
     namespace fs = std::filesystem;
     std::string database_name = std::string(database_path.filename().c_str());
@@ -131,7 +122,6 @@ Re GlobalDataBaseManager::CreateDb(const std::filesystem::path database_path) {
         return Re::SchemaDbExist;
     }
 }
-
 Re GlobalDataBaseManager::CloseAllDb() {
     for (const auto &it: opened_databases_) {
         it.second->Destroy();
@@ -139,11 +129,9 @@ Re GlobalDataBaseManager::CloseAllDb() {
     opened_databases_.clear();
     return Re::Success;
 }
-
 void GlobalDataBaseManager::Destroy() {
     CloseAllDb();
 }
-
 DataBase *GlobalDataBaseManager::GetDb(const char *database_name) {
     std::string th_database_name = std::string(database_name);
     if (opened_databases_.count(th_database_name)) {
@@ -169,7 +157,6 @@ DataBase *GlobalDataBaseManager::GetDb(const char *database_name) {
         }
     }
 }
-
 DataBase *GlobalDataBaseManager::GetDb(const std::filesystem::path database_path) {
     std::string th_database_name = std::string(database_path.filename());
     return GetDb(th_database_name.c_str());

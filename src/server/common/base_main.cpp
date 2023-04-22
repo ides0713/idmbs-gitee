@@ -5,7 +5,6 @@ void BaseMain::BaseSet(const BaseMain &base_main) {
     txn_ = base_main.txn_;
     txn_multi_operation_ = base_main.txn_multi_operation_;
 }
-
 Txn *BaseMain::GetTxn() {
     if (txn_ == nullptr) {
         txn_ = new Txn();
@@ -13,7 +12,6 @@ Txn *BaseMain::GetTxn() {
     }
     return txn_;
 }
-
 std::string StrMainType(MainType type) {
     switch (type) {
         case MainType::Base:

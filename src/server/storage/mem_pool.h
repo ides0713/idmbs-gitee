@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../../common/common_defs.h"
 #include <cassert>
 #include <cstdio>
@@ -9,36 +8,25 @@
 #include <sstream>
 #include <string>
 #include <thread>
-
 #define MP_NAME_MAX_SIZE 20
 #define DEFAULT_ITEM_NUM_PER_POOL 128
 #define DEFAULT_POOL_NUM 1
-
 // 接管new/delete
 template<typename T>
-class MemoryPool {
+class MemoryPool
+{
 public:
     explicit MemoryPool(const char *name);
-
     ~MemoryPool();
-
     bool Init(bool is_dynamic = true, int pool_num = DEFAULT_POOL_NUM,
               int item_num_per_pool = DEFAULT_ITEM_NUM_PER_POOL);
-
     void CleanUp();
-
     bool Extend();
-
     T *Alloc();
-
     void Free(T *item);
-
     std::string ToString();
-
     [[nodiscard]] std::string GetName() const { return name_; }
-
     [[nodiscard]] int GetSize() const { return size_; }
-
     [[nodiscard]] int GetUsedSize();
 
 private:
@@ -53,17 +41,14 @@ private:
     std::list<T *> free_;
     int item_num_per_pool_;
 };
-
 template<class T>
 inline MemoryPool<T>::MemoryPool(const char *name) : name_(name) {
     size_ = 0, is_dynamic_ = false, item_num_per_pool_ = 0;
 }
-
 template<class T>
 inline MemoryPool<T>::~MemoryPool() {
     CleanUp();
 }
-
 template<class T>
 inline bool MemoryPool<T>::Init(bool is_dynamic, int pool_num, int item_num_per_pool) {
     if (!pools_.empty()) {
@@ -85,7 +70,6 @@ inline bool MemoryPool<T>::Init(bool is_dynamic, int pool_num, int item_num_per_
     is_dynamic_ = is_dynamic;
     return true;
 }
-
 template<class T>
 inline void MemoryPool<T>::CleanUp() {
     free_.clear();
@@ -98,7 +82,6 @@ inline void MemoryPool<T>::CleanUp() {
     pools_.clear();
     lock_.unlock();
 }
-
 template<class T>
 inline bool MemoryPool<T>::Extend() {
     if (!is_dynamic_) {
@@ -117,7 +100,6 @@ inline bool MemoryPool<T>::Extend() {
     lock_.unlock();
     return true;
 }
-
 template<class T>
 inline T *MemoryPool<T>::Alloc() {
     if (free_.empty()) {
@@ -133,7 +115,6 @@ inline T *MemoryPool<T>::Alloc() {
     lock_.unlock();
     return res;
 }
-
 template<class T>
 inline void MemoryPool<T>::Free(T *item) {
     lock_.lock();
@@ -145,7 +126,6 @@ inline void MemoryPool<T>::Free(T *item) {
     free_.push_back(item);
     lock_.unlock();
 }
-
 template<class T>
 inline std::string MemoryPool<T>::ToString() {
     std::stringstream ss;
@@ -157,7 +137,6 @@ inline std::string MemoryPool<T>::ToString() {
        << "free_size:" << free_.size();
     return ss.str();
 }
-
 template<class T>
 inline int MemoryPool<T>::GetUsedSize() {
     lock_.lock();

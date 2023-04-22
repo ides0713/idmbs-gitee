@@ -1,68 +1,55 @@
 #include "record.h"
 #include "condition_filter.h"
-
 ///@brief calculate how many bit data(size=param:size) will use (unit is byte(8 bit))
 int Align8(int size) {
     return size / 8 * 8 + ((size % 8 == 0) ? 0 : 8);
 }
-
 ///@brief return size of struct PageHeader of a page
 int PageHeaderSize() {
     return sizeof(PageHeader);
 }
-
 ///@brief page record capacity
 int PageRecordCapacity(int page_data_size, int record_size) {
     return int((page_data_size - PageHeaderSize() - 1) / (record_size + 0.125));
 }
-
 ///@brief
 int PageBitmapSize(int record_capacity) {
     return record_capacity / 8 + ((record_capacity % 8 == 0) ? 0 : 1);
 }
-
 ///@brief header of a page is composed of two parts
 int PageHeaderSize(int record_capacity) {
     const int bitmap_size = PageBitmapSize(record_capacity);
     return Align8(PageHeaderSize() + bitmap_size);
 }
-
 std::string RecordId::ToString() const {
     std::stringstream ss;
     ss << "PageId:" << page_id << ", SlotId:" << slot_id;
     return ss.str();
 }
-
 int RecordId::Compare(const RecordId *rid_1, const RecordId *rid_2) {
     return rid_1->page_id - rid_2->page_id == 0 ? rid_1->page_id - rid_2->page_id : rid_1->slot_id - rid_2->slot_id;
 }
-
 RecordId *RecordId::Min() {
     static RecordId rid{0, 0};
     return &rid;
 }
-
 RecordId *RecordId::Max() {
     static RecordId rid{std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::max()};
     return &rid;
 }
-
 void Record::Init(const RecordId &record_id, char *data) {
     SetRecordId(record_id);
     SetData(data);
 }
-
 void RecordPageIterator::Init(RecordPageHandler &record_page_handler) {
     record_page_handler_ = &record_page_handler;
     page_id_ = record_page_handler.GetPageId();
     bitmap_.Init(record_page_handler.bitmap_, record_page_handler.page_header_->record_capacity);
     next_slot_id_ = bitmap_.NextSetBit(0);
 }
-
 bool RecordPageIterator::HasNext() {
     return next_slot_id_ != -1;
 }
-
 Re RecordPageIterator::Next(class Record &record) {
     record.SetRecordId(page_id_, next_slot_id_);
     record.SetData(record_page_handler_->GetRecordData(record.GetRecordId().slot_id));
@@ -70,7 +57,6 @@ Re RecordPageIterator::Next(class Record &record) {
         next_slot_id_ = bitmap_.NextSetBit(next_slot_id_ + 1);
     return record.GetRecordId().slot_id != -1 ? Re::Success : Re::RecordEof;
 }
-
 Re RecordPageHandler::Destroy() {
     if (disk_buffer_pool_ != nullptr) {
         disk_buffer_pool_->UnpinPage(frame_);
@@ -78,7 +64,6 @@ Re RecordPageHandler::Destroy() {
     }
     return Re::Success;
 }
-
 Re RecordPageHandler::Init(DiskBufferPool &buffer_pool, int32_t page_id) {
     if (disk_buffer_pool_ != nullptr) {
         DebugPrint("RecordPageHandler:disk buffer pool has been opened for page_id %d.\n", page_id);
@@ -96,7 +81,6 @@ Re RecordPageHandler::Init(DiskBufferPool &buffer_pool, int32_t page_id) {
     DebugPrint("RecordPageHandler:successfully init page_id %d.\n", page_id);
     return Re::Success;
 }
-
 Re RecordPageHandler::RecoverInit(DiskBufferPool &buffer_pool, int32_t page_id) {
     if (disk_buffer_pool_ != nullptr) {
         DebugPrint("RecordPageHandler:disk buffer pool has been opened for page_id %d.\n", page_id);
@@ -115,7 +99,6 @@ Re RecordPageHandler::RecoverInit(DiskBufferPool &buffer_pool, int32_t page_id) 
     DebugPrint("RecordPageHandler:successfully recover init page_id %d.\n", page_id);
     return Re::Success;
 }
-
 Re RecordPageHandler::InitEmptyPage(DiskBufferPool &buffer_pool, int32_t page_id, int record_size) {
     Re r = Init(buffer_pool, page_id);
     if (r != Re::Success) {
@@ -137,7 +120,6 @@ Re RecordPageHandler::InitEmptyPage(DiskBufferPool &buffer_pool, int32_t page_id
     }
     return Re::Success;
 }
-
 Re RecordPageHandler::InsertRecord(const char *data, RecordId *rid) {
     if (page_header_->record_num == page_header_->record_capacity) {
         DebugPrint("RecordPageHandler:page is full, page_id %d.\n", frame_->GetPageId());
@@ -156,7 +138,6 @@ Re RecordPageHandler::InsertRecord(const char *data, RecordId *rid) {
     }
     return Re::Success;
 }
-
 Re RecordPageHandler::RecoverInsertRecord(const char *data, RecordId *rid) {
     if (page_header_->record_num == page_header_->record_capacity) {
         DebugPrint("RecordPageHandler:page is full, page_id %d.\n", frame_->GetPageId());
@@ -177,7 +158,6 @@ Re RecordPageHandler::RecoverInsertRecord(const char *data, RecordId *rid) {
     frame_->DirtyMark();
     return Re::Success;
 }
-
 Re RecordPageHandler::UpdateRecord(class Record *rec) {
     if (rec->GetRecordId().slot_id >= page_header_->record_capacity) {
         DebugPrint("RecordPageHandler:invalid slot_id %d, exceed page's record capacity, page_id %d.\n",
@@ -186,8 +166,8 @@ Re RecordPageHandler::UpdateRecord(class Record *rec) {
     }
     BitMap bitmap(bitmap_, page_header_->record_capacity);
     if (!bitmap.GetBit(rec->GetRecordId().slot_id)) {
-        DebugPrint("RecordPageHandler:invalid slot_id %d, slot is empty, page_id %d.\n",
-                   rec->GetRecordId().slot_id, frame_->GetPageId());
+        DebugPrint("RecordPageHandler:invalid slot_id %d, slot is empty, page_id %d.\n", rec->GetRecordId().slot_id,
+                   frame_->GetPageId());
         return Re::RecordRecordNotExist;
     } else {
         char *record_data = GetRecordData(rec->GetRecordId().slot_id);
@@ -197,11 +177,10 @@ Re RecordPageHandler::UpdateRecord(class Record *rec) {
         return Re::Success;
     }
 }
-
 Re RecordPageHandler::DeleteRecord(const RecordId *rid) {
     if (rid->slot_id >= page_header_->record_capacity) {
-        DebugPrint("RecordPageHandler:invalid slot_id %d, exceed page's record capacity, page_id %d.\n",
-                   rid->slot_id, frame_->GetPageId());
+        DebugPrint("RecordPageHandler:invalid slot_id %d, exceed page's record capacity, page_id %d.\n", rid->slot_id,
+                   frame_->GetPageId());
         return Re::InvalidArgument;
     }
     BitMap bitmap(bitmap_, page_header_->record_capacity);
@@ -218,43 +197,38 @@ Re RecordPageHandler::DeleteRecord(const RecordId *rid) {
         }
         return Re::Success;
     } else {
-        DebugPrint("RecordPageHandler:invalid slot_id %d, slot is empty, page_id %d.\n",
-                   rid->slot_id, frame_->GetPageId());
+        DebugPrint("RecordPageHandler:invalid slot_id %d, slot is empty, page_id %d.\n", rid->slot_id,
+                   frame_->GetPageId());
         return Re::RecordRecordNotExist;
     }
 }
-
 Re RecordPageHandler::GetRecord(const RecordId *rid, class Record *rec) {
     if (rid->slot_id >= page_header_->record_capacity) {
-        DebugPrint("RecordPageHandler:invalid slot_id:%d, exceed page's record capacity, page_id %d.\n",
-                   rid->slot_id, frame_->GetPageId());
+        DebugPrint("RecordPageHandler:invalid slot_id:%d, exceed page's record capacity, page_id %d.\n", rid->slot_id,
+                   frame_->GetPageId());
         return Re::RecordInvalidRId;
     }
     BitMap bitmap(bitmap_, page_header_->record_capacity);
     if (!bitmap.GetBit(rid->slot_id)) {
-        DebugPrint("RecordPageHandler:invalid slot_id:%d, slot is empty, page_id %d.\n",
-                   rid->slot_id, frame_->GetPageId());
+        DebugPrint("RecordPageHandler:invalid slot_id:%d, slot is empty, page_id %d.\n", rid->slot_id,
+                   frame_->GetPageId());
         return Re::RecordRecordNotExist;
     }
     rec->SetRecordId(*rid);
     rec->SetData(GetRecordData(rid->slot_id));
     return Re::Success;
 }
-
 int32_t RecordPageHandler::GetPageId() const {
     if (page_header_ == nullptr)
         return (int32_t) (-1);
     return frame_->GetPageId();
 }
-
 bool RecordPageHandler::IsFull() const {
     return page_header_->record_num >= page_header_->record_capacity;
 }
-
 char *RecordPageHandler::GetRecordData(int32_t slot_id) {
     return frame_->GetPageData() + page_header_->first_record_offset + (page_header_->record_size * slot_id);
 }
-
 template<class RecordUpdater>
 Re RecordPageHandler::UpdateRecordInPlace(const RecordId *rid, RecordUpdater updater) {
     class Record record;
@@ -265,7 +239,6 @@ Re RecordPageHandler::UpdateRecordInPlace(const RecordId *rid, RecordUpdater upd
     frame_->DirtyMark();
     return r;
 }
-
 Re RecordFileHandler::Init(DiskBufferPool *buffer_pool) {
     if (disk_buffer_pool_ != nullptr) {
         DebugPrint("RecordFileHandler:record file handler has been opened.\n");
@@ -276,12 +249,10 @@ Re RecordFileHandler::Init(DiskBufferPool *buffer_pool) {
     DebugPrint("RecordFileHandler:open record file handle done. r=%d\n", r);
     return Re::Success;
 }
-
 void RecordFileHandler::Destroy() {
     if (disk_buffer_pool_ != nullptr)
         disk_buffer_pool_ = nullptr;
 }
-
 Re RecordFileHandler::InitFreePages() {
     // 遍历当前文件上所有页面，找到没有满的页面
     BufferPoolIterator bp_iterator;
@@ -292,8 +263,7 @@ Re RecordFileHandler::InitFreePages() {
         current_page_id = bp_iterator.Next();
         Re r = record_page_handler.Init(*disk_buffer_pool_, current_page_id);
         if (r != Re::Success) {
-            DebugPrint("RecordFileHandler:failed to init record page handler. page id=%d, r=%d.\n",
-                       current_page_id, r);
+            DebugPrint("RecordFileHandler:failed to init record page handler. page id=%d, r=%d.\n", current_page_id, r);
             return r;
         }
         if (!record_page_handler.IsFull())
@@ -302,7 +272,6 @@ Re RecordFileHandler::InitFreePages() {
     }
     return Re::Success;
 }
-
 Re RecordFileHandler::UpdateRecord(class Record *rec) {
     RecordPageHandler page_handler;
     Re r = page_handler.Init(*disk_buffer_pool_, rec->GetRecordId().page_id);
@@ -312,7 +281,6 @@ Re RecordFileHandler::UpdateRecord(class Record *rec) {
     }
     return page_handler.UpdateRecord(rec);
 }
-
 Re RecordFileHandler::DeleteRecord(const RecordId *rid) {
     RecordPageHandler page_handler;
     Re r = page_handler.Init(*disk_buffer_pool_, rid->page_id);
@@ -325,7 +293,6 @@ Re RecordFileHandler::DeleteRecord(const RecordId *rid) {
         free_pages_.insert(rid->page_id);
     return r;
 }
-
 Re RecordFileHandler::InsertRecord(const char *data, int record_size, RecordId *rid) {
     // try to find page not full in free_pages_
     RecordPageHandler record_page_handler;
@@ -334,8 +301,7 @@ Re RecordFileHandler::InsertRecord(const char *data, int record_size, RecordId *
         current_page_id = *free_pages_.begin();
         Re r = record_page_handler.Init(*disk_buffer_pool_, current_page_id);
         if (r != Re::Success) {
-            DebugPrint("RecordFileHandler:failed to init record page handler. page id=%d, r=%d\n",
-                       current_page_id, r);
+            DebugPrint("RecordFileHandler:failed to init record page handler. page id=%d, r=%d\n", current_page_id, r);
             return r;
         }
         if (!record_page_handler.IsFull())
@@ -363,7 +329,6 @@ Re RecordFileHandler::InsertRecord(const char *data, int record_size, RecordId *
     printf("before page handler handle(insert record)\n");
     return record_page_handler.InsertRecord(data, rid);
 }
-
 Re RecordFileHandler::RecoverInsertRecord(const char *data, int record_size, RecordId *rid) {
     RecordPageHandler record_page_handler;
     Re r = record_page_handler.RecoverInit(*disk_buffer_pool_, rid->page_id);
@@ -373,7 +338,6 @@ Re RecordFileHandler::RecoverInsertRecord(const char *data, int record_size, Rec
     }
     return record_page_handler.RecoverInsertRecord(data, rid);
 }
-
 Re RecordFileHandler::GetRecord(const RecordId *rid, class Record *rec) {
     // lock?
     if (rid == nullptr or rec == nullptr) {
@@ -388,7 +352,6 @@ Re RecordFileHandler::GetRecord(const RecordId *rid, class Record *rec) {
     }
     return page_handler.GetRecord(rid, rec);
 }
-
 template<class RecordUpdater>
 Re RecordFileHandler::UpdateRecordInPlace(const RecordId *rid, RecordUpdater updater) {
     RecordPageHandler page_handler;
@@ -397,7 +360,6 @@ Re RecordFileHandler::UpdateRecordInPlace(const RecordId *rid, RecordUpdater upd
         return r;
     return page_handler.UpdateRecordInPlace(rid, updater);
 }
-
 Re RecordFileScanner::Init(DiskBufferPool &buffer_pool, ConditionFilter *condition_filter) {
     Destroy();
     disk_buffer_pool_ = &buffer_pool;
@@ -412,7 +374,6 @@ Re RecordFileScanner::Init(DiskBufferPool &buffer_pool, ConditionFilter *conditi
         return Re::Success;
     return r;
 }
-
 Re RecordFileScanner::Destroy() {
     if (disk_buffer_pool_ != nullptr)
         disk_buffer_pool_ = nullptr;
@@ -420,11 +381,9 @@ Re RecordFileScanner::Destroy() {
         condition_filter_ = nullptr;
     return Re::Success;
 }
-
 bool RecordFileScanner::HasNext() {
     return next_record_.GetRecordId().slot_id != -1;
 }
-
 Re RecordFileScanner::Next(class Record &record) {
     record = next_record_;
     Re r = FetchNextRecord();
@@ -432,7 +391,6 @@ Re RecordFileScanner::Next(class Record &record) {
         r = Re::Success;
     return r;
 }
-
 Re RecordFileScanner::FetchNextRecord() {
     if (record_page_iterator_.IsValid()) {
         Re r = FetchNextRecordInPage();
@@ -457,7 +415,6 @@ Re RecordFileScanner::FetchNextRecord() {
     next_record_.GetRecordId().slot_id = -1;
     return Re::RecordEof;
 }
-
 Re RecordFileScanner::FetchNextRecordInPage() {
     while (record_page_iterator_.HasNext()) {
         Re r = record_page_iterator_.Next(next_record_);

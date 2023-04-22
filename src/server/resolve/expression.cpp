@@ -1,19 +1,15 @@
 #include "expression.h"
-
 Re FieldExpression::GetValue(const Tuple &tuple, TupleUnit &unit) const {
     return tuple.GetUnit(field_, unit);
 }
-
 ValueExpression::ValueExpression(const Value &value) : tuple_unit_(value.type, reinterpret_cast<char *>(value.data)) {
     if (value.type == AttrType::Chars)
         tuple_unit_.SetLength(strlen(reinterpret_cast<const char *>(value.data)));
 }
-
 Re ValueExpression::GetValue(const Tuple &tuple, TupleUnit &unit) const {
     unit = tuple_unit_;
     return Re::Success;
 }
-
 std::string StrExprType(ExprType type) {
     switch (type) {
         case ExprType::Field:

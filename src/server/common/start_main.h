@@ -2,8 +2,8 @@
 #include "../../common/common_defs.h"
 #include "../parse/parse_defs.h"
 #include "base_main.h"
-
-class StartMain : public BaseMain {
+class StartMain : public BaseMain
+{
 public:
     StartMain() : sql_(nullptr) { SetType(MainType::Start); }
     Re Init(BaseMain *last_main) override;

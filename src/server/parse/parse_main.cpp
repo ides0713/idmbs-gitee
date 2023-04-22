@@ -11,19 +11,15 @@ Re ParseMain::Init(BaseMain *last_main) {
         return Re::GenericError;
     return Re::Success;
 }
-
 Re ParseMain::Handle() {
     int rv = Parse(sql_, query_);
     if (!rv) {
-        query_->Destroy();
-        query_ = nullptr;
         GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
         gmm.SetResponse("SQL PARSE ERROR\n");
         return Re::SqlSyntax;
     }
     return Re::Success;
 }
-
 void ParseMain::Clear() {
     if (query_ != nullptr) {
         query_->Destroy();
@@ -32,10 +28,8 @@ void ParseMain::Clear() {
     if (sql_ != nullptr)
         sql_ = nullptr;
 }
-
 void ParseMain::Destroy() {
 }
-
 // Re ParseMain::handle(const char *st)
 // {
 //     int rv = parse(st, query_);
@@ -52,7 +46,6 @@ void ParseMain::Destroy() {
 //         return Re::Success;
 //     }
 // }
-
 // Session *ParseMain::callBack()
 // {
 //     return parse_session_;

@@ -1,1 +1,87 @@
 
+GlobalParamsManager:
+project_path:/home/ubuntu/idbms
+binary_path:/home/ubuntu/idbms/build
+bin_path:/home/ubuntu/idbms/bin
+GlobalParamsManager:initialized done
+default database path is /home/ubuntu/idbms/bin/sys
+bin path is /home/ubuntu/idbms/bin
+GlobalDataBaseManager:initialized done
+GlobalBufferPoolManager:initialized done
+GlobalManagers initialized done
+
+setted sql is         CREATE TABLE Select_tables_1(id int, age int, u_name char);
+
+Parse main init succeeded
+Parse main handle succeeded
+Resolve main init succeeded
+PersistFileIoHandler:successfully create /home/ubuntu/idbms/bin/sys/clog
+DataBase:all table have been opened. num=0
+GlobalDataBaseManager:getDb succeeded,database_name:sys
+Resolve main handle succeeded
+Execute main init succeeded
+FieldMeta:init a field_meta with name:__txn
+FieldMeta:init a field_meta with name:id
+FieldMeta:init a field_meta with name:age
+FieldMeta:init a field_meta with name:u_name
+TableMeta:initialized table meta.table name=Select_tables_1
+GlobalBufferPoolManager:successfully createFilter /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
+DiskBufferPool:successfully open file /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
+DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=7, hdr_frame=0x7ffff7822010
+RecordFileHandler:open record file handle done. r=0
+Table:successfully create table /home/ubuntu/idbms/bin/sys:Select_tables_1DataBase:createFilter table success. table name=Select_tables_1
+Execute main handle succeeded
+Storage main init succeeded
+Storage main handle succeeded
+
+setted sql is         INSERT INTO Select_tables_1 VALUES (1,18,'a');
+
+Parse main init succeeded
+Parse main handle succeeded
+Resolve main init succeeded
+GlobalDataBaseManager:getDb from opened_databases,database_name:sys
+Resolve main handle succeeded
+Execute main init succeeded
+DiskBufferPool:flush page page_id:1
+DiskBufferPool:Flush block. file desc=7, page id=1
+RecordPageHandler:successfully init page_id 1.
+DiskBufferPool:flush page page_id:1
+DiskBufferPool:Flush block. file desc=7, page id=1
+Execute main handle succeeded
+Storage main init succeeded
+Storage main handle succeeded
+
+setted sql is         INSERT INTO Select_tables_1 VALUES (1,20,'a');
+
+Parse main init succeeded
+Parse main handle succeeded
+Resolve main init succeeded
+GlobalDataBaseManager:getDb from opened_databases,database_name:sys
+Resolve main handle succeeded
+Execute main init succeeded
+RecordPageHandler:successfully init page_id 1.
+Execute main handle succeeded
+Storage main init succeeded
+Storage main handle succeeded
+
+setted sql is         SELECT * FROM Select_tables_1 WHERE id=1;
+
+Parse main init succeeded
+Parse main handle succeeded
+Resolve main init succeeded
+GlobalDataBaseManager:getDb from opened_databases,database_name:sys
+SelectStatement:got 1 tables in from stmt and 3 fields in query stmt
+Resolve main handle succeeded
+Execute main init succeeded
+RecordPageHandler:successfully init page_id 1.
+Execute main handle succeeded
+Storage main init succeeded
+Storage main handle succeeded
+
+setted sql is         DELETE FROM Select_tables_1 WHERE age=20;
+
+Parse main init succeeded
+Parse main handle succeeded
+Resolve main init succeeded
+GlobalDataBaseManager:getDb from opened_databases,database_name:sys
+Statement:unrecognized query SCF

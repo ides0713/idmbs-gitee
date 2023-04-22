@@ -6,7 +6,8 @@
 class Session;
 class DataBase;
 class Txn;
-enum MainType {
+enum MainType
+{
     Start = 0,
     Parses,
     Resolve,
@@ -15,10 +16,12 @@ enum MainType {
     Base
 };
 std::string StrMainType(MainType type);
-class BaseMain {
+class BaseMain
+{
 public:
     BaseMain() : database_(nullptr), txn_(nullptr), txn_multi_operation_(false), type_(MainType::Base) {}
-    BaseMain(DataBase *db, Txn *txn, bool txn_multi_operation) : database_(db), txn_(txn), txn_multi_operation_(txn_multi_operation), type_(MainType::Base) {}
+    BaseMain(DataBase *db, Txn *txn, bool txn_multi_operation)
+        : database_(db), txn_(txn), txn_multi_operation_(txn_multi_operation), type_(MainType::Base) {}
     virtual Re Init(BaseMain *last_main) = 0;
     virtual Re Handle() = 0;
     virtual void Clear() = 0;

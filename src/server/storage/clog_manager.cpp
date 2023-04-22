@@ -1,9 +1,7 @@
 #include "clog_manager.h"
 #include <new>
-
 const char *CLOG_FILE_NAME = "clog";
 const size_t CLOG_INSERT_RECORD_NO_PTR_SIZE = sizeof(CLogInsertRecord) - sizeof(char *);
-
 CLogRecord::CLogRecord(CLogType flag, int32_t txn_id, const char *table_name, int data_len, class Record *rec) {
     clog_flag_ = flag;
     clog_record_ = nullptr;
@@ -11,8 +9,8 @@ CLogRecord::CLogRecord(CLogType flag, int32_t txn_id, const char *table_name, in
         case CLogType::RedoMiniTxnBegin:
         case CLogType::RedoMiniTxnCommit: {
             clog_record_ = new CLogMiniTxnRecord;
-            clog_record_->header.Set(CLogManager::GetNextLsn(sizeof(CLogMiniTxnRecord)),
-                                     txn_id, clog_flag_, sizeof(CLogMiniTxnRecord));
+            clog_record_->header.Set(CLogManager::GetNextLsn(sizeof(CLogMiniTxnRecord)), txn_id, clog_flag_,
+                                     sizeof(CLogMiniTxnRecord));
         } break;
         case CLogType::RedoInsert: {
             if (rec == nullptr or rec->GetData() == nullptr) {
@@ -25,8 +23,8 @@ CLogRecord::CLogRecord(CLogType flag, int32_t txn_id, const char *table_name, in
                 clog_insert_record->rid = rec->GetRecordId();
                 clog_insert_record->data_len = data_len;
                 int clog_record_length = Align8(CLOG_INSERT_RECORD_NO_PTR_SIZE + data_len);
-                clog_record_->header.Set(CLogManager::GetNextLsn(clog_record_length),
-                                         txn_id, clog_flag_, clog_record_length);
+                clog_record_->header.Set(CLogManager::GetNextLsn(clog_record_length), txn_id, clog_flag_,
+                                         clog_record_length);
                 clog_insert_record->data = new char[clog_record_length - CLOG_INSERT_RECORD_NO_PTR_SIZE];
                 memmove(clog_insert_record->data, rec->GetData(), data_len);
             }
@@ -40,8 +38,8 @@ CLogRecord::CLogRecord(CLogType flag, int32_t txn_id, const char *table_name, in
                 auto clog_delete_record = static_cast<CLogDeleteRecord *>(clog_record_);
                 clog_delete_record->rid = rec->GetRecordId();
                 strcpy(clog_delete_record->table_name, table_name);
-                clog_record_->header.Set(CLogManager::GetNextLsn(sizeof(CLogDeleteRecord)),
-                                         txn_id, clog_flag_, sizeof(CLogDeleteRecord));
+                clog_record_->header.Set(CLogManager::GetNextLsn(sizeof(CLogDeleteRecord)), txn_id, clog_flag_,
+                                         sizeof(CLogDeleteRecord));
             }
         } break;
         default: {
@@ -50,7 +48,6 @@ CLogRecord::CLogRecord(CLogType flag, int32_t txn_id, const char *table_name, in
         } break;
     }
 }
-
 CLogRecord::CLogRecord(char *data) {
     auto clog_record_header = reinterpret_cast<CLogRecordHeader *>(data);
     clog_flag_ = (CLogType) clog_record_header->type;
@@ -89,29 +86,29 @@ CLogRecord::CLogRecord(char *data) {
         } break;
     }
 }
-
 CLogRecord::~CLogRecord() {
     delete clog_record_;
 }
-
 Re CLogRecord::CopyRecordTo(void *dest, int start_off, int copy_len) {
     if (start_off + copy_len > GetCLogRecordLen()) {
-        DebugPrint("copy record to dest failed,start off %d,copy len %d,total record len is %d\n",
-                   start_off, copy_len, GetCLogRecordLen());
+        DebugPrint("copy record to dest failed,start off %d,copy len %d,total record len is %d\n", start_off, copy_len,
+                   GetCLogRecordLen());
         return Re::GenericError;
     }
     switch (clog_flag_) {
         case CLogType::RedoInsert: {
             if (start_off > CLOG_INSERT_RECORD_NO_PTR_SIZE)
-                memmove(dest, static_cast<CLogInsertRecord *>(clog_record_)->data + start_off - CLOG_INSERT_RECORD_NO_PTR_SIZE, copy_len);
+                memmove(dest,
+                        static_cast<CLogInsertRecord *>(clog_record_)->data + start_off -
+                                CLOG_INSERT_RECORD_NO_PTR_SIZE,
+                        copy_len);
             else if (start_off + copy_len <= CLOG_INSERT_RECORD_NO_PTR_SIZE)
                 memmove(dest, reinterpret_cast<char *>(clog_record_) + start_off, copy_len);
             else {
                 int no_ptr_copy_len = CLOG_INSERT_RECORD_NO_PTR_SIZE - start_off;
                 memmove(dest, reinterpret_cast<char *>(clog_record_) + start_off, no_ptr_copy_len);
                 memmove(reinterpret_cast<char *>(dest) + no_ptr_copy_len,
-                        static_cast<CLogInsertRecord *>(clog_record_)->data,
-                        copy_len - no_ptr_copy_len);
+                        static_cast<CLogInsertRecord *>(clog_record_)->data, copy_len - no_ptr_copy_len);
             }
         } break;
         default:
@@ -120,21 +117,23 @@ Re CLogRecord::CopyRecordTo(void *dest, int start_off, int copy_len) {
     }
     return Re::Success;
 }
-
 int CLogRecord::CmpEq(CLogRecord *other) {
     if (GetCLogType() == other->GetCLogType()) {
         switch (GetCLogType()) {
             case CLogType::RedoMiniTxnBegin:
             case CLogType::RedoMiniTxnCommit: {
-                auto cr_1 = static_cast<CLogMiniTxnRecord *>(clog_record_), cr_2 = static_cast<CLogMiniTxnRecord *>(other->GetCLogRecord());
+                auto cr_1 = static_cast<CLogMiniTxnRecord *>(clog_record_),
+                     cr_2 = static_cast<CLogMiniTxnRecord *>(other->GetCLogRecord());
                 return *cr_1 == *cr_2;
             }
             case CLogType::RedoInsert: {
-                auto cr_1 = static_cast<CLogInsertRecord *>(clog_record_), cr_2 = static_cast<CLogInsertRecord *>(other->GetCLogRecord());
+                auto cr_1 = static_cast<CLogInsertRecord *>(clog_record_),
+                     cr_2 = static_cast<CLogInsertRecord *>(other->GetCLogRecord());
                 return *cr_1 == *cr_2;
             }
             case CLogType::RedoDelete: {
-                auto cr_1 = static_cast<CLogDeleteRecord *>(clog_record_), cr_2 = static_cast<CLogDeleteRecord *>(other->GetCLogRecord());
+                auto cr_1 = static_cast<CLogDeleteRecord *>(clog_record_),
+                     cr_2 = static_cast<CLogDeleteRecord *>(other->GetCLogRecord());
                 return *cr_1 == *cr_2;
             }
             default:
@@ -143,13 +142,11 @@ int CLogRecord::CmpEq(CLogRecord *other) {
     }
     return 0;
 }
-
 CLogBuffer::CLogBuffer() : current_block_offset_(0), write_block_offset_(0), write_offset_(0) {
     memset(buffer_, 0, CLOG_BUFFER_SIZE);
 }
-
-CLogBuffer::~CLogBuffer() {}
-
+CLogBuffer::~CLogBuffer() {
+}
 Re CLogBuffer::AppendCLogRecord(CLogRecord *clog_record, int &offset) {
     if (clog_record == nullptr)
         return Re::GenericError;
@@ -178,8 +175,7 @@ Re CLogBuffer::AppendCLogRecord(CLogRecord *clog_record, int &offset) {
     // left data of the record can be stored in current block and no need to get a new block
     if (clog_record_left_len <= (CLOG_BLOCK_DATA_SIZE - clog_block->header.block_data_len)) {
         if (clog_block->header.block_data_len == 0)
-            clog_block->header.first_record_offset =
-                    CLOG_BLOCK_HEADER_SIZE + (offset == 0 ? 0 : clog_record_left_len);
+            clog_block->header.first_record_offset = CLOG_BLOCK_HEADER_SIZE + (offset == 0 ? 0 : clog_record_left_len);
         clog_record->CopyRecordTo(&buffer_[write_offset_], offset, clog_record_left_len);
         write_offset_ += clog_record_left_len;
         clog_block->header.block_data_len += clog_record_left_len;
@@ -197,7 +193,6 @@ Re CLogBuffer::AppendCLogRecord(CLogRecord *clog_record, int &offset) {
     }
     return Re::Success;
 }
-
 Re CLogBuffer::FlushBuffer(CLogFile *clog_file) {
     if (write_offset_ == CLOG_BUFFER_SIZE) {// 如果是buffer满触发的下刷
         auto clog_block = reinterpret_cast<CLogBlock *>(buffer_);
@@ -222,12 +217,10 @@ Re CLogBuffer::FlushBuffer(CLogFile *clog_file) {
     }
     return Re::Success;
 }
-
 Re CLogBuffer::BlockCopyFrom(int32_t offset, CLogBlock *clog_block) {
     memmove(&buffer_[offset], reinterpret_cast<char *>(clog_block), CLOG_BLOCK_SIZE);
     return Re::Success;
 }
-
 CLogFile::CLogFile(const char *dir_path) {
     namespace fs = std::filesystem;
     clog_file_ = new PersistFileIoHandler();
@@ -240,25 +233,20 @@ CLogFile::CLogFile(const char *dir_path) {
         (void) clog_file_->ReadAt(0, CLOG_BLOCK_SIZE, reinterpret_cast<char *>(&clog_file_header_block_), nullptr);
     }
 }
-
 CLogFile::~CLogFile() {
     delete clog_file_;
 }
-
 Re CLogFile::UpdateCLogFileHeader(int32_t current_file_lsn) {
     clog_file_header_block_.header.file_lsn = current_file_lsn;
     clog_file_header_block_.header.file_real_offset = CLOG_FILE_HEADER_SIZE;
     return clog_file_->WriteAt(0, CLOG_BLOCK_SIZE, reinterpret_cast<char *>(&clog_file_header_block_), nullptr);
 }
-
 Re CLogFile::Append(int data_len, char *data) {
     return clog_file_->Append(data_len, data, nullptr);
 }
-
 Re CLogFile::Write(uint64_t offset, int data_len, char *data) {
     return clog_file_->WriteAt(offset, data_len, data, nullptr);
 }
-
 Re CLogFile::Recover(CLogMiniTxnManager *mini_txn_manager, CLogBuffer *clog_buffer) {
     // obviously,clog record can not be divided into three blocks but up to two blocks
     char redo_buffer[CLOG_REDO_BUFFER_SIZE];
@@ -304,7 +292,6 @@ Re CLogFile::Recover(CLogMiniTxnManager *mini_txn_manager, CLogBuffer *clog_buff
     }
     return Re::Success;
 }
-
 Re CLogFile::BlockRecover(CLogBlock *block, int16_t &offset, CLogRecordBuffer *clog_record_buffer,
                           CLogRecord *&clog_record) {
     if (offset == CLOG_BLOCK_HEADER_SIZE and block->header.first_record_offset != CLOG_BLOCK_HEADER_SIZE) {
@@ -312,8 +299,7 @@ Re CLogFile::BlockRecover(CLogBlock *block, int16_t &offset, CLogRecordBuffer *c
         // so we write from the header_end to first record begin(first_record_offset)
         int write_len = block->header.first_record_offset - CLOG_BLOCK_HEADER_SIZE;
         const char *write_target_ptr = reinterpret_cast<char *>(block) + static_cast<int>(offset);
-        memmove(&clog_record_buffer->buffer[clog_record_buffer->write_offset],
-                write_target_ptr, write_len);
+        memmove(&clog_record_buffer->buffer[clog_record_buffer->write_offset], write_target_ptr, write_len);
         clog_record_buffer->write_offset += write_len;
         offset += write_len;
     } else {
@@ -321,8 +307,7 @@ Re CLogFile::BlockRecover(CLogBlock *block, int16_t &offset, CLogRecordBuffer *c
             // 此时无法确定log record的长度 开始写入clog_record_buffer
             int write_len = CLOG_BLOCK_SIZE - offset;
             const char *write_target_ptr = reinterpret_cast<char *>(block) + static_cast<int>(offset);
-            memmove(&clog_record_buffer->buffer[clog_record_buffer->write_offset],
-                    write_target_ptr, write_len);
+            memmove(&clog_record_buffer->buffer[clog_record_buffer->write_offset], write_target_ptr, write_len);
             clog_record_buffer->write_offset += write_len;
             offset = CLOG_BLOCK_SIZE;
         } else {
@@ -339,8 +324,7 @@ Re CLogFile::BlockRecover(CLogBlock *block, int16_t &offset, CLogRecordBuffer *c
                     // 此时为跨block的第一部分 开始写入logrec_buf
                     int write_len = CLOG_BLOCK_SIZE - offset;
                     const char *write_target_ptr = reinterpret_cast<char *>(block) + static_cast<int>(offset);
-                    memmove(&clog_record_buffer->buffer[clog_record_buffer->write_offset],
-                            write_target_ptr, write_len);
+                    memmove(&clog_record_buffer->buffer[clog_record_buffer->write_offset], write_target_ptr, write_len);
                     clog_record_buffer->write_offset += write_len;
                     offset = CLOG_BLOCK_SIZE;
                 }
@@ -349,7 +333,6 @@ Re CLogFile::BlockRecover(CLogBlock *block, int16_t &offset, CLogRecordBuffer *c
     }
     return Re::Success;
 }
-
 void CLogMiniTxnManager::CLogRecordManage(CLogRecord *clog_record) {
     switch (clog_record->GetCLogType()) {
         case CLogType::RedoMiniTxnCommit: {
@@ -365,28 +348,22 @@ void CLogMiniTxnManager::CLogRecordManage(CLogRecord *clog_record) {
             break;
     }
 }
-
 std::atomic<int32_t> CLogManager::global_lsn(0);
-
 int32_t CLogManager::GetNextLsn(int32_t rec_len) {
     int32_t res_lsn = CLogManager::global_lsn;
     CLogManager::global_lsn += rec_len;// 当前不考虑溢出
     return res_lsn;
 }
-
 CLogManager::CLogManager(const char *dir_path) {
     clog_buffer_ = new CLogBuffer();
     clog_file_ = new CLogFile(dir_path);
     clog_mini_txn_manager_ = new CLogMiniTxnManager();
 }
-
 CLogManager::~CLogManager() {
     delete clog_buffer_;
 }
-
-Re CLogManager::MakeRecord(
-        CLogType flag, int32_t txn_id, CLogRecord *&clog_record,
-        const char *table_name, int data_len, class Record *rec) {
+Re CLogManager::MakeRecord(CLogType flag, int32_t txn_id, CLogRecord *&clog_record, const char *table_name,
+                           int data_len, class Record *rec) {
     auto new_clog_record = new (std::nothrow) CLogRecord(flag, txn_id, table_name, data_len, rec);
     if (new_clog_record != nullptr)
         clog_record = new_clog_record;
@@ -396,7 +373,6 @@ Re CLogManager::MakeRecord(
     }
     return Re::Success;
 }
-
 Re CLogManager::AppendRecord(CLogRecord *clog_record) {
     int start_offset = 0;
     Re r = clog_buffer_->AppendCLogRecord(clog_record, start_offset);
@@ -409,11 +385,9 @@ Re CLogManager::AppendRecord(CLogRecord *clog_record) {
     delete clog_record;// NOTE: 单元测试需要注释该行
     return r;
 }
-
 Re CLogManager::Sync() {
     return clog_buffer_->FlushBuffer(clog_file_);
 }
-
 Re CLogManager::Recover() {
     clog_file_->Recover(clog_mini_txn_manager_, clog_buffer_);
     return Re::Success;

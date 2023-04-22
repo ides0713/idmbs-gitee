@@ -1,8 +1,6 @@
 #include "parse.h"
 #include "../../common/common_defs.h"
-
 int SqlParse(const char *st, Query *&res);
-
 int Parse(const char *st, Query *&res) {
     SqlParse(st, res);
     if (res->GetScf() == ScfError) {
@@ -10,26 +8,22 @@ int Parse(const char *st, Query *&res) {
     }
     return 1;
 }
-
 int *InitIntsValue(int value) {
     int *res = new int;
     *res = value;
     return res;
 }
-
 float *InitFloatValue(float value) {
     float *res = new float;
     *res = value;
     return res;
 }
-
 char *InitCharsValue(const char *value) {
     char *res = StrNew(value);
     return res;
 }
 // parse_defs
 //----------------------------------------------------
-
 char *StrNew(const char *str) {
     int len = int(strlen(str));
     char *res = new char[len + 1];
@@ -37,7 +31,6 @@ char *StrNew(const char *str) {
     res[len] = '\0';
     return res;
 }
-
 std::string StrAttrType(AttrType type) {
     switch (type) {
         case AttrType::Undefined:
@@ -54,7 +47,6 @@ std::string StrAttrType(AttrType type) {
             assert(false);
     }
 }
-
 std::string StrCompOp(CompOp cmp) {
     switch (cmp) {
         case CompOp::NoOp:

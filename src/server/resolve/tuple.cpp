@@ -1,7 +1,6 @@
 #include "tuple.h"
 #include "../../common/common_defs.h"
 #include "expression.h"
-
 std::string Double2string(double v) {
     char buf[256];
     snprintf(buf, sizeof(buf), "%.2f", v);
@@ -12,10 +11,8 @@ std::string Double2string(double v) {
     if (buf[len - 1] == '.') {
         len--;
     }
-
     return std::string(buf, len);
 }
-
 void TupleUnit::ToString(std::ostream &os) const {
     switch (attr_type_) {
         case AttrType::Ints:
@@ -43,7 +40,6 @@ void TupleUnit::ToString(std::ostream &os) const {
             break;
     }
 }
-
 int TupleUnit::Compare(const TupleUnit &other) {
     if (attr_type_ == other.attr_type_) {
         switch (attr_type_) {
@@ -55,7 +51,8 @@ int TupleUnit::Compare(const TupleUnit &other) {
                 printf("undefined compare not implemented yet\n");
                 assert(false);
             case AttrType::Chars: {
-                const char *str_1 = reinterpret_cast<const char *>(data_), *str_2 = reinterpret_cast<const char *>(other.data_);
+                const char *str_1 = reinterpret_cast<const char *>(data_),
+                           *str_2 = reinterpret_cast<const char *>(other.data_);
                 int compare_len = std::min(length_, other.length_);
                 int compare_result = strncmp(str_1, str_2, compare_len);
                 if (compare_result != 0)
@@ -81,25 +78,21 @@ int TupleUnit::Compare(const TupleUnit &other) {
     }
     assert(false);
 }
-
 TupleUnitSpec::~TupleUnitSpec() {
     delete expression_;
     expression_ = nullptr;
 }
-
 RowTuple::~RowTuple() {
     for (auto spec: specs_)
         delete spec;
     specs_.clear();
 }
-
 void RowTuple::SetSchema(const Table *table, const std::vector<FieldMeta> *fields) {
     table_ = table;
     specs_.reserve(fields->size());
     for (const FieldMeta &field: *fields)
         specs_.push_back(new TupleUnitSpec(new FieldExpression(table, &field)));
 }
-
 Re RowTuple::GetUnitAt(int index, TupleUnit &unit) const {
     if (index < 0 or index >= specs_.size()) {
         DebugPrint("RowTuple:invalid argument. index=%d\n", index);
@@ -113,7 +106,6 @@ Re RowTuple::GetUnitAt(int index, TupleUnit &unit) const {
     unit.SetLength(field_meta->GetLen());
     return Re::Success;
 }
-
 Re RowTuple::GetUnit(const Field &field, TupleUnit &unit) const {
     if (strcmp(table_->GetTableName(), field.GetTableName()) != 0)
         return Re::NotFound;
@@ -125,7 +117,6 @@ Re RowTuple::GetUnit(const Field &field, TupleUnit &unit) const {
     }
     return Re::NotFound;
 }
-
 Re RowTuple::GetUnitSpecAt(int index, const TupleUnitSpec *&spec) const {
     if (index < 0 or index >= specs_.size()) {
         DebugPrint("RowTuple:invalid argument. index=%d\n", index);
@@ -134,13 +125,11 @@ Re RowTuple::GetUnitSpecAt(int index, const TupleUnitSpec *&spec) const {
     spec = specs_[index];
     return Re::Success;
 }
-
 ProjectTuple::~ProjectTuple() {
     for (auto spec: specs_)
         delete spec;
     specs_.clear();
 }
-
 Re ProjectTuple::GetUnitAt(int index, TupleUnit &unit) const {
     if (index < 0 or index >= specs_.size())
         return Re::GenericError;
@@ -149,11 +138,9 @@ Re ProjectTuple::GetUnitAt(int index, TupleUnit &unit) const {
     const TupleUnitSpec *spec = specs_[index];
     return spec->GetExpression()->GetValue(*tuple_, unit);
 }
-
 Re ProjectTuple::GetUnit(const Field &field, TupleUnit &unit) const {
     return tuple_->GetUnit(field, unit);
 }
-
 Re ProjectTuple::GetUnitSpecAt(int index, const TupleUnitSpec *&unit) const {
     if (index < 0 or index >= specs_.size())
         return Re::NotFound;

@@ -2,7 +2,6 @@
 #include "../storage/database.h"
 #include "../storage/field.h"
 #include "../storage/table.h"
-
 Re GetTableAndField(DataBase *db, Table *default_table, std::unordered_map<std::string, Table *> *tables,
                     const RelAttr &attr, Table *&table, const FieldMeta *&field) {
     if (attr.rel_name == nullptr)
@@ -19,14 +18,12 @@ Re GetTableAndField(DataBase *db, Table *default_table, std::unordered_map<std::
     }
     field = table->GetTableMeta().GetField(attr.attr_name);
     if (field == nullptr) {
-        DebugPrint("FilterFunc:no such field in table: table %s, field %s\n",
-                   table->GetTableName(), attr.attr_name);
+        DebugPrint("FilterFunc:no such field in table: table %s, field %s\n", table->GetTableName(), attr.attr_name);
         table = nullptr;
         return Re::SchemaFieldNotExist;
     }
     return Re::Success;
 }
-
 void SetTempType(Expression *expr, AttrType &type) {
     if (expr->GetExprType() == ExprType::Field) {
         auto fe = static_cast<FieldExpression *>(expr);
@@ -38,7 +35,6 @@ void SetTempType(Expression *expr, AttrType &type) {
         type = temp.GetAttrType();
     }
 }
-
 bool IsComparable(Expression *a, Expression *b) {
     if (a->GetExprType() == ExprType::None or b->GetExprType() == ExprType::None) {
         printf("====== filter.cpp\n");
@@ -57,20 +53,17 @@ bool IsComparable(Expression *a, Expression *b) {
         return false;
     }
 }
-
 FilterUnit::~FilterUnit() {
     delete left_;
     left_ = nullptr;
     delete right_;
     right_ = nullptr;
 }
-
 Filter::~Filter() {
     for (auto unit: filter_units_)
         delete unit;
     filter_units_.clear();
 }
-
 Re Filter::CreateFilter(DataBase *db, Table *default_table, std::unordered_map<std::string, Table *> *tables,
                         int conditions_num, const Condition *conditions, Filter *&filter) {
     filter = nullptr;
@@ -88,7 +81,6 @@ Re Filter::CreateFilter(DataBase *db, Table *default_table, std::unordered_map<s
     filter = temp_filter;
     return Re::Success;
 }
-
 Re Filter::CreateFilterUnit(DataBase *db, Table *default_table, std::unordered_map<std::string, Table *> *tables,
                             const Condition &condition, FilterUnit *&filter_unit) {
     CompOp temp_comp = condition.comp;

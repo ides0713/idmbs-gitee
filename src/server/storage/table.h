@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../parse/parse_defs.h"
 #include "field.h"
 #include "index.h"
@@ -7,59 +6,34 @@
 #include <filesystem>
 #include <jsoncpp/json/json.h>
 #include <string>
-
 struct RecordId;
-
 class Record;
-
 class DiskBufferPool;
-
 class RecordFileHandler;
-
 class RecordFileScanner;
-
 class ConditionFilter;
-
 class DefaultConditionFilter;
-
 class IndexScanner;
-
 class RecordDeleter;
-
 class Txn;
-
 class CLogManager;
-
 #define TABLE_NAME_MAX_LEN 20
-
-class TableMeta {
+class TableMeta
+{
 public:
     TableMeta() : record_size_(0) {}
-
     TableMeta(const TableMeta &other);
-
     Re Init(const char *table_name, int32_t attr_infos_num, const AttrInfo *attr_infos);
-
     int Serialize(std::ostream &ostream) const;
-
     int Deserialize(std::istream &istream);
-
     [[nodiscard]] int GetSerialSize() const;
-
     [[nodiscard]] const FieldMeta *GetTxnField() const;
-
     [[nodiscard]] const FieldMeta *GetField(int index) const;
-
     const FieldMeta *GetField(const char *field_name) const;
-
     [[nodiscard]] const FieldMeta *GetField(std::string field_name) const;
-
     [[nodiscard]] const char *GetTableName() const { return table_name_.c_str(); }
-
     [[nodiscard]] int GetFieldsNum() const { return fields_.size(); }
-
     [[nodiscard]] int GetRecordSize() const { return record_size_; }
-
     [[nodiscard]] const std::vector<FieldMeta> *GetFields() const { return &fields_; }
 
 public:
@@ -78,29 +52,22 @@ private:
 private:
     static Re InitializeSysFields();
 };
-
-class Table {
+class Table
+{
 public:
     Table() : data_buffer_pool_(nullptr), record_handler_(nullptr), clog_manager_(nullptr) {}
-
     /// @brief create an not existed table within params
     Re Init(std::filesystem::path database_path, const char *table_name, const size_t attr_infos_num,
             const AttrInfo *attr_infos, CLogManager *clog_manager);
-
     /// @brief open an exist table from existed table meta file(open table)
     Re Init(std::filesystem::path database_path, const char *table_name, CLogManager *clog_manager);
-
     /// @brief get table name from table(table meta)
     const char *GetTableName() const { return table_meta_.GetTableName(); }
-
     const TableMeta &GetTableMeta() const { return table_meta_; }
-
     Re InsertRecord(Txn *txn, int values_num, const Value *values);
-
+    Re DeleteRecord(Txn *txn, class Record *record);
     RecordFileHandler *GetRecordFileHandler() { return record_handler_; }
-
     Re GetRecordFileScanner(RecordFileScanner &scanner);
-
     void Destroy();
 
 private:
@@ -113,10 +80,7 @@ private:
 
 private:
     Re InitRecordHandler(const char *base_dir);
-
     Re InitRecordHandler(std::filesystem::path base_dir);
-
     Re MakeRecord(int values_num, const Value *values, char *&record_data);
-
     Re InsertRecord(Txn *txn, class Record *rec);
 };

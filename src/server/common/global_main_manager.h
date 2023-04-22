@@ -4,7 +4,8 @@
 #include <cstring>
 #include <string>
 #include <vector>
-class GlobalMainManager {
+class GlobalMainManager
+{
 public:
     void Init();
     void Handle(const char *sql);

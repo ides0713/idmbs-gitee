@@ -7,7 +7,6 @@
 #include <sys/socket.h>
 #include <thread>
 #include <unistd.h>
-
 void RecvFunc(int fd) {
     Message m;
     while (read(fd, reinterpret_cast<char *>(&m), sizeof(m)) > 0) {
@@ -19,7 +18,6 @@ void RecvFunc(int fd) {
     }
     close(fd);
 }
-
 int main(int argc, char **argv) {
     int sock_fd, n;
     char buffer[BUFFER_SIZE];

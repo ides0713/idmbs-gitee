@@ -2,21 +2,17 @@
 #include "../../common/common_defs.h"
 #include <cstring>
 #include <dirent.h>
-
 std::filesystem::path GetDataBasePath(std::filesystem::path bin_path, const char *database_name) {
     return bin_path.append(database_name);
 }
-
 std::filesystem::path GetTableMetaFilePath(std::filesystem::path database_path, const char *table_name) {
     std::string table_meta_file_name = std::string(table_name) + ".table";
     return database_path.append(table_meta_file_name);
 }
-
 std::filesystem::path GetTableDataFilePath(std::filesystem::path database_path, const char *table_name) {
     std::string table_data_file_name = std::string(table_name) + ".data";
     return database_path.append(table_data_file_name);
 }
-
 int ListFile(std::filesystem::path dir_path, const char *regx, std::vector<std::string> &files_name) {
     int b_size = files_name.size();
     DIR *dir = opendir(dir_path.c_str());

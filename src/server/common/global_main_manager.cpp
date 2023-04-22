@@ -16,7 +16,6 @@ void GlobalMainManager::Init() {
     BaseMain *storage_main = new StorageMain();
     mains_.push_back(storage_main);
 }
-
 void GlobalMainManager::Handle(const char *sql) {
     static_cast<StartMain *>(mains_[0])->SetSql(sql);
     for (int i = 1; i < mains_.size(); i++) {
@@ -41,17 +40,14 @@ void GlobalMainManager::Handle(const char *sql) {
     }
     DoneResponse();
 }
-
 void GlobalMainManager::Destroy() {
     for (int i = 0; i < mains_.size(); i++)
         mains_[i]->Destroy();
     mains_.clear();
 }
-
 void GlobalMainManager::SetResponse(std::string str) {
     response_.assign(str);
 }
-
 void GlobalMainManager::SetResponse(const char *format, ...) {
     va_list var_list;
     va_start(var_list, format);
@@ -61,20 +57,17 @@ void GlobalMainManager::SetResponse(const char *format, ...) {
     delete[] a;
     va_end(var_list);
 }
-
 void GlobalMainManager::Response() {
     if (response_.empty())
         SetResponse("SQL ended and response is empty\n");
     printf("%s", response_.c_str());
 }
-
 void GlobalMainManager::DoneResponse() {
     if (response_.empty())
         printf("SQL SUCCEEDED\n");
     else
         Response();
 }
-
 void GlobalMainManager::Clear() {
     for (int i = 0; i < mains_.size(); i++)
         mains_[i]->Clear();

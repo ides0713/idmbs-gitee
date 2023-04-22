@@ -1,7 +1,6 @@
 #include "resolve_main.h"
 #include "../parse/parse_main.h"
 #include "../storage/storage_handler.h"
-
 Re ResolveMain::Init(BaseMain *last_main) {
     BaseSet(*last_main);
     auto parse_main = static_cast<ParseMain *>(last_main);
@@ -10,7 +9,6 @@ Re ResolveMain::Init(BaseMain *last_main) {
         return Re::GenericError;
     return Re::Success;
 }
-
 Re ResolveMain::Handle() {
     GlobalDataBaseManager &dbm = GlobalManagers::GetGlobalDataBaseManager();
     DataBase *default_db = dbm.GetDb(dbm.GetProjectDefaultDatabasePath());
@@ -35,7 +33,6 @@ Re ResolveMain::Handle() {
     }
     return Re::Success;
 }
-
 void ResolveMain::Clear() {
     if (query_ != nullptr)
         query_ = nullptr;
@@ -44,7 +41,6 @@ void ResolveMain::Clear() {
         stmt_ = nullptr;
     }
 }
-
 void ResolveMain::Destroy() {
     Clear();
 }

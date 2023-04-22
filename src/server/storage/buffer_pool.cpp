@@ -4,16 +4,13 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
 static const int32_t BP_HEADER_PAGE = 0;
 static const int MEM_POOL_ITEM_NUM = 128;
-
 unsigned long GetCurrentTime() {
     timespec tp;
     clock_gettime(CLOCK_MONOTONIC, &tp);
     return tp.tv_sec * 1000 * 1000 * 1000UL + tp.tv_nsec;
 }
-
 int WriteN(int fd, const void *buf, int size) {
     const char *tmp = (const char *) buf;
     while (size > 0) {
@@ -29,7 +26,6 @@ int WriteN(int fd, const void *buf, int size) {
     }
     return 0;
 }
-
 int ReadN(int fd, void *buf, int size) {
     char *tmp = (char *) buf;
     while (size > 0) {
@@ -47,21 +43,18 @@ int ReadN(int fd, void *buf, int size) {
     }
     return 0;
 }
-
 Re FrameManager::Init(int pool_num) {
     bool ret = frame_allocator_.Init(false, pool_num);
     if (ret)
         return Re::Success;
     return Re::GenericError;
 }
-
 Re FrameManager::CleanUp() {
     if (frame_lru_cache_.Count() > 0)
         return Re::GenericError;
     frame_lru_cache_.Destroy();
     return Re::Success;
 }
-
 Frame *FrameManager::GetFrame(int file_desc, int32_t page_id) {
     FrameId frame_id(file_desc, page_id);
     std::lock_guard<std::mutex> lock_guard(lock_);
@@ -69,7 +62,6 @@ Frame *FrameManager::GetFrame(int file_desc, int32_t page_id) {
     (void) frame_lru_cache_.Get(frame_id, frame);
     return frame;
 }
-
 Frame *FrameManager::Alloc(int file_desc, int32_t page_id) {
     FrameId frame_id(file_desc, page_id);
     std::lock_guard<std::mutex> lock_guard(lock_);
@@ -81,23 +73,21 @@ Frame *FrameManager::Alloc(int file_desc, int32_t page_id) {
         frame_lru_cache_.Put(frame_id, frame);
     return frame;
 }
-
 Re FrameManager::Free(int file_desc, int32_t page_id, Frame *frame) {
     FrameId frame_id(file_desc, page_id);
     std::lock_guard<std::mutex> lock_guard(lock_);
     Frame *frame_source = nullptr;
     bool found = frame_lru_cache_.Get(frame_id, frame_source);
     if (!found or frame != frame_source) {
-        DebugPrint(
-                "DiskBufferPool:failed to find frame or got frame not match. file_desc=%d, Page_id=%d, frame_source=%p, frame=%p\n",
-                file_desc, page_id, frame_source, frame);
+        DebugPrint("DiskBufferPool:failed to find frame or got frame not match. file_desc=%d, Page_id=%d, "
+                   "frame_source=%p, frame=%p\n",
+                   file_desc, page_id, frame_source, frame);
         return Re::GenericError;
     }
     frame_lru_cache_.Remove(frame_id);
     frame_allocator_.Free(frame);
     return Re::Success;
 }
-
 Frame *FrameManager::GetPurgeableFrame() {
     Frame *purgeable_frame = nullptr;
     auto purge_finder = [&purgeable_frame](const FrameId &frame_id, Frame *const frame) -> bool {
@@ -111,7 +101,6 @@ Frame *FrameManager::GetPurgeableFrame() {
     frame_lru_cache_.ForeachReverse(purge_finder);
     return purgeable_frame;
 }
-
 std::list<Frame *> FrameManager::FindFrames(int file_desc) {
     std::lock_guard<std::mutex> lock_guard(lock_);
     std::list<Frame *> frames;
@@ -123,7 +112,6 @@ std::list<Frame *> FrameManager::FindFrames(int file_desc) {
     frame_lru_cache_.Foreach(fetcher);
     return frames;
 }
-
 Re DiskBufferPool::OpenFile(std::string file_name) {
     int fd = open(file_name.c_str(), O_RDWR);
     if (fd < 0) {
@@ -157,7 +145,6 @@ Re DiskBufferPool::OpenFile(std::string file_name) {
                header_frame_);
     return Re::Success;
 }
-
 Re DiskBufferPool::CloseFile() {
     if (file_desc_ < 0)
         return Re::Success;// has not open file,just return success
@@ -172,15 +159,13 @@ Re DiskBufferPool::CloseFile() {
     disposed_pages_.clear();
     if (close(file_desc_) < 0) {
         DebugPrint("DiskBufferPool:failed to destroy fileId:%d, fileName:%s, error:%s\n", file_desc_,
-                   file_name_.c_str(),
-                   strerror(errno));
+                   file_name_.c_str(), strerror(errno));
         return Re::IoErrClose;
     }
     DebugPrint("DiskBufferPool:successfully destroy file %d:%s.\n", file_desc_, file_name_.c_str());
     file_desc_ = -1;
     return Re::Success;
 }
-
 Re DiskBufferPool::GetPage(int32_t page_id, Frame **frame) {
     // try to find out if target page was already stored in a frame (in the lru cache of frame manager)
     Frame *used_match_frame = frame_manager_.GetFrame(file_desc_, page_id);
@@ -217,7 +202,6 @@ Re DiskBufferPool::GetPage(int32_t page_id, Frame **frame) {
     *frame = allocated_frame;
     return Re::Success;
 }
-
 Re DiskBufferPool::AllocatePage(Frame **frame) {
     int byte, bit;
     if (file_header_->allocated_pages_num < file_header_->pages_num) {
@@ -239,21 +223,17 @@ Re DiskBufferPool::AllocatePage(Frame **frame) {
         return Re::BufferPoolNoBuf;
     }
     int32_t page_id = file_header_->pages_num;
-
     Frame *allocated_frame = nullptr;
     Re r = AllocateFrame(page_id, &allocated_frame);
     if (r != Re::Success) {
         DebugPrint("DiskBufferPool:failed to allocate frame %s, due to no free page.\n", file_name_.c_str());
         return r;
     }
-
     file_header_->allocated_pages_num++;
     file_header_->pages_num++;
-
     byte = page_id / 8, bit = page_id % 8;
     file_header_->bitmap[byte] |= (1 << bit);
     header_frame_->DirtyMark();
-
     allocated_frame->dirty_ = false;
     allocated_frame->file_desc_ = file_desc_;
     allocated_frame->pin_count_ = 1;
@@ -270,7 +250,6 @@ Re DiskBufferPool::AllocatePage(Frame **frame) {
     *frame = allocated_frame;
     return Re::Success;
 }
-
 Re DiskBufferPool::DisposePage(int32_t page_id) {
     Re r = PurgePage(page_id);
     if (r != Re::Success) {
@@ -286,14 +265,12 @@ Re DiskBufferPool::DisposePage(int32_t page_id) {
     file_header_->bitmap[page_id / 8] &= ~tmp;
     return Re::Success;
 }
-
 Re DiskBufferPool::PurgePage(int32_t page_id) {
     Frame *used_frame = frame_manager_.GetFrame(file_desc_, page_id);
     if (used_frame != nullptr)
         return PurgeFrame(page_id, used_frame);
     return Re::Success;
 }
-
 Re DiskBufferPool::PurgeAllPages() {
     std::list<Frame *> used = frame_manager_.FindFrames(file_desc_);
     for (auto frame: used) {
@@ -313,7 +290,6 @@ Re DiskBufferPool::PurgeAllPages() {
     }
     return Re::Success;
 }
-
 Re DiskBufferPool::UnpinPage(Frame *frame) {
     assert(frame->pin_count_ >= 1);
     if (--frame->pin_count_ == 0) {
@@ -327,36 +303,31 @@ Re DiskBufferPool::UnpinPage(Frame *frame) {
     }
     return Re::Success;
 }
-
 Re DiskBufferPool::GetAllocatedPagesNum(int *page_count) {
     *page_count = file_header_->allocated_pages_num;
     return Re::Success;
 }
-
 void DiskBufferPool::CheckAllPages() {
     std::list<Frame *> frames = frame_manager_.FindFrames(file_desc_);
     for (auto &frame: frames)
         frame->Desc();
 }
-
 Re DiskBufferPool::CheckAllPagesUnpinned() {
     std::list<Frame *> frames = frame_manager_.FindFrames(file_desc_);
     for (auto &frame: frames) {
         if (frame->GetPageId() == BP_HEADER_PAGE && frame->pin_count_ > 1)
-            DebugPrint("DiskBufferPool:this page has been pinned. file desc=%d, page id:%d, pin count=%d\n",
-                       file_desc_, frame->GetPageId(), frame->pin_count_);
+            DebugPrint("DiskBufferPool:this page has been pinned. file desc=%d, page id:%d, pin count=%d\n", file_desc_,
+                       frame->GetPageId(), frame->pin_count_);
         else if (frame->GetPageId() != BP_HEADER_PAGE && frame->pin_count_ > 0)
-            DebugPrint("DiskBufferPool:this page has been pinned. file desc=%d, page id:%d, pin count=%d\n",
-                       file_desc_, frame->GetPageId(), frame->pin_count_);
+            DebugPrint("DiskBufferPool:this page has been pinned. file desc=%d, page id:%d, pin count=%d\n", file_desc_,
+                       frame->GetPageId(), frame->pin_count_);
     }
     DebugPrint("DiskBufferPool:all pages have been checked of file desc %d\n", file_desc_);
     return Re::Success;
 }
-
 int DiskBufferPool::GetFileDesc() const {
     return file_desc_;
 }
-
 Re DiskBufferPool::FlushPage(Frame &frame) {
     DebugPrint("DiskBufferPool:flush page page_id:%d\n", frame.GetPageId());
     Page &page = frame.page_;
@@ -374,7 +345,6 @@ Re DiskBufferPool::FlushPage(Frame &frame) {
     DebugPrint("DiskBufferPool:Flush block. file desc=%d, page id=%d\n", file_desc_, page.page_id);
     return Re::Success;
 }
-
 Re DiskBufferPool::FlushAllPages() {
     std::list<Frame *> used = frame_manager_.FindFrames(file_desc_);
     for (Frame *frame: used) {
@@ -386,7 +356,6 @@ Re DiskBufferPool::FlushAllPages() {
     }
     return Re::Success;
 }
-
 Re DiskBufferPool::RecoverPage(int32_t page_id) {
     int byte = page_id / 8, bit = page_id % 8;
     if (!(file_header_->bitmap[byte] & (1 << bit))) {
@@ -397,7 +366,6 @@ Re DiskBufferPool::RecoverPage(int32_t page_id) {
     }
     return Re::Success;
 }
-
 Re DiskBufferPool::AllocateFrame(int32_t page_id, Frame **buf) {
     while (true) {
         Frame *frame = frame_manager_.Alloc(file_desc_, page_id);
@@ -421,7 +389,6 @@ Re DiskBufferPool::AllocateFrame(int32_t page_id, Frame **buf) {
         frame_manager_.Free(frame->GetFileDesc(), frame->GetPageId(), frame);
     }
 }
-
 Re DiskBufferPool::PurgeFrame(int32_t page_id, Frame *used_frame) {
     if (used_frame->pin_count_ > 0) {
         DebugPrint("DiskBufferPool:begin to free page %d of %d(file id), but it's pinned, pin_count:%d.\n",
@@ -441,7 +408,6 @@ Re DiskBufferPool::PurgeFrame(int32_t page_id, Frame *used_frame) {
     frame_manager_.Free(file_desc_, page_id, used_frame);
     return Re::Success;
 }
-
 Re DiskBufferPool::CheckPageId(int32_t page_id) {
     if (page_id >= file_header_->pages_num) {
         DebugPrint("DiskBufferPool:invalid page_id:%d, file's name:%s\n", page_id, file_name_.c_str());
@@ -454,12 +420,11 @@ Re DiskBufferPool::CheckPageId(int32_t page_id) {
     }
     return Re::Success;
 }
-
 Re DiskBufferPool::LoadPage(int32_t page_id, Frame *frame) {
     long long offset = ((long long) page_id) * sizeof(Page);
     if (lseek(file_desc_, offset, SEEK_SET) == -1) {
-        DebugPrint("DiskBufferPool:failed to load page %s:%d, due to failed to lseek:%s.\n",
-                   file_name_.c_str(), page_id, strerror(errno));
+        DebugPrint("DiskBufferPool:failed to load page %s:%d, due to failed to lseek:%s.\n", file_name_.c_str(),
+                   page_id, strerror(errno));
         return Re::IoErrSeek;
     }
     int ret = ReadN(file_desc_, &(frame->page_), sizeof(Page));
@@ -470,7 +435,6 @@ Re DiskBufferPool::LoadPage(int32_t page_id, Frame *frame) {
     }
     return Re::Success;
 }
-
 void DiskBufferPool::Destroy() {
     if (file_desc_ < 0)
         return;// has not open file,just return success
@@ -486,20 +450,17 @@ void DiskBufferPool::Destroy() {
     disposed_pages_.clear();
     if (close(file_desc_) < 0) {
         DebugPrint("DiskBufferPool:failed to destroy fileId:%d, fileName:%s, error:%s\n", file_desc_,
-                   file_name_.c_str(),
-                   strerror(errno));
+                   file_name_.c_str(), strerror(errno));
         return;
     }
     DebugPrint("DiskBufferPool:successfully destroy file %d:%s.\n", file_desc_, file_name_.c_str());
     file_desc_ = -1;
     DebugPrint("DiskBufferPool:disk buffer pool destructed\n");
 }
-
 void GlobalBufferPoolManager::Init() {
     frame_manager_.Init(MEM_POOL_ITEM_NUM);
     DebugPrint("GlobalBufferPoolManager:initialized done\n");
 }
-
 Re GlobalBufferPoolManager::CreateFile(const char *file_name) {
     int fd = open(file_name, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
     if (fd < 0) {
@@ -539,11 +500,11 @@ Re GlobalBufferPoolManager::CreateFile(const char *file_name) {
     DebugPrint("GlobalBufferPoolManager:successfully createFilter %s.\n", file_name);
     return Re::Success;
 }
-
 Re GlobalBufferPoolManager::OpenFile(std::string file_name, DiskBufferPool *&bp) {
     std::string x(file_name);
     if (buffer_pools_.find(x) != buffer_pools_.end()) {
-        DebugPrint("GlobalBufferPoolManager:file already opened and has a buffer now. file name=%s\n", file_name.c_str());
+        DebugPrint("GlobalBufferPoolManager:file already opened and has a buffer now. file name=%s\n",
+                   file_name.c_str());
         return Re::BufferPoolOpen;
     }
     auto new_buffer_pool = new DiskBufferPool(*this, frame_manager_);
@@ -558,7 +519,6 @@ Re GlobalBufferPoolManager::OpenFile(std::string file_name, DiskBufferPool *&bp)
     bp = new_buffer_pool;
     return Re::Success;
 }
-
 Re GlobalBufferPoolManager::CloseFile(std::string file_name) {
     auto iter = buffer_pools_.find(file_name);
     if (iter == buffer_pools_.end()) {
@@ -572,7 +532,6 @@ Re GlobalBufferPoolManager::CloseFile(std::string file_name) {
     bp->CloseFile();
     return Re::Success;
 }
-
 Re GlobalBufferPoolManager::FlushPage(Frame &frame) {
     int fd = frame.GetFileDesc();
     auto iter = fd_buffer_pools_.find(fd);
@@ -583,36 +542,31 @@ Re GlobalBufferPoolManager::FlushPage(Frame &frame) {
     DiskBufferPool *bp = iter->second;
     return bp->FlushPage(frame);
 }
-
 void GlobalBufferPoolManager::Destroy() {
     std::unordered_map<std::string, DiskBufferPool *> tmp_bps;
     tmp_bps.swap(buffer_pools_);
     for (auto &iter: tmp_bps)
         iter.second->Destroy();
 }
-
 Re BufferPoolIterator::Init(DiskBufferPool &bp, int32_t start_page /* = 0 */) {
     bit_map_.Init(bp.file_header_->bitmap, bp.file_header_->pages_num);
     current_page_id_ = std::max(0, start_page);
     return Re::Success;
 }
-
 bool BufferPoolIterator::HasNext() {
     return bit_map_.NextSetBit(current_page_id_ + 1) != -1;
 }
-
 int32_t BufferPoolIterator::Next() {
     int32_t next_page = bit_map_.NextSetBit(current_page_id_ + 1);
     if (next_page != -1)
         current_page_id_ = next_page;
     return next_page;
 }
-
 Re BufferPoolIterator::Reset() {
     current_page_id_ = 0;
     return Re::Success;
 }
-
 void Frame::Desc() {
-    printf("Frame: dirty_mark:%d pin_count:%d file_desc:%d page_id:%d\n", dirty_, pin_count_, file_desc_, page_.page_id);
+    printf("Frame: dirty_mark:%d pin_count:%d file_desc:%d page_id:%d\n", dirty_, pin_count_, file_desc_,
+           page_.page_id);
 }

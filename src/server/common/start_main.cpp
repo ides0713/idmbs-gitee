@@ -1,32 +1,26 @@
 #include "start_main.h"
 #include "../parse/parse_defs.h"
-
 Re StartMain::Init(BaseMain *last_main) {
     return Re::Success;
 }
-
 Re StartMain::Handle() {
     return Re::Success;
 }
-
 void StartMain::Clear() {
     if (sql_ != nullptr) {
         delete[] sql_;
         sql_ = nullptr;
     }
 }
-
 void StartMain::Destroy() {
     if (sql_ != nullptr) {
         delete[] sql_;
         sql_ = nullptr;
     }
 }
-
 char *StartMain::GetSql() {
     return sql_;
 }
-
 void StartMain::SetSql(const char *sql) {
     printf("sql is %s\n", sql);
     if (sql_ != nullptr) {

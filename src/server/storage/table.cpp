@@ -10,17 +10,14 @@
 #include <fstream>
 #include <iostream>
 #include <utility>
-
 static const Json::StaticString FIELD_TABLE_NAME("table_name");
 static const Json::StaticString FIELD_FIELDS("fields");
 static const Json::StaticString FIELD_INDEXES("indexes");
-
 std::vector<FieldMeta> TableMeta::sys_fields;
-
 TableMeta::TableMeta(const TableMeta &other)
     : table_name_(other.table_name_), fields_(other.fields_), indexes_(other.indexes_),
-      record_size_(other.record_size_) {}
-
+      record_size_(other.record_size_) {
+}
 Re TableMeta::Init(const char *table_name, int32_t attr_infos_num, const AttrInfo *attr_infos) {
     if (strlen(table_name) == 0 or strlen(table_name) > TABLE_NAME_MAX_LEN) {
         DebugPrint("TableMeta:init table_meta:%s failed,table name:%s is not valid\n", table_name, table_name);
@@ -58,7 +55,6 @@ Re TableMeta::Init(const char *table_name, int32_t attr_infos_num, const AttrInf
     DebugPrint("TableMeta:initialized table meta.table name=%s\n", table_name);
     return Re::Success;
 }
-
 Re TableMeta::InitializeSysFields() {
     sys_fields.reserve(1);
     FieldMeta field_meta;
@@ -70,11 +66,9 @@ Re TableMeta::InitializeSysFields() {
     sys_fields.push_back(field_meta);
     return Re::Success;
 }
-
 int TableMeta::Serialize(std::ostream &ostream) const {
     Json::Value table_value;
     table_value[FIELD_TABLE_NAME] = table_name_;
-
     Json::Value fields_value;
     for (const FieldMeta &field: fields_) {
         Json::Value field_value;
@@ -97,7 +91,6 @@ int TableMeta::Serialize(std::ostream &ostream) const {
     delete writer;
     return ret;
 }
-
 int TableMeta::Deserialize(std::istream &istream) {
     if (sys_fields.empty()) {
         InitializeSysFields();
@@ -110,27 +103,22 @@ int TableMeta::Deserialize(std::istream &istream) {
         DebugPrint("TableMeta:failed to deserialize table meta. error=%s\n", errors.c_str());
         return -1;
     }
-
     const Json::Value &table_name_value = table_value[FIELD_TABLE_NAME];
     if (!table_name_value.isString()) {
         DebugPrint("TableMeta:invalid table name. json value=%s\n", table_name_value.toStyledString().c_str());
         return -1;
     }
-
     std::string table_name = table_name_value.asString();
-
     const Json::Value &fields_value = table_value[FIELD_FIELDS];
     if (!fields_value.isArray() or fields_value.size() <= 0) {
         DebugPrint("TableMeta:invalid table meta. fields is not array, json value=%s\n",
                    fields_value.toStyledString().c_str());
         return -1;
     }
-
     int field_num = fields_value.size();
     std::vector<FieldMeta> fields(field_num);
     for (int i = 0; i < field_num; i++) {
         FieldMeta &field = fields[i];
-
         const Json::Value &field_value = fields_value[i];
         Re r = FieldMeta::FromJson(field_value, field);
         if (r != Re::Success) {
@@ -138,15 +126,11 @@ int TableMeta::Deserialize(std::istream &istream) {
             return -1;
         }
     }
-
-    std::sort(
-            fields.begin(), fields.end(),
-            [](const FieldMeta &f_1, const FieldMeta &f_2) { return f_1.GetOffset() < f_2.GetOffset(); });
-
+    std::sort(fields.begin(), fields.end(),
+              [](const FieldMeta &f_1, const FieldMeta &f_2) { return f_1.GetOffset() < f_2.GetOffset(); });
     table_name_.swap(table_name);
     fields_.swap(fields);
     record_size_ = fields_.back().GetOffset() + fields_.back().GetLen() - fields_.begin()->GetOffset();
-
     const Json::Value &indexes_value = table_value[FIELD_INDEXES];
     if (!indexes_value.empty()) {
         if (!indexes_value.isArray()) {
@@ -169,15 +153,12 @@ int TableMeta::Deserialize(std::istream &istream) {
     }
     return (int) (istream.tellg() - old_pos);
 }
-
 int TableMeta::GetSerialSize() const {
     return -1;
 }
-
 const FieldMeta *TableMeta::GetField(int index) const {
     return &fields_[index];
 }
-
 const FieldMeta *TableMeta::GetField(const char *field_name) const {
     if (strlen(field_name) == 0) {
         DebugPrint("TableMeta:getFrame field:%s failed,field_name invalid\n", field_name);
@@ -188,19 +169,15 @@ const FieldMeta *TableMeta::GetField(const char *field_name) const {
             return &field;
     return nullptr;
 }
-
 const FieldMeta *TableMeta::GetField(std::string field_name) const {
     return GetField(field_name.c_str());
 }
-
 int TableMeta::GetSysFieldsNum() {
     return sys_fields.size();
 }
-
 const FieldMeta *TableMeta::GetTxnField() const {
     return &fields_[0];
 }
-
 Re Table::Init(std::filesystem::path database_path, const char *table_name, const size_t attr_infos_num,
                const AttrInfo *attr_infos, CLogManager *clog_manager) {
     if (strlen(table_name) == 0 or strlen(table_name) > TABLE_NAME_MAX_LEN) {
@@ -235,7 +212,6 @@ Re Table::Init(std::filesystem::path database_path, const char *table_name, cons
     }
     table_meta_.Serialize(file_stream);
     file_stream.close();
-
     std::string data_file_name = std::string(table_name) + ".data";
     fs::path data_file_path = fs::path(database_path).append(data_file_name);
     GlobalBufferPoolManager &bpm = GlobalManagers::GetGlobalBufferPoolManager();
@@ -255,7 +231,6 @@ Re Table::Init(std::filesystem::path database_path, const char *table_name, cons
     DebugPrint("Table:successfully create table %s:%s", database_path_.c_str(), table_meta_.GetTableName());
     return Re::Success;
 }
-
 Re Table::InitRecordHandler(const char *base_dir) {
     namespace fs = std::filesystem;
     std::string data_file_name = std::string(table_meta_.GetTableName()) + ".data";
@@ -278,32 +253,28 @@ Re Table::InitRecordHandler(const char *base_dir) {
     }
     return Re::Success;
 }
-
 Re Table::InitRecordHandler(std::filesystem::path base_dir) {
     return InitRecordHandler(base_dir.c_str());
 }
-
 Re Table::Init(std::filesystem::path database_path, const char *table_name, CLogManager *clog_manager) {
     namespace fs = std::filesystem;
     std::fstream f_stream;
     fs::path table_meta_file_path = GetTableMetaFilePath(database_path, table_name);
     f_stream.open(table_meta_file_path.c_str(), std::ios_base::in | std::ios_base::binary);
     if (!f_stream.is_open()) {
-        DebugPrint("Table:failed to open meta file for read. file name=%s, errmsg=%s\n",
-                   table_meta_file_path.c_str(), strerror(errno));
+        DebugPrint("Table:failed to open meta file for read. file name=%s, errmsg=%s\n", table_meta_file_path.c_str(),
+                   strerror(errno));
         return Re::IoErr;
     }
     if (table_meta_.Deserialize(f_stream) < 0) {
-        DebugPrint("Table:failed to deserialize table meta. file name=%s\n",
-                   table_meta_file_path.c_str());
+        DebugPrint("Table:failed to deserialize table meta. file name=%s\n", table_meta_file_path.c_str());
         f_stream.close();
         return Re::GenericError;
     }
     f_stream.close();
     Re r = InitRecordHandler(database_path);
     if (r != Re::Success) {
-        DebugPrint("Table:failed to open table %s due to init record handler failed.\n",
-                   table_meta_.GetTableName());
+        DebugPrint("Table:failed to open table %s due to init record handler failed.\n", table_meta_.GetTableName());
         // don't need to remove the data_file
         return r;
     }
@@ -312,7 +283,6 @@ Re Table::Init(std::filesystem::path database_path, const char *table_name, CLog
         clog_manager_ = clog_manager;
     return Re::Success;
 }
-
 Re Table::InsertRecord(Txn *txn, int values_num, const Value *values) {
     char *record_data;
     MakeRecord(values_num, values, record_data);
@@ -322,14 +292,16 @@ Re Table::InsertRecord(Txn *txn, int values_num, const Value *values) {
     delete[] record_data;
     return r;
 }
-
+Re Table::DeleteRecord(Txn *txn, class Record *record) {
+    //TODO delete entry of indexes(not implemented)
+    Re r = record_handler_->DeleteRecord(&record->GetRecordId());
+}
 Re Table::GetRecordFileScanner(RecordFileScanner &scanner) {
     Re r = scanner.Init(*data_buffer_pool_, nullptr);
     if (r != Re::Success)
         DebugPrint("Table:failed to open scanner. r=%d:%s", r, StrRe(r));
     return Re::Success;
 }
-
 void Table::Destroy() {
     if (record_handler_ != nullptr) {
         record_handler_->Destroy();
@@ -346,14 +318,12 @@ void Table::Destroy() {
     }
     DebugPrint("Table:table has been destroyed\n");
 }
-
 Re Table::InsertRecord(Txn *txn, class Record *rec) {
     if (txn != nullptr)
         txn->Init(this, *rec);
     Re r = record_handler_->InsertRecord(rec->GetData(), table_meta_.GetRecordSize(), &rec->GetRecordId());
     if (r != Re::Success) {
-        DebugPrint("Table:insert record failed. table name=%s, re=%d:%s\n",
-                   table_meta_.GetTableName(), r, StrRe(r));
+        DebugPrint("Table:insert record failed. table name=%s, re=%d:%s\n", table_meta_.GetTableName(), r, StrRe(r));
         return r;
     }
     if (txn != nullptr) {
@@ -371,7 +341,6 @@ Re Table::InsertRecord(Txn *txn, class Record *rec) {
     // todo after implement index of table,we must update the index of the table in order to keep it usable
     return Re::Success;
 }
-
 Re Table::MakeRecord(int values_num, const Value *values, char *&record_data) {
     int table_sys_fields_num = table_meta_.GetSysFieldsNum();
     if (values_num != table_meta_.GetFieldsNum() - table_sys_fields_num) {
@@ -384,8 +353,8 @@ Re Table::MakeRecord(int values_num, const Value *values, char *&record_data) {
         const Value &th_value = values[i];
         const FieldMeta *th_field_meta = table_meta_.GetField(i + table_sys_fields_num);
         if (th_value.type != th_field_meta->GetAttrType()) {
-            DebugPrint("Table:make record failed,values getExprType %d mismatch fields getExprType %d\n",
-                       th_value.type, th_field_meta->GetAttrType());
+            DebugPrint("Table:make record failed,values getExprType %d mismatch fields getExprType %d\n", th_value.type,
+                       th_field_meta->GetAttrType());
             return Re::SchemaFieldTypeMismatch;
         }
     }

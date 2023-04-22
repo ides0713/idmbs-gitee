@@ -1,6 +1,5 @@
 #include "predicate_operator.h"
 #include "../resolve/filter.h"
-
 Re PredicateOperator::Init() {
     if (opers_.size() != 1) {
         DebugPrint("PredicateOperator:predicate operator must has one operator\n");
@@ -8,7 +7,6 @@ Re PredicateOperator::Init() {
     }
     return opers_[0]->Init();
 }
-
 Re PredicateOperator::Handle() {
     Operator *oper = opers_[0];
     Re r;
@@ -24,17 +22,14 @@ Re PredicateOperator::Handle() {
     }
     return r;
 }
-
 Re PredicateOperator::Destroy() {
     opers_[0]->Destroy();
     return Re::Success;
 }
-
 Tuple *PredicateOperator::GetCurrentTuple() {
     Tuple *res = opers_[0]->GetCurrentTuple();
     return res;
 }
-
 bool PredicateOperator::Predicate(RowTuple &row_tuple) {
     const Table &t = row_tuple.GetTable();
     if (filter_ == nullptr or filter_->GetFilterUnits().empty())

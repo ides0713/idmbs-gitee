@@ -1,31 +1,20 @@
 #pragma once
-
 #include "../common/re.h"
 #include "../parse/parse_defs.h"
 #include "expression.h"
-
 class DataBase;
-
 class Table;
-
 class FieldMeta;
-
-class FilterUnit {
+class FilterUnit
+{
 public:
     FilterUnit() : comp_(CompOp::NoOp), left_(nullptr), right_(nullptr) {}
-
     ~FilterUnit();
-
     void SetComp(CompOp cmp) { comp_ = cmp; }
-
     void SetLeft(Expression *expr) { left_ = expr; }
-
     void SetRight(Expression *expr) { right_ = expr; }
-
     [[nodiscard]] CompOp GetComp() const { return comp_; }
-
     [[nodiscard]] Expression *GetLeft() const { return left_; }
-
     [[nodiscard]] Expression *GetRight() const { return right_; }
 
 private:
@@ -33,13 +22,11 @@ private:
     Expression *left_;
     Expression *right_;
 };
-
-class Filter {
+class Filter
+{
 public:
     Filter() = default;
-
     ~Filter();
-
     [[nodiscard]] const std::vector<FilterUnit *> &GetFilterUnits() const { return filter_units_; }
 
 public:

@@ -1,39 +1,32 @@
 #include "bitmap.h"
-
 int FindFirstZero(char byte, int start) {
     for (int i = start; i < 8; i++)
         if ((byte & (1 << i)) == 0)
             return i;
     return -1;
 }
-
 int FindFirstSet(char byte, int start) {
     for (int i = start; i < 8; i++)
         if ((byte & (1 << i)) != 0)
             return i;
     return -1;
 }
-
 void BitMap::Init(char *bitmap, int size) {
     bit_map_ = bitmap;
     size_ = size;
 }
-
 bool BitMap::GetBit(int index) {
     char bits = bit_map_[index / 8];
     return (bits & (1 << (index % 8))) != 0;
 }
-
 void BitMap::SetBit(int index) {
     char &bits = bit_map_[index / 8];
     bits |= (1 << (index % 8));
 }
-
 void BitMap::ClearBit(int index) {
     char &bits = bit_map_[index / 8];
     bits &= ~(1 << (index % 8));
 }
-
 int BitMap::NextUnsetBit(int start) {
     int ret = -1, start_in_byte = start % 8;
     for (int iter = start / 8, end = (size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1); iter <= end; iter++) {
@@ -51,7 +44,6 @@ int BitMap::NextUnsetBit(int start) {
         ret = -1;
     return ret;
 }
-
 int BitMap::NextSetBit(int start) {
     int ret = -1, start_in_byte = start % 8;
     for (int iter = start / 8, end = (size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1); iter <= end; iter++) {

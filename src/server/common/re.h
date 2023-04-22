@@ -2,10 +2,9 @@
 // Created by ubuntu on 4/2/23.
 //
 #pragma once
-
 #define RE_SIMPLE_STR(re) #re
-
-enum ReBufferPool {
+enum ReBufferPool
+{
     BpExist = 1,
     BpFileErr,
     BpInvalidName,
@@ -20,8 +19,8 @@ enum ReBufferPool {
     BpOpenTooManyFiles,
     BpIllegalFileId,
 };
-
-enum ReRecord {
+enum ReRecord
+{
     RdClosed = 1,
     RdOpened,
     RdInvalidRecSize,
@@ -37,8 +36,8 @@ enum ReRecord {
     RdEof,
     RdNotExist,
 };
-
-enum ReSchema {
+enum ReSchema
+{
     DbExist = 1,
     DbNotExist,
     DbNotOpened,
@@ -56,12 +55,12 @@ enum ReSchema {
     IndexNotExist,
     IndexNameIllegal,
 };
-
-enum ReSql {
+enum ReSql
+{
     SqlSelect = 1
 };
-
-enum ReIoError {
+enum ReIoError
+{
     Read = 1,
     ShortRead,
     Write,
@@ -92,8 +91,8 @@ enum ReIoError {
     CorruptFs,
     OpenTooManyFiles,
 };
-
-enum ReLock {
+enum ReLock
+{
     Lock = 1,
     Unlock,
     SharedCache,
@@ -101,14 +100,14 @@ enum ReLock {
     NeedWait,
     ResourceDeleted,
 };
-
-enum ReBusy {
+enum ReBusy
+{
     BRecovery = 1,
     Snapshot,
     Timeout,
 };
-
-enum ReCantOpen {
+enum ReCantOpen
+{
     NotEmpDir = 1,
     Isdir,
     FullPath,
@@ -116,14 +115,14 @@ enum ReCantOpen {
     DirtyWal,
     Symlink,
 };
-
-enum ReCorrupt {
+enum ReCorrupt
+{
     CorruptVirt = 1,
     CorruptSequence,
     CorruptIndex
 };
-
-enum ReReadOnly {
+enum ReReadOnly
+{
     RoRecovery = 1,
     CantLock,
     RoRollBack,
@@ -131,12 +130,12 @@ enum ReReadOnly {
     CantInit,
     Directory,
 };
-
-enum ReAbort {
+enum ReAbort
+{
     ARollBack = 1,
 };
-
-enum ReConstraint {
+enum ReConstraint
+{
     Check = 1,
     CommitHook,
     Foreignkey,
@@ -149,18 +148,18 @@ enum ReConstraint {
     RowId,
     Pinned,
 };
-
-enum ReNotice {
+enum ReNotice
+{
     RecoverWal = 1,
     RecoverRollBack,
     AutoIndex,
 };
-
-enum ReAuth {
+enum ReAuth
+{
     User = 1,
 };
-
-enum ReFile {
+enum ReFile
+{
     FExist = 1,
     FNotExist,
     FName,
@@ -174,13 +173,13 @@ enum ReFile {
     FRead,
     FWrite,
 };
-
-enum ReLogBuf {
+enum ReLogBuf
+{
     LbFull = 1,
     LbEmpty,
 };
-
-enum Re {
+enum Re
+{
     Success = 0, /* Successful result */
     /* beginning-of-error-codes */
     GenericError,    /* Generic error */
@@ -217,7 +216,6 @@ enum Re {
     FileError,       /* File error */
     LogBuf,          /* clog buffer error */
     Notice = 100,    /* Notifications from log() */
-
     /* buffer pool part */
     BufferPoolExist = (BufferPool | (ReBufferPool::BpExist << 8)),
     BufferPoolFileErr = (BufferPool | (ReBufferPool::BpFileErr << 8)),
@@ -232,7 +230,6 @@ enum Re {
     BufferPoolPagePinned = (BufferPool | (ReBufferPool::BpPagePinned << 8)),
     BufferPoolOpenTooManyFiles = (BufferPool | (ReBufferPool::BpOpenTooManyFiles << 8)),
     BufferPoolIllegalFileId = (BufferPool | (ReBufferPool::BpIllegalFileId << 8)),
-
     /* record part */
     RecordClosed = (Record | (ReRecord::RdClosed << 8)),
     RecordOpened = (Record | (ReRecord::RdOpened << 8)),
@@ -248,7 +245,6 @@ enum Re {
     RecordScanOpened = (Record | (ReRecord::RdScanOpened << 8)),
     RecordEof = (Record | (ReRecord::RdEof << 8)),
     RecordRecordNotExist = (Record | (ReRecord::RdNotExist << 8)),
-
     /* schema part */
     SchemaDbExist = (Schema | (ReSchema::DbExist << 8)),
     SchemaDbNotExist = (Schema | (ReSchema::DbNotExist << 8)),
@@ -266,7 +262,6 @@ enum Re {
     SchemaIndexExist = (Schema | (ReSchema::IndexExist << 8)),
     SchemaIndexNotExist = (Schema | (ReSchema::IndexNotExist << 8)),
     SchemaIndexNameIllegal = (Schema | (ReSchema::IndexNameIllegal << 8)),
-
     /*io error part*/
     IoErrRead = (IoErr | (ReIoError::Read << 8)),
     IoErrShortRead = (IoErr | (ReIoError::ShortRead << 8)),
@@ -297,7 +292,6 @@ enum Re {
     IoErrData = (IoErr | (ReIoError::Data << 8)),
     IoErrCorruptFs = (IoErr | (ReIoError::CorruptFs << 8)),
     IoErrOpenTooManyFiles = (IoErr | ReIoError::OpenTooManyFiles << 8),
-
     /* Lock part*/
     LockedLock = (Locked | (ReLock::Lock << 8)),
     LockedUnlock = (Locked | (ReLock::Unlock << 8)),
@@ -305,12 +299,10 @@ enum Re {
     LockedVirt = (Locked | (ReLock::LVirt << 8)),
     LockedNeedWait = (Locked | (ReLock::NeedWait << 8)),
     LockedResourceDeleted = (Locked | (ReLock::ResourceDeleted << 8)),
-
     /* busy part */
     BusyRecovery = (Busy | (ReBusy::BRecovery << 8)),
     BusySnapShot = (Busy | (ReBusy::Snapshot << 8)),
     BusyTimeOut = (Busy | (ReBusy::Timeout << 8)),
-
     /* Can't open part */
     CantOpenNotEmptyDir = (CantOpen | (ReCantOpen::NotEmpDir << 8)),
     CantOpenIsDir = (CantOpen | (ReCantOpen::Isdir << 8)),
@@ -318,12 +310,10 @@ enum Re {
     CantOpenConvPath = (CantOpen | (ReCantOpen::CoConvPath << 8)),
     CantOpenDirtyWal = (CantOpen | (ReCantOpen::DirtyWal << 8)),
     CantOpenSymlink = (CantOpen | (ReCantOpen::Symlink << 8)),
-
     /* corrupt part */// compile error
     // CorruptVirt = (CORRUPT | (RECorrupt::CorruptVirt << 8)),
     // CorruptSequence = (CORRUPT | (RECorrupt::CorruptSequence << 8)),
     // CorruptIndex = (CORRUPT | (RECorrupt::CorruptIndex << 8)),
-
     /*readonly part*/
     ReadOnlyRecovery = (ReadOnly | (ReReadOnly::RoRecovery << 8)),
     ReadOnlyCantLock = (ReadOnly | (ReReadOnly::CantLock << 8)),
@@ -331,9 +321,7 @@ enum Re {
     ReadOnlyDbMoved = (ReadOnly | (ReReadOnly::DbMoved << 8)),
     ReadOnlyCantInit = (ReadOnly | (ReReadOnly::CantInit << 8)),
     ReadOnlyDirectory = (ReadOnly | (ReReadOnly::Directory << 8)),
-
     AbortRollBack = (Abort | (ReAbort::ARollBack << 8)),
-
     /* constraint part */
     ConstraintCheck = (Constraint | (ReConstraint::Check << 8)),
     ConstraintCommitHook = (Constraint | (ReConstraint::CommitHook << 8)),
@@ -346,12 +334,10 @@ enum Re {
     ConstraintVirt = (Constraint | (ReConstraint::CVirt << 8)),
     ConstraintRowid = (Constraint | (ReConstraint::RowId << 8)),
     ConstraintPinned = (Constraint | (ReConstraint::Pinned << 8)),
-
     /* notice part */
     NoticeRecoverWal = (Notice | (ReNotice::RecoverWal << 8)),
     NoticeRecoverRollback = (Notice | (ReNotice::RecoverRollBack << 8)),
     NoticeAutoIndex = (Notice | (ReNotice::AutoIndex << 8)),
-
     /* file part */
     FileExist = (FileError | (ReFile::FExist << 8)),
     FileNotExist = (FileError | (ReFile::FNotExist << 8)),
@@ -365,13 +351,10 @@ enum Re {
     FileSeek = (FileError | (ReFile::FSeek << 8)),
     FileRead = (FileError | (ReFile::FRead << 8)),
     FileWrite = (FileError | (ReFile::FWrite << 8)),
-
     /* auth part*/
     AuthUser = (Auth | (ReAuth::User << 8)),
-
     /* clog buffer part */
     LogBufFull = (LogBuf | (ReLogBuf::LbFull << 8)),
     LogBufEmpty = (LogBuf | (ReLogBuf::LbEmpty << 8)),
 };
-
 const char *StrRe(Re re);

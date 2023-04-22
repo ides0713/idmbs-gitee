@@ -5,9 +5,9 @@
 #include "predicate_operator.h"
 #include "project_operator.h"
 #include "table_scan_operator.h"
+#include "delete_operator.h"
 #include <cassert>
 #include <sstream>
-
 IndexScanOperator *CreateIndexScanOperator(Filter *filter) {
     // TODO: implement index
     return nullptr;
@@ -25,7 +25,6 @@ void PrintTupleHeader(std::ostream &os, const ProjectOperator &oper) {
     if (units_num > 0)
         os << '\n';
 }
-
 void DescStrTuple(std::ostream &os, Tuple *tuple) {
     TupleUnit unit;
     bool first_field = true;
@@ -42,7 +41,6 @@ void DescStrTuple(std::ostream &os, Tuple *tuple) {
         unit.ToString(os);
     }
 }
-
 Re ExecuteMain::Init(BaseMain *last_main) {
     BaseSet(*last_main);
     auto resolve_main = static_cast<ResolveMain *>(last_main);
@@ -51,7 +49,6 @@ Re ExecuteMain::Init(BaseMain *last_main) {
         return Re::GenericError;
     return Re::Success;
 }
-
 Re ExecuteMain::Handle() {
     Re r = Re::Success;
     // (void)getTxn();
@@ -65,22 +62,22 @@ Re ExecuteMain::Handle() {
         case StatementType::Insert:
             r = DoInsert(stmt_);
             break;
+        case StatementType::Delete:
+            r = DoDelete(stmt_);
+            break;
         default:
             r = Re::GenericError;
             break;
     }
     return r;
 }
-
 void ExecuteMain::Clear() {
     if (stmt_ != nullptr)
         stmt_ = nullptr;
 }
-
 void ExecuteMain::Destroy() {
     Clear();
 }
-
 Re ExecuteMain::DoSelect(Statement *stmt) {
     auto s = static_cast<SelectStatement *>(stmt);
     if (s->GetTables()->size() != 1) {
@@ -124,7 +121,6 @@ Re ExecuteMain::DoSelect(Statement *stmt) {
     gmm.SetResponse(str);
     return r;
 }
-
 Re ExecuteMain::DoCreateTable(Statement *stmt) {
     auto s = static_cast<CreateTableStatement *>(stmt);
     DataBase *db = GetDb();
@@ -134,7 +130,6 @@ Re ExecuteMain::DoCreateTable(Statement *stmt) {
     }
     return db->CreateTable(s->GetTableName(), s->GetAttrInfosNum(), s->GetAttrInfos());
 }
-
 Re ExecuteMain::DoInsert(Statement *stmt) {
     //    auto rs = static_cast<ResolveSession *>(resolve_session_);
     auto s = static_cast<InsertStatement *>(stmt);
@@ -157,6 +152,51 @@ Re ExecuteMain::DoInsert(Statement *stmt) {
         r = clog_manager->AppendRecord(clog_record);
         if (r != Re::Success)
             return r;
+        txn->NextCurrentId();
+    }
+    return Re::Success;
+}
+Re ExecuteMain::DoDelete(Statement *stmt) {
+    DataBase *current_database = GetDb();
+    Txn *txn = GetTxn();
+    CLogManager *clog_manager = current_database->GetCLogManager();
+    if (stmt == nullptr) {
+        DebugPrint("ExecuteMain:cannot find delete statement\n");
+        return Re::GenericError;
+    }
+    auto ds = static_cast<DeleteStatement *>(stmt);
+    TableScanOperator * scan_oper=new TableScanOperator(ds->GetTable());
+    PredicateOperator * pred_oper=new PredicateOperator(ds->GetFilter());
+    DeleteOperator* del_oper=new DeleteOperator(ds,txn);
+    pred_oper->AddOper(scan_oper);
+    del_oper->AddOper(pred_oper);
+    GlobalMainManager& gmm=GlobalManagers::GetGlobalMainManager();
+    Re r=del_oper->Init();
+    if(r!=Re::Success){
+        DebugPrint("ExecuteMain:init operators failed\n");
+        gmm.SetResponse("SQL ERROR,INIT OPERATOR FAILED\n");
+        return r;
+    }
+    r=del_oper->Handle();
+    if(r!=Re::Success){
+        DebugPrint("ExecuteMain:handle operators failed\n");
+        gmm.SetResponse("SQL ERROR,HANDLE OPERATOR FAILED\n");
+        return r;
+    }
+    if(!GetTmo()){
+        CLogRecord* clog_record=nullptr;
+        r=clog_manager->MakeRecord(CLogType::RedoMiniTxnCommit,txn->GetTxnId(),clog_record);
+        if(r!=Re::Success or clog_record==nullptr){
+            DebugPrint("ExecuteMain:make clog record failed re:%d,%s\n",r,StrRe(r));
+            gmm.SetResponse("SQL ERROR,CAN NOT MAKE LOG\n");
+            return r;
+        }
+        r=clog_manager->AppendRecord(clog_record);
+        if(r!=Re::Success){
+            DebugPrint("ExecuteMain:append clog record failed re:%d,%s\n",r,StrRe(r));
+            gmm.SetResponse("SQL ERROR,CAN NOT APPEND LOG\n");
+            return r;
+        }
         txn->NextCurrentId();
     }
     return Re::Success;

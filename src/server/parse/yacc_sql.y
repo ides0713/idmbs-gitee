@@ -287,12 +287,17 @@ value:
     
 delete:		/*  delete 语句的语法解析树*/
     DELETE FROM ID where SEMICOLON {
+        if(CONTEXT->query==nullptr){
+			CONTEXT->query=new DeleteQuery();
+			CONTEXT->query->Init();
+		}
+        static_cast<DeleteQuery*>(CONTEXT->query)->SetRelName($3);
+        static_cast<DeleteQuery*>(CONTEXT->query)->AddConditions(CONTEXT->condition_length,CONTEXT->conditions);
         // CONTEXT->query_info->SCF_Flag = ScfDelete;//"delete";
         // deletes_init_relation(&CONTEXT->ssql->sstr.deletion, $3);
         // deletes_set_conditions(&CONTEXT->ssql->sstr.deletion,
         // 		CONTEXT->conditions, CONTEXT->condition_length);
-        // CONTEXT->condition_length = 0;
-        printf("delete sql recognize\n");
+        CONTEXT->condition_length = 0;
     }
     ;
 update:			/*  update 语句的语法解析树*/

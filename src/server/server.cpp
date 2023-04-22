@@ -17,7 +17,6 @@
 #include <sys/socket.h>
 #include <thread>
 #include <unistd.h>
-
 void DoTest();
 void ToLower(char *str);
 void ToUpper(char *str);
@@ -26,6 +25,7 @@ int main(int argc, char *argv[]) {
     GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     char str[READ_BUFFER_SIZE];
     while (true) {
+        printf("[iSQL]: ");
         memset(str, 0, 1024);
         scanf("%[^\n]", &str);
         getchar();
@@ -63,7 +63,6 @@ void ToLower(char *str) {
         if (str[i] < 'Z' and str[i] > 'A')
             str[i] = str[i] - 'A' + 'a';
 }
-
 void ToUpper(char *str) {
     for (int i = 0; i < strlen(str); i++)
         if (str[i] < 'z' and str[i] > 'a')

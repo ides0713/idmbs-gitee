@@ -1,16 +1,14 @@
 #pragma once
-
 #include "../common/persist_file_io_handler.h"
 #include "../common/re.h"
 #include "record.h"
 #include <atomic>
 #include <filesystem>
-
 #define CLOG_FILE_SIZE (48 * 1024 * 1024) // 48MB
 #define CLOG_BUFFER_SIZE (4 * 1024 * 1024)// 4MB
 #define TABLE_NAME_MAX_LEN 20
-
-enum CLogType {
+enum CLogType
+{
     RedoError = 0,
     RedoMiniTxnBegin,
     RedoMiniTxnCommit,
@@ -18,7 +16,6 @@ enum CLogType {
     RedoDelete,
     RedoUpdate
 };
-
 struct CLogRecordHeader {
 public:
     int32_t lsn;// lsn stands for log sequence number
@@ -33,24 +30,22 @@ public:
         type = p_type;
         clog_record_len = p_clog_record_len;
     }
-
     bool operator==(const CLogRecordHeader &other) const {
         return lsn == other.lsn && txn_id == other.txn_id && type == other.type &&
                clog_record_len == other.clog_record_len;
     }
 };
-
-class CLogRecordBase {
+class CLogRecordBase
+{
 public:
     CLogRecordHeader header;
 
 public:
     CLogRecordBase() = default;
-
     virtual ~CLogRecordBase() = default;
 };
-
-class CLogInsertRecord : public CLogRecordBase {
+class CLogInsertRecord : public CLogRecordBase
+{
 public:
     char table_name[TABLE_NAME_MAX_LEN];
     RecordId rid;
@@ -59,73 +54,53 @@ public:
 
 public:
     CLogInsertRecord() : data(nullptr) {}
-
     ~CLogInsertRecord() override { delete[] data; }
-
     bool operator==(const CLogInsertRecord &other) const {
         return header == other.header and strcmp(table_name, other.table_name) == 0 and rid == other.rid and
                data_len == other.data_len and (memcmp(data, other.data, data_len) == 0);
     }
 };
-
-class CLogDeleteRecord : public CLogRecordBase {
+class CLogDeleteRecord : public CLogRecordBase
+{
 public:
     char table_name[TABLE_NAME_MAX_LEN];
     RecordId rid;
 
 public:
     ~CLogDeleteRecord() override = default;
-
     bool operator==(const CLogDeleteRecord &other) const {
         return header == other.header and strcmp(table_name, other.table_name) == 0 && rid == other.rid;
     }
 };
-
-class CLogMiniTxnRecord : public CLogRecordBase {
+class CLogMiniTxnRecord : public CLogRecordBase
+{
 public:
     ~CLogMiniTxnRecord() override = default;
-
-    bool operator==(const CLogMiniTxnRecord &other) const {
-        return header == other.header;
-    }
+    bool operator==(const CLogMiniTxnRecord &other) const { return header == other.header; }
 };
-
-class CLogError : public CLogRecordBase {
+class CLogError : public CLogRecordBase
+{
 public:
     ~CLogError() override = default;
-
     void Destroy() { delete this; }
-
-    bool operator==(const CLogError &other) const {
-        return header == other.header;
-    }
+    bool operator==(const CLogError &other) const { return header == other.header; }
 };
-
-class CLogRecord {
+class CLogRecord
+{
 public:
     // TODO: lsn当前在内部分配
     ///@brief construct a clog record with given params
-    CLogRecord(CLogType flag, int32_t txn_id, const char *table_name, int data_len,
-               class Record *rec);
-
+    CLogRecord(CLogType flag, int32_t txn_id, const char *table_name, int data_len, class Record *rec);
     ///@brief construct from chars data,using for recover clog from disk
     explicit CLogRecord(char *data);
-
     ~CLogRecord();
-
     CLogType GetCLogType() { return clog_flag_; }
-
     int32_t GetTxnId() { return clog_record_->header.txn_id; }
-
     int32_t GetCLogRecordLen() { return clog_record_->header.clog_record_len; }
-
     int32_t GetLsn() { return clog_record_->header.lsn; }
-
     ///@brief copy data of record to dest(from (param:start_off) to (param:start_off+param:copy_len))
     Re CopyRecordTo(void *dest, int start_off, int copy_len);
-
     int CmpEq(CLogRecord *other);
-
     CLogRecordBase *GetCLogRecord() { return clog_record_; }
 
 private:
@@ -135,28 +110,19 @@ private:
 private:
     friend class DataBase;
 };
-
 class CLogBlock;
-
 class CLogFile;
-
-class CLogBuffer {
+class CLogBuffer
+{
 public:
     CLogBuffer();
-
     ~CLogBuffer();
-
     Re AppendCLogRecord(CLogRecord *clog_record, int &offset);
-
     // 将buffer中的数据下刷到log_file
     Re FlushBuffer(CLogFile *clog_file);
-
     void SetCurrentBlockOffset(const int32_t block_offset) { current_block_offset_ = block_offset; }
-
     void SetWriteBlockOffset(const int32_t write_block_offset) { write_block_offset_ = write_block_offset; };
-
     void SetWriteOffset(const int32_t write_offset) { write_offset_ = write_offset; };
-
     Re BlockCopyFrom(int32_t offset, CLogBlock *clog_block);
 
 private:
@@ -165,67 +131,53 @@ private:
     int32_t write_offset_;
     char buffer_[CLOG_BUFFER_SIZE];// 4MB
 };
-
 struct CLogBlockHeader;
 struct CLogFileHeader;
-
 #define CLOG_FILE_HEADER_SIZE sizeof(CLogFileHeader)                   // 8B
 #define CLOG_BLOCK_SIZE (1 << 9)                                       // 512B
 #define CLOG_BLOCK_HEADER_SIZE sizeof(CLogBlockHeader)                 // 8B
 #define CLOG_BLOCK_DATA_SIZE (CLOG_BLOCK_SIZE - CLOG_BLOCK_HEADER_SIZE)// 504B (512B-8B)
 #define CLOG_REDO_BUFFER_SIZE (8 * CLOG_BLOCK_SIZE)                    // 4KB
-
 struct CLogRecordBuffer {
 public:
     int32_t write_offset;
     // TODO: 当前假定log record大小不会超过CLOG_REDO_BUFFER_SIZE
     char buffer[CLOG_REDO_BUFFER_SIZE];
 };
-
 struct CLogFileHeader {
 public:
     int32_t file_real_offset;
     // TODO: 用于文件组，当前没用
     int32_t file_lsn;
 };
-
 struct CLogFileHeaderBlock {
 public:
     CLogFileHeader header;
     char pad[CLOG_BLOCK_SIZE - CLOG_FILE_HEADER_SIZE];
 };
-
 struct CLogBlockHeader {
 public:
     int32_t block_offset;       // offset of the block in clock buffer
     int16_t block_data_len;     // len of current data stored in the block
     int16_t first_record_offset;// offset of first record start in the block(first record in the block ends at offset)
 };
-
 ///@brief structure used to explain the buffer
 struct CLogBlock {
 public:
     CLogBlockHeader header;
     char data[CLOG_BLOCK_DATA_SIZE];
 };
-
 class CLogMiniTxnManager;
-
-class CLogFile {
+class CLogFile
+{
 public:
     CLogFile(const char *dir_path);
-
     ~CLogFile();
-
     Re UpdateCLogFileHeader(int32_t current_file_lsn);
-
     Re Append(int data_len, char *data);
-
     Re Write(uint64_t offset, int data_len, char *data);
-
     ///@brief r
     Re Recover(CLogMiniTxnManager *mini_txn_manager, CLogBuffer *clog_buffer);
-
     ///@brief recover a clog_record from block at param:offset
     ///@param offset offset in the block from the block header
     ///@param clog_record_buffer used to store the temp result of clog record
@@ -237,7 +189,6 @@ private:
     CLogFileHeaderBlock clog_file_header_block_;
     PersistFileIoHandler *clog_file_;
 };
-
 // TODO: 当前简单管理mtr
 struct CLogMiniTxnManager {
 public:
@@ -246,22 +197,17 @@ public:
 public:
     void CLogRecordManage(CLogRecord *clog_record);
 };
-
-class CLogManager {
+class CLogManager
+{
 public:
     explicit CLogManager(const char *dir_path);
-
     ~CLogManager();
-
     Re MakeRecord(CLogType flag, int32_t txn_id, CLogRecord *&clog_record, const char *table_name = nullptr,
                   int data_len = 0, class Record *rec = nullptr);
-
     // 追加写到log_buffer
     Re AppendRecord(CLogRecord *clog_record);
-
     // TODO: 优化回放过程，对同一位置的修改可以用哈希聚合
     Re Recover();
-
     CLogMiniTxnManager *GetMiniTxnManager() { return clog_mini_txn_manager_; }
 
 public:

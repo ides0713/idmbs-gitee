@@ -2,11 +2,9 @@
 // Created by ubuntu on 4/2/23.
 //
 #include "re.h"
-
-#define RE_CASE_STRING(re) \
-    case re:               \
+#define RE_CASE_STRING(re)                                                                                             \
+    case re:                                                                                                           \
         return #re
-
 const char *StrRe(Re re) {
     switch (re) {
         RE_CASE_STRING(Success);
@@ -43,7 +41,6 @@ const char *StrRe(Re re) {
         RE_CASE_STRING(NotADb);
         RE_CASE_STRING(LogBuf);
         RE_CASE_STRING(Notice);
-
         RE_CASE_STRING(BufferPoolExist);
         RE_CASE_STRING(BufferPoolFileErr);
         RE_CASE_STRING(BufferPoolInvalidName);
@@ -57,7 +54,6 @@ const char *StrRe(Re re) {
         RE_CASE_STRING(BufferPoolPagePinned);
         RE_CASE_STRING(BufferPoolOpenTooManyFiles);
         RE_CASE_STRING(BufferPoolIllegalFileId);
-
         RE_CASE_STRING(RecordClosed);
         RE_CASE_STRING(RecordOpened);
         RE_CASE_STRING(RecordInvalidRecSize);
@@ -72,7 +68,6 @@ const char *StrRe(Re re) {
         RE_CASE_STRING(RecordScanOpened);
         RE_CASE_STRING(RecordEof);
         RE_CASE_STRING(RecordRecordNotExist);
-
         RE_CASE_STRING(SchemaDbExist);
         RE_CASE_STRING(SchemaDbNotExist);
         RE_CASE_STRING(SchemaDbNotOpened);
@@ -89,7 +84,6 @@ const char *StrRe(Re re) {
         RE_CASE_STRING(SchemaIndexExist);
         RE_CASE_STRING(SchemaIndexNotExist);
         RE_CASE_STRING(SchemaIndexNameIllegal);
-
         RE_CASE_STRING(IoErrRead);
         RE_CASE_STRING(IoErrShortRead);
         RE_CASE_STRING(IoErrWrite);
@@ -119,34 +113,28 @@ const char *StrRe(Re re) {
         RE_CASE_STRING(IoErrData);
         RE_CASE_STRING(IoErrCorruptFs);
         RE_CASE_STRING(IoErrOpenTooManyFiles);
-
         RE_CASE_STRING(LockedLock);
         RE_CASE_STRING(LockedUnlock);
         RE_CASE_STRING(LockedSharedCache);
         RE_CASE_STRING(LockedVirt);
         RE_CASE_STRING(LockedNeedWait);
         RE_CASE_STRING(LockedResourceDeleted);
-
         RE_CASE_STRING(BusyRecovery);
         RE_CASE_STRING(BusySnapShot);
         RE_CASE_STRING(BusyTimeOut);
-
         RE_CASE_STRING(CantOpenNotEmptyDir);
         RE_CASE_STRING(CantOpenIsDir);
         RE_CASE_STRING(CantOpenFullPath);
         RE_CASE_STRING(CantOpenConvPath);
         RE_CASE_STRING(CantOpenDirtyWal);
         RE_CASE_STRING(CantOpenSymlink);
-
         RE_CASE_STRING(ReadOnlyRecovery);
         RE_CASE_STRING(ReadOnlyCantLock);
         RE_CASE_STRING(ReadonlyRollback);
         RE_CASE_STRING(ReadOnlyDbMoved);
         RE_CASE_STRING(ReadOnlyCantInit);
         RE_CASE_STRING(ReadOnlyDirectory);
-
         RE_CASE_STRING(AbortRollBack);
-
         RE_CASE_STRING(ConstraintCheck);
         RE_CASE_STRING(ConstraintCommitHook);
         RE_CASE_STRING(ConstraintForeignKey);
@@ -158,11 +146,9 @@ const char *StrRe(Re re) {
         RE_CASE_STRING(ConstraintVirt);
         RE_CASE_STRING(ConstraintRowid);
         RE_CASE_STRING(ConstraintPinned);
-
         RE_CASE_STRING(NoticeRecoverWal);
         RE_CASE_STRING(NoticeRecoverRollback);
         RE_CASE_STRING(NoticeAutoIndex);
-
         RE_CASE_STRING(FileExist);
         RE_CASE_STRING(FileNotExist);
         RE_CASE_STRING(FileName);
@@ -175,9 +161,7 @@ const char *StrRe(Re re) {
         RE_CASE_STRING(FileSeek);
         RE_CASE_STRING(FileRead);
         RE_CASE_STRING(FileWrite);
-
         RE_CASE_STRING(AuthUser);
-
         RE_CASE_STRING(LogBufFull);
         RE_CASE_STRING(LogBufEmpty);
         default: {
