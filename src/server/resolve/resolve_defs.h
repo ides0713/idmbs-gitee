@@ -1,19 +1,21 @@
 #pragma once
-#include "../common/global_managers.h"
-#include "../common/re.h"
-#include "../common/server_defs.h"
-#include "../parse/parse_defs.h"
-#include "../storage/database.h"
-#include "filter.h"
-#include <vector>
-class Session;
+#include <vector>                                         // for vector
+
+#include "../common/re.h"                                 // for Re
+#include "../parse/parse_defs.h"                          // for SqlCommandFlag
+#include "/home/ubuntu/idbms/src/server/storage/field.h"  // for Field
+
 class ResolveMain;
+class Filter;
+class Table;
+
 enum StatementType
 {
     Select = 0,
     CreateTable,
     Insert,
-    Delete
+    Delete,
+    CreateIndex,
 };
 class Statement
 {
@@ -107,4 +109,19 @@ private:
     Condition *conditions_;
     Filter *filter_;
     Table *table_;
+};
+class CreateIndexStatement : public Statement
+{
+public:
+    explicit CreateIndexStatement(Query *query);
+    void Init(Query *query) override;
+    Re Handle(Query *query, ResolveMain *resolve_main) override;
+    void Destroy() override;
+    StatementType GetType() override { return StatementType::CreateIndex; }
+    const char *GetIndexName() { return index_name_; }
+    RelAttr *getAttr() { return attr_; }
+
+private:
+    char *index_name_;
+    RelAttr *attr_;
 };

@@ -1,4 +1,11 @@
 #include "persist_file_io_handler.h"
+
+#include <bits/chrono.h>                                // for filesystem
+#include <errno.h>                                      // for errno
+#include <cstring>                                      // for strerror
+
+#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
+
 PersistFileIoHandler::PersistFileIoHandler() : file_(nullptr) {
 }
 PersistFileIoHandler::~PersistFileIoHandler() {

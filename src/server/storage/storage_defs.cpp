@@ -1,7 +1,12 @@
 #include "storage_defs.h"
-#include "../../common/common_defs.h"
-#include <cstring>
-#include <dirent.h>
+
+#include <dirent.h>                    // for dirent, opendir, readdir, DIR
+#include <errno.h>                     // for errno
+#include <cstring>                     // for strerror
+#include <regex>                       // for regex_match, match_results<>::...
+
+#include "../../common/common_defs.h"  // for DebugPrint
+
 std::filesystem::path GetDataBasePath(std::filesystem::path bin_path, const char *database_name) {
     return bin_path.append(database_name);
 }

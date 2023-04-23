@@ -1,26 +1,23 @@
-#include "../common/common_defs.h"
-#include "common/global_managers.h"
-#include "common/re.h"
-#include "common/server_defs.h"
-#include "execute/execute_main.h"
-#include "parse/parse_main.h"
-#include "resolve/resolve_main.h"
-#include "storage/storage_main.h"
-#include <arpa/inet.h>
-#include <cstdio>
-#include <cstring>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <netinet/in.h>
-#include <string>
-#include <sys/socket.h>
-#include <thread>
-#include <unistd.h>
+#include <bits/chrono.h>                 // for filesystem
+#include <cstdio>                        // for printf, getchar, scanf
+#include <cstring>                       // for strlen, strcmp, memset
+#include <filesystem>                    // for path
+#include <fstream>                       // for basic_istream, ifstream
+#include <string>                        // for allocator, string, getline
+
+#include "../common/common_defs.h"       // for DebugPrint
+#include "common/global_managers.h"      // for GlobalManagers
+#include "common/server_defs.h"          // for GlobalParamsManager, READ_BU...
+#include "common/global_main_manager.h"  // for GlobalMainManager
+
+const char *EXIT_COMMAND = "exit;";
+const char *TEST_COMMAND = "t";
 void DoTest();
 void ToLower(char *str);
 void ToUpper(char *str);
 int main(int argc, char *argv[]) {
+    //TODO users and corresponding config file
+    //TODO test case and tools to generate it
     GlobalManagers::Init();
     GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     char str[READ_BUFFER_SIZE];
@@ -29,9 +26,9 @@ int main(int argc, char *argv[]) {
         memset(str, 0, 1024);
         scanf("%[^\n]", &str);
         getchar();
-        if (strcmp(str, "t") == 0)
+        if (strcmp(str, TEST_COMMAND) == 0)
             DoTest();
-        else if (strcmp(str, "exit;") == 0)
+        else if (strcmp(str, EXIT_COMMAND) == 0)
             break;
         else if (strlen(str) != 0)
             gmm.Handle(str);

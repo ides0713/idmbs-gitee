@@ -1,8 +1,6 @@
 #pragma once
-#include <dirent.h>
-#include <filesystem>
-#include <unistd.h>
-#include <vector>
+#include <filesystem>  // for path
+
 const int MAX_CONNECTS = 10;
 const int READ_BUFFER_SIZE = 1024;
 class GlobalParamsManager

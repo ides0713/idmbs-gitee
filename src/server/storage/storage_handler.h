@@ -1,6 +1,3 @@
-#include "database.h"
-#include "record.h"
-#include "table.h"
 class StorageHandler
 {
 public:

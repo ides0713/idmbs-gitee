@@ -1,8 +1,9 @@
 #pragma once
-#include "../storage/buffer_pool.h"
-#include "../storage/database.h"
-#include "global_main_manager.h"
-#include "server_defs.h"
+class GlobalBufferPoolManager;
+class GlobalDataBaseManager;
+class GlobalMainManager;
+class GlobalParamsManager;
+
 class GlobalManagers
 {
 public:

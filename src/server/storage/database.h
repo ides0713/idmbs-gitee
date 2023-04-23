@@ -1,14 +1,16 @@
 #pragma once
-#include "../common/server_defs.h"
-#include "../parse/parse_defs.h"
-#include "table.h"
-#include <cstdio>
-#include <cstring>
-#include <filesystem>
-#include <map>
-#include <string>
-#include <unordered_map>
+#include <cstdio>                                     // for size_t
+#include <filesystem>                                 // for path
+#include <map>                                        // for map
+#include <string>                                     // for string, hash
+#include <unordered_map>                              // for unordered_map
+
+#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re
+
 class CLogManager;
+class Table;
+struct AttrInfo;
+
 #define DATABASE_NAME_MAX_LEN 20
 class DataBase
 {

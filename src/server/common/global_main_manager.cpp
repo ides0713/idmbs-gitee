@@ -1,9 +1,17 @@
 #include "global_main_manager.h"
-#include "../execute/execute_main.h"
-#include "../parse/parse_main.h"
-#include "../resolve/resolve_main.h"
-#include "../storage/storage_main.h"
-#include "start_main.h"
+
+#include <stdio.h>                                      // for printf, vsprintf
+#include <cstdarg>                                      // for va_end, va_list
+
+#include "../execute/execute_main.h"                    // for ExecuteMain
+#include "../parse/parse_main.h"                        // for ParseMain
+#include "../resolve/resolve_main.h"                    // for ResolveMain
+#include "../storage/storage_main.h"                    // for StorageMain
+#include "start_main.h"                                 // for StartMain
+#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
+#include "base_main.h"                                  // for StrMainType
+#include "re.h"                                         // for Re, Success
+
 void GlobalMainManager::Init() {
     BaseMain *start_main = new StartMain();
     mains_.push_back(start_main);

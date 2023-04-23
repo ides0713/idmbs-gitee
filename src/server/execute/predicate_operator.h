@@ -1,7 +1,11 @@
 #pragma once
-#include "operator.h"
+#include "operator.h"                                 // for Operator
+#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re
+
 class Filter;
 class RowTuple;
+class Tuple;
+
 ///@brief filter predicate for only one table
 class PredicateOperator : public Operator
 {

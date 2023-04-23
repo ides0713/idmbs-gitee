@@ -1,7 +1,11 @@
 #pragma once
-#include "operator.h"
+#include "operator.h"                                 // for Operator
+#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re
+
 class Txn;
 class DeleteStatement;
+class Tuple;
+
 class DeleteOperator : public Operator
 {
 public:

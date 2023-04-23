@@ -1,5 +1,9 @@
 #pragma once
-#include "operator.h"
+#include "operator.h"                                 // for Operator
+#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re
+
+class Tuple;
+
 class IndexScanOperator : public Operator
 {
 public:

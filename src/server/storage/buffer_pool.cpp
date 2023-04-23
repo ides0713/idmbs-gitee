@@ -1,9 +1,19 @@
 #include "buffer_pool.h"
-#include <bitset>
-#include <cmath>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+
+#include <fcntl.h>                                      // for open, O_RDWR
+#include <sys/stat.h>                                   // for timespec, S_I...
+#include <sys/types.h>                                  // for __ssize_t
+#include <assert.h>                                     // for assert
+#include <errno.h>                                      // for errno, EAGAIN
+#include <time.h>                                       // for clock_gettime
+#include <unistd.h>                                     // for close, lseek
+#include <algorithm>                                    // for max
+#include <cstdio>                                       // for printf, ssize_t
+#include <utility>                                      // for pair
+
+#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
+#include "/home/ubuntu/idbms/src/server/common/re.h"    // for Re, Success
+
 static const int32_t BP_HEADER_PAGE = 0;
 static const int MEM_POOL_ITEM_NUM = 128;
 unsigned long GetCurrentTime() {

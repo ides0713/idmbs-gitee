@@ -1,9 +1,9 @@
 #pragma once
-#include "../common/base_main.h"
-#include "../common/re.h"
-#include "../common/server_defs.h"
+#include "../common/base_main.h"  // for BaseMain, MainType, Parses
+#include "../common/re.h"         // for Re
+
 class Query;
-class StartMain;
+
 class ParseMain : public BaseMain
 {
 public:

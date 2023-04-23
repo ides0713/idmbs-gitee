@@ -1,10 +1,11 @@
 #pragma once
-#include "../common/re.h"
-#include "../common/server_defs.h"
-#include <cstring>
-#include <string>
+#include <string>          // for string
+
+#include "../common/re.h"  // for Re
+
 class FieldMeta;
 class TableMeta;
+
 namespace Json {
     class Value;
 }

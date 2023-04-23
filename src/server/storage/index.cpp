@@ -1,8 +1,14 @@
 #include "index.h"
-#include "../../common/common_defs.h"
-#include "field.h"
-#include "table.h"
-#include <jsoncpp/json/json.h>
+
+#include <jsoncpp/json/config.h>                      // for String
+#include <jsoncpp/json/value.h>                       // for Value, StaticSt...
+#include <cstring>                                    // for strlen
+
+#include "../../common/common_defs.h"                 // for DebugPrint
+#include "field.h"                                    // for FieldMeta
+#include "table.h"                                    // for TableMeta
+#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re, GenericError
+
 const static Json::StaticString FIELD_NAME("name");
 const static Json::StaticString FIELD_FIELD_NAME("field_name");
 Re IndexMeta::Init(const char *name, const FieldMeta &field) {

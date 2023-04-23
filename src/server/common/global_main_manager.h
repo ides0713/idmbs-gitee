@@ -1,9 +1,9 @@
 #pragma once
-#include "base_main.h"
-#include <cstdarg>
-#include <cstring>
-#include <string>
-#include <vector>
+#include <string>  // for string
+#include <vector>  // for vector
+
+class BaseMain;
+
 class GlobalMainManager
 {
 public:

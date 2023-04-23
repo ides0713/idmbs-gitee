@@ -1,12 +1,16 @@
-#include "../common/common_defs.h"
-#include <arpa/inet.h>
-#include <cstring>
-#include <iostream>
-#include <netinet/in.h>
-#include <strings.h>
-#include <sys/socket.h>
-#include <thread>
-#include <unistd.h>
+#include <arpa/inet.h>              // for inet_pton
+#include <netinet/in.h>             // for sockaddr_in, htons
+#include <strings.h>                // for bzero
+#include <sys/socket.h>             // for AF_INET, connect, socket, SOCK_ST...
+#include <unistd.h>                 // for write, close, read
+#include <stdio.h>                  // for printf
+#include <stdlib.h>                 // for EXIT_FAILURE, EXIT_SUCCESS
+#include <cstring>                  // for strcmp, strcpy
+#include <iostream>                 // for cin, istream
+#include <thread>                   // for thread
+
+#include "../common/common_defs.h"  // for Message, BUFFER_SIZE, MSG_TYPE_EXIT
+
 void RecvFunc(int fd) {
     Message m;
     while (read(fd, reinterpret_cast<char *>(&m), sizeof(m)) > 0) {

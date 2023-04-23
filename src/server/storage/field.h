@@ -1,9 +1,9 @@
 #pragma once
-#include "../common/re.h"
-#include "../common/server_defs.h"
-#include "../parse/parse_defs.h"
-#include <cstring>
-#include <string>
+#include <string>                 // for string
+
+#include "../common/re.h"         // for Re
+#include "../parse/parse_defs.h"  // for AttrType, Undefined
+
 namespace Json {
     class Value;
 }
@@ -29,6 +29,7 @@ private:
     bool visible_;
 };
 class Table;
+
 ///@brief class Field is just a container of pointer of field meta and pointer of table,it does not have its own memeber
 class Field
 {

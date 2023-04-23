@@ -1,8 +1,22 @@
 #include "resolve_defs.h"
+
+#include <string.h>
+#include <cassert>
+#include <string>
+#include <unordered_map>
+#include <utility>
+
 #include "../storage/txn.h"
 #include "filter.h"
 #include "resolve_main.h"
-#include <cassert>
+#include "/home/ubuntu/idbms/src/common/common_defs.h"
+#include "/home/ubuntu/idbms/src/server/common/global_main_manager.h"
+#include "/home/ubuntu/idbms/src/server/common/global_managers.h"
+#include "/home/ubuntu/idbms/src/server/common/re.h"
+#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"
+#include "/home/ubuntu/idbms/src/server/storage/database.h"
+#include "/home/ubuntu/idbms/src/server/storage/table.h"
+
 void WildcardFields(Table *table, std::vector<Field> &fields) {
     const TableMeta &table_meta = table->GetTableMeta();
     for (int i = TableMeta::GetSysFieldsNum(); i < table_meta.GetFieldsNum(); i++) {
@@ -22,6 +36,9 @@ void Statement::CreateStatement(Query *const query, Statement *&stmt) {
             break;
         case SqlCommandFlag::ScfDelete:
             stmt = new DeleteStatement(query);
+            break;
+        case SqlCommandFlag::ScfCreateIndex:
+            stmt = new CreateIndexStatement(query);
             break;
         default:
             DebugPrint("Statement:unrecognized query SCF\n");
@@ -243,7 +260,8 @@ void InsertStatement::Destroy() {
     delete[] values_;
 }
 DeleteStatement::DeleteStatement(Query *query)
-    : Statement(query->GetScf()), table_name_(nullptr), conditions_num_(0), conditions_(nullptr), filter_(nullptr) {
+    : Statement(query->GetScf()), table_name_(nullptr), conditions_num_(0), conditions_(nullptr), filter_(nullptr),
+      table_(nullptr) {
 }
 void DeleteStatement::Init(Query *query) {
     auto dq = static_cast<DeleteQuery *>(query);
@@ -282,6 +300,7 @@ Re DeleteStatement::Handle(Query *query, ResolveMain *resolve_main) {
         return r;
     }
     filter_ = filter;
+    table_ = table;
     return Re::Success;
 }
 void DeleteStatement::Destroy() {
@@ -289,4 +308,14 @@ void DeleteStatement::Destroy() {
     for (int i = 0; i < conditions_num_; i++)
         conditions_[i].Destroy();
     delete[] conditions_;
+}
+CreateIndexStatement::CreateIndexStatement(Query *query)
+    : Statement(query->GetScf()), index_name_(nullptr), attr_(nullptr) {
+}
+void CreateIndexStatement::Init(Query *query) {
+}
+Re CreateIndexStatement::Handle(Query *query, ResolveMain *resolve_main) {
+    return Re();
+}
+void CreateIndexStatement::Destroy() {
 }

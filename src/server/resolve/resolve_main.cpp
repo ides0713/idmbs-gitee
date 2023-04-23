@@ -1,6 +1,15 @@
 #include "resolve_main.h"
+
 #include "../parse/parse_main.h"
-#include "../storage/storage_handler.h"
+#include "/home/ubuntu/idbms/src/common/common_defs.h"
+#include "/home/ubuntu/idbms/src/server/common/global_main_manager.h"
+#include "/home/ubuntu/idbms/src/server/common/global_managers.h"
+#include "/home/ubuntu/idbms/src/server/common/re.h"
+#include "/home/ubuntu/idbms/src/server/storage/database.h"
+#include "resolve_defs.h"
+
+class BaseMain;
+
 Re ResolveMain::Init(BaseMain *last_main) {
     BaseSet(*last_main);
     auto parse_main = static_cast<ParseMain *>(last_main);

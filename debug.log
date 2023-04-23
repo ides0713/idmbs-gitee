@@ -27,7 +27,7 @@ FieldMeta:init a field_meta with name:u_name
 TableMeta:initialized table meta.table name=Select_tables_1
 GlobalBufferPoolManager:successfully createFilter /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
 DiskBufferPool:successfully open file /home/ubuntu/idbms/bin/sys/Select_tables_1.data.
-DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=7, hdr_frame=0x7ffff7822010
+DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/Select_tables_1.data. file_desc=7, hdr_frame=0x7fd057dce010
 RecordFileHandler:open record file handle done. r=0
 Table:successfully create table /home/ubuntu/idbms/bin/sys:Select_tables_1DataBase:createFilter table success. table name=Select_tables_1
 Execute main handle succeeded
@@ -51,34 +51,7 @@ Execute main handle succeeded
 Storage main init succeeded
 Storage main handle succeeded
 
-setted sql is         INSERT INTO Select_tables_1 VALUES (1,20,'a');
-
-Parse main init succeeded
-Parse main handle succeeded
-Resolve main init succeeded
-GlobalDataBaseManager:getDb from opened_databases,database_name:sys
-Resolve main handle succeeded
-Execute main init succeeded
-RecordPageHandler:successfully init page_id 1.
-Execute main handle succeeded
-Storage main init succeeded
-Storage main handle succeeded
-
-setted sql is         SELECT * FROM Select_tables_1 WHERE id=1;
-
-Parse main init succeeded
-Parse main handle succeeded
-Resolve main init succeeded
-GlobalDataBaseManager:getDb from opened_databases,database_name:sys
-SelectStatement:got 1 tables in from stmt and 3 fields in query stmt
-Resolve main handle succeeded
-Execute main init succeeded
-RecordPageHandler:successfully init page_id 1.
-Execute main handle succeeded
-Storage main init succeeded
-Storage main handle succeeded
-
-setted sql is         DELETE FROM Select_tables_1 WHERE age=20;
+setted sql is         CREATE INDEX Select_index_1 ON Select_tables_1(id);
 
 Parse main init succeeded
 Parse main handle succeeded

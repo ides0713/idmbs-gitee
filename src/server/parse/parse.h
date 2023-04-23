@@ -1,3 +1,4 @@
 #pragma once
-#include "parse_defs.h"
+class Query;
+
 int Parse(const char *st, Query *&res);

@@ -1,5 +1,14 @@
 #include "record.h"
-#include "condition_filter.h"
+
+#include <stdio.h>                                      // for printf
+#include <string.h>                                     // for memcpy, memmove
+#include <limits>                                       // for numeric_limits
+#include <sstream>                                      // for basic_ostream...
+
+#include "condition_filter.h"                           // for ConditionFilter
+#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
+#include "/home/ubuntu/idbms/src/server/common/re.h"    // for Re, Success
+
 ///@brief calculate how many bit data(size=param:size) will use (unit is byte(8 bit))
 int Align8(int size) {
     return size / 8 * 8 + ((size % 8 == 0) ? 0 : 8);

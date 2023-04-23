@@ -1,7 +1,12 @@
 #include "delete_operator.h"
-#include "../../common/common_defs.h"
-#include "../resolve/resolve_defs.h"
-#include "../storage/table.h"
+
+#include <vector>                                         // for vector
+
+#include "../../common/common_defs.h"                     // for DebugPrint
+#include "../resolve/resolve_defs.h"                      // for DeleteState...
+#include "../storage/table.h"                             // for Table
+#include "/home/ubuntu/idbms/src/server/resolve/tuple.h"  // for RowTuple
+
 Re DeleteOperator::Init() {
     if (opers_.size() != 1) {
         DebugPrint("DeleteOperator:delete operaot must has 1 child operator\n");

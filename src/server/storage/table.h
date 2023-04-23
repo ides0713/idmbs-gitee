@@ -1,22 +1,23 @@
 #pragma once
-#include "../parse/parse_defs.h"
-#include "field.h"
-#include "index.h"
-#include <cstring>
-#include <filesystem>
-#include <jsoncpp/json/json.h>
-#include <string>
-struct RecordId;
-class Record;
+#include <stdint.h>                                   // for int32_t
+#include <cstring>                                    // for size_t
+#include <filesystem>                                 // for path
+#include <string>                                     // for string
+#include <iosfwd>                                     // for istream, ostream
+#include <vector>                                     // for vector
+
+#include "field.h"                                    // for FieldMeta
+#include "index.h"                                    // for IndexMeta
+#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re
+
 class DiskBufferPool;
 class RecordFileHandler;
 class RecordFileScanner;
-class ConditionFilter;
-class DefaultConditionFilter;
-class IndexScanner;
-class RecordDeleter;
 class Txn;
 class CLogManager;
+struct AttrInfo;
+struct Value;
+
 #define TABLE_NAME_MAX_LEN 20
 class TableMeta
 {

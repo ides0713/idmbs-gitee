@@ -1,8 +1,19 @@
 #include "database.h"
-#include "../common/global_managers.h"
-#include "clog_manager.h"
-#include "storage_defs.h"
-#include "storage_handler.h"
+
+#include <bits/chrono.h>                                       // for filesy...
+#include <cstring>                                             // for strlen
+#include <utility>                                             // for pair
+#include <vector>                                              // for vector
+
+#include "../common/global_managers.h"                         // for Global...
+#include "clog_manager.h"                                      // for CLogMa...
+#include "storage_defs.h"                                      // for ListFile
+#include "/home/ubuntu/idbms/src/common/common_defs.h"         // for DebugP...
+#include "/home/ubuntu/idbms/src/server/common/server_defs.h"  // for Global...
+#include "table.h"                                             // for Table
+
+struct AttrInfo;
+
 void DataBase::Destroy() {
     // destroy all table of the database,remove them from the memory and
     for (auto table: opened_tables_)

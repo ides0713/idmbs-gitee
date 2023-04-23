@@ -1,9 +1,9 @@
 #pragma once
-#include "../common/base_main.h"
-#include "../common/re.h"
-#include "../common/server_defs.h"
-#include "../resolve/resolve_defs.h"
-#include "../storage/clog_manager.h"
+#include "../common/base_main.h"  // for BaseMain, Execute, MainType
+#include "../common/re.h"         // for Re
+
+class Statement;
+
 class ExecuteMain : public BaseMain
 {
 public:
@@ -18,7 +18,7 @@ private:
     Re DoCreateTable(Statement *stmt);
     Re DoInsert(Statement *stmt);
     Re DoDelete(Statement *stmt);
-
+    Re DoCreateIndex(Statement* stmt);
 private:
     Statement *stmt_;
 };

@@ -1,15 +1,28 @@
 #include "table.h"
-#include "../common/global_managers.h"
-#include "buffer_pool.h"
-#include "clog_manager.h"
-#include "record.h"
-#include "storage_defs.h"
-#include "storage_handler.h"
-#include "txn.h"
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <utility>
+
+#include <bits/chrono.h>                                     // for filesystem
+#include <errno.h>                                           // for errno
+#include <ext/alloc_traits.h>                                // for __alloc_...
+#include <jsoncpp/json/config.h>                             // for String
+#include <jsoncpp/json/reader.h>                             // for parseFro...
+#include <jsoncpp/json/value.h>                              // for Value
+#include <jsoncpp/json/writer.h>                             // for StreamWr...
+#include <cstdio>                                            // for fclose
+#include <fstream>                                           // for fstream
+#include <utility>                                           // for move
+#include <algorithm>                                         // for sort
+#include <compare>                                           // for operator<
+#include <memory>                                            // for allocato...
+
+#include "../common/global_managers.h"                       // for GlobalMa...
+#include "buffer_pool.h"                                     // for GlobalBu...
+#include "clog_manager.h"                                    // for CLogManager
+#include "record.h"                                          // for Record
+#include "storage_defs.h"                                    // for GetTable...
+#include "txn.h"                                             // for Txn
+#include "/home/ubuntu/idbms/src/common/common_defs.h"       // for DebugPrint
+#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"  // for Value
+
 static const Json::StaticString FIELD_TABLE_NAME("table_name");
 static const Json::StaticString FIELD_FIELDS("fields");
 static const Json::StaticString FIELD_INDEXES("indexes");
@@ -295,6 +308,25 @@ Re Table::InsertRecord(Txn *txn, int values_num, const Value *values) {
 Re Table::DeleteRecord(Txn *txn, class Record *record) {
     //TODO delete entry of indexes(not implemented)
     Re r = record_handler_->DeleteRecord(&record->GetRecordId());
+    if(r!=Re::Success){
+        DebugPrint("Table:failed to delete record rid=%d,%d re=%d,%s\n",record->GetRecordId().page_id,record->GetRecordId().slot_id,r,StrRe(r));
+        return r;
+    }
+    if(txn!=nullptr){
+        txn->DeleteRecord(this,record);
+        CLogRecord *clog_record=nullptr;
+        r=clog_manager_->MakeRecord(CLogType::RedoDelete,txn->GetTxnId(),clog_record,GetTableName(),0,record);
+        if(r!=Re::Success){
+            DebugPrint("Table:failed to create a clog record re=%d,%s\n",r,StrRe(r));
+            return r;
+        }    
+        r=clog_manager_->AppendRecord(clog_record);
+        if(r!=Re::Success){
+            DebugPrint("Table:failed to append clog record re=%d,%s\n",r,StrRe(r));
+            return r;
+        }
+    }
+    return Re::Success;
 }
 Re Table::GetRecordFileScanner(RecordFileScanner &scanner) {
     Re r = scanner.Init(*data_buffer_pool_, nullptr);

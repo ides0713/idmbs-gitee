@@ -1,5 +1,11 @@
 #include "parse.h"
-#include "../../common/common_defs.h"
+
+#include <assert.h>      // for assert
+#include <string.h>      // for strcpy, strlen
+#include <string>        // for allocator, string
+
+#include "parse_defs.h"  // for CompOp, AttrType, Chars, Dates, EqualTo, Floats
+
 int SqlParse(const char *st, Query *&res);
 int Parse(const char *st, Query *&res) {
     SqlParse(st, res);

@@ -1,5 +1,8 @@
 #include "start_main.h"
-#include "../parse/parse_defs.h"
+
+#include "../parse/parse_defs.h"                        // for StrNew
+#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
+
 Re StartMain::Init(BaseMain *last_main) {
     return Re::Success;
 }
@@ -22,7 +25,6 @@ char *StartMain::GetSql() {
     return sql_;
 }
 void StartMain::SetSql(const char *sql) {
-    printf("sql is %s\n", sql);
     if (sql_ != nullptr) {
         delete[] sql_;
         sql_ = nullptr;

@@ -2,11 +2,11 @@
 // Created by ubuntu on 4/1/23.
 //
 #pragma once
-#include "../common/re.h"
-#include "../common/server_defs.h"
-#include "../parse/parse_defs.h"
-class Record;
+#include "../common/re.h"         // for Re
+#include "../parse/parse_defs.h"  // for AttrType, CompOp, NoOp, Undefined
+
 class Table;
+
 struct ConDesc {
 public:
     bool is_attr;

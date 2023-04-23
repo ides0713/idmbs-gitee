@@ -175,6 +175,13 @@ create_index:		/*create index 语句的语法解析树*/
     CREATE INDEX ID ON ID LBRACE ID RBRACE SEMICOLON {
         // CONTEXT->query_info->SCF_Flag = ScfCreateIndex;//"create_index";
         // create_index_init(&CONTEXT->ssql->sstr.create_index, $3, $5, $7);
+        if(CONTEXT->query==nullptr){
+			CONTEXT->query=new CreateIndexQuery();
+			CONTEXT->query->Init();
+		}
+        static_cast<CreateIndexQuery*>(CONTEXT->query)->SetIndexName($3);
+        RelAttr attr($5,$7);
+        static_cast<CreateIndexQuery*>(CONTEXT->query)->SetAttr(attr);
 	}
     ;
 

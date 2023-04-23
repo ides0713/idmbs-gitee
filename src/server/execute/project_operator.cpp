@@ -1,8 +1,12 @@
 #include "project_operator.h"
-#include "../resolve/expression.h"
-#include "../resolve/tuple.h"
-#include "../storage/field.h"
-#include "../storage/table.h"
+
+#include <vector>                                       // for vector
+
+#include "../resolve/expression.h"                      // for FieldExpression
+#include "../resolve/tuple.h"                           // for ProjectTuple
+#include "../storage/field.h"                           // for FieldMeta
+#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
+
 ProjectOperator::ProjectOperator() {
     tuple_ = new ProjectTuple;
 }

@@ -1,11 +1,11 @@
 #pragma once
-#include "re.h"
-#include <cstring>
-#include <string>
-#include <vector>
-class Session;
+#include <string>  // for string
+
+#include "re.h"    // for Re
+
 class DataBase;
 class Txn;
+
 enum MainType
 {
     Start = 0,

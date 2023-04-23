@@ -1,10 +1,15 @@
 #pragma once
-#include "../common/re.h"
-#include "../parse/parse_defs.h"
-#include "expression.h"
+#include <string>                 // for string
+#include <unordered_map>          // for unordered_map
+#include <vector>                 // for vector
+
+#include "../common/re.h"         // for Re
+#include "../parse/parse_defs.h"  // for CompOp, NoOp
+
 class DataBase;
 class Table;
-class FieldMeta;
+class Expression;
+
 class FilterUnit
 {
 public:

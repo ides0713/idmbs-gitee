@@ -1,13 +1,16 @@
 #pragma once
-#include "../common/re.h"
-#include "../parse/parse_defs.h"
-#include <atomic>
-#include <cstddef>
-#include <unordered_map>
-#include <unordered_set>
+#include <stdint.h>               // for int32_t
+#include <atomic>                 // for atomic
+#include <cstddef>                // for size_t
+#include <unordered_map>          // for unordered_map
+#include <unordered_set>          // for unordered_set
+
+#include "../common/re.h"         // for Re
+#include "../parse/parse_defs.h"  // for AttrType
+
 class Table;
 struct RecordId;
-class Record;
+
 class Operation
 {
 public:

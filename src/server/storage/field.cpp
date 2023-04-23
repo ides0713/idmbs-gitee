@@ -1,7 +1,14 @@
 #include "field.h"
-#include "../../common/common_defs.h"
-#include "table.h"
-#include <jsoncpp/json/json.h>
+
+#include <jsoncpp/json/config.h>                             // for String
+#include <jsoncpp/json/value.h>                              // for Value
+#include <cstring>                                           // for strcmp
+
+#include "../../common/common_defs.h"                        // for DebugPrint
+#include "table.h"                                           // for Table
+#include "/home/ubuntu/idbms/src/server/common/re.h"         // for Re, Gene...
+#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"  // for AttrType
+
 const static Json::StaticString FIELD_NAME("name");
 const static Json::StaticString FIELD_TYPE("type");
 const static Json::StaticString FIELD_OFFSET("offset");

@@ -1,9 +1,14 @@
 #include "common_defs.h"
-#include "params_deliver.h"
-#include <cassert>
-#include <cstdio>
-#include <cstring>
-#include <filesystem>
+
+#include <bits/chrono.h>     // for filesystem
+#include <cassert>           // for assert
+#include <cstdio>            // for fflush, fopen, vfprintf
+#include <cstring>           // for strcpy
+#include <filesystem>        // for path
+#include <cstdarg>           // for va_end, va_list, va_start
+
+#include "params_deliver.h"  // for PROJECT_PATH
+
 void DebugPrint(const char *format, ...) {
     // #ifdef DEBUG
     if (LOG_STREAM == nullptr) {

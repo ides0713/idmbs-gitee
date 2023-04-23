@@ -1,7 +1,9 @@
 #include "storage_main.h"
-#include "../../common/common_defs.h"
-#include "storage_defs.h"
-#include <sys/stat.h>
+
+#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re, Success
+
+class BaseMain;
+
 Re StorageMain::Init(BaseMain *last_main) {
     BaseSet(*last_main);
     return Re::Success;

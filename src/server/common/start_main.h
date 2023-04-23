@@ -1,7 +1,7 @@
 #pragma once
-#include "../../common/common_defs.h"
-#include "../parse/parse_defs.h"
-#include "base_main.h"
+#include "base_main.h"  // for BaseMain, MainType, Start
+#include "re.h"         // for Re
+
 class StartMain : public BaseMain
 {
 public:

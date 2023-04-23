@@ -1,9 +1,10 @@
 #pragma once
-#include "../common/base_main.h"
-#include "../common/re.h"
-#include "../common/server_defs.h"
-#include "resolve_defs.h"
-#include <unordered_map>
+#include "../common/base_main.h"  // for BaseMain, MainType, Resolve
+#include "../common/re.h"         // for Re
+
+class Query;
+class Statement;
+
 class ResolveMain : public BaseMain
 {
 public:

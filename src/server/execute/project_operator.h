@@ -1,9 +1,13 @@
 #pragma once
-#include "operator.h"
+#include "operator.h"                                 // for Operator
+#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re
+
 class TupleUnitSpec;
 class ProjectTuple;
 class FieldMeta;
 class Table;
+class Tuple;
+
 class ProjectOperator : public Operator
 {
 public:

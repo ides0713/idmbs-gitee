@@ -1,6 +1,13 @@
 #include "txn.h"
-#include "record.h"
-#include "table.h"
+
+#include <utility>                                           // for pair
+
+#include "record.h"                                          // for Record
+#include "table.h"                                           // for Table
+#include "/home/ubuntu/idbms/src/server/common/re.h"         // for Re, Gene...
+#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"  // for AttrType
+#include "field.h"                                           // for FieldMeta
+
 static const uint32_t DELETED_FLAG_BIT_MASK = 0x80000000;
 static const uint32_t TXN_ID_BIT_MASK = 0x7FFFFFFF;
 std::atomic<int32_t> Txn::global_txn_id(0);

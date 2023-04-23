@@ -1,8 +1,13 @@
 #pragma once
-#include "../storage/field.h"
-#include "tuple.h"
-#include <cstring>
-#include <string>
+#include <string>                                     // for string
+
+#include "../storage/field.h"                         // for Field
+#include "tuple.h"                                    // for TupleUnit
+#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re
+
+class Table;
+struct Value;
+
 enum class ExprType
 {
     None,

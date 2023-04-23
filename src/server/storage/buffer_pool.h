@@ -1,13 +1,19 @@
 #pragma once
-#include "../common/re.h"
-#include "../common/server_defs.h"
-#include "bitmap.h"
-#include "lru_cache.h"
-#include "mem_pool.h"
-#include <cstdint>
-#include <cstdio>
-#include <cstring>
-#include <unordered_map>
+#include <cstdint>         // for int32_t
+#include <cstring>         // for size_t, memset
+#include <unordered_map>   // for unordered_map
+#include <functional>      // for equal_to
+#include <list>            // for list
+#include <mutex>           // for mutex
+#include <set>             // for set
+#include <string>          // for string, hash
+#include <unordered_set>   // for unordered_set
+
+#include "../common/re.h"  // for Re
+#include "bitmap.h"        // for BitMap
+#include "lru_cache.h"     // for LruCache
+#include "mem_pool.h"      // for MemoryPool
+
 #define BP_INVALID_PAGE_NUM (-1)
 #define BP_PAGE_SIZE (1 << 14)// 2^14 16KB
 #define BP_PAGE_DATA_SIZE (BP_PAGE_SIZE - sizeof(int32_t))
@@ -136,6 +142,7 @@ private:
     MemoryPool<Frame> frame_allocator_;// a allocator of frames,implemented with memory pool
 };
 class GlobalBufferPoolManager;
+
 ///@brief a buffer pool of corresponding file,i.e. a buffer pool can be used by only one on-disk file
 class DiskBufferPool
 {

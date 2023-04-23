@@ -1,5 +1,9 @@
 #include "base_main.h"
-#include "../storage/txn.h"
+
+#include <assert.h>          // for assert
+
+#include "../storage/txn.h"  // for Txn
+
 void BaseMain::BaseSet(const BaseMain &base_main) {
     database_ = base_main.database_;
     txn_ = base_main.txn_;

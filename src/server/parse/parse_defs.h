@@ -152,6 +152,8 @@ public:
     RelAttr(const char *r_name, const char *a_name) {
         if (r_name == nullptr)
             rel_name = nullptr;
+        else
+            rel_name = StrNew(r_name);
         attr_name = StrNew(a_name);
     }
     void Copy(const RelAttr &attr) {
@@ -298,15 +300,24 @@ public:
         rel_names_ = new char *[MAX_RELS_NUM];
     }
     void Destroy() override {
-        for (int i = 0; i < rel_names_num_; i++)
-            delete[] rel_names_[i];
-        delete[] rel_names_;
-        for (int i = 0; i < attrs_num_; i++)
-            attrs_[i].Destroy();
-        delete[] attrs_;
-        for (int i = 0; i < conditions_num_; i++)
-            conditions_[i].Destroy();
-        delete[] conditions_;
+        if (rel_names_ != nullptr) {
+            for (int i = 0; i < rel_names_num_; i++)
+                delete[] rel_names_[i];
+            delete[] rel_names_;
+            rel_names_ = nullptr;
+        }
+        if (attrs_ != nullptr) {
+            for (int i = 0; i < attrs_num_; i++)
+                attrs_[i].Destroy();
+            delete[] attrs_;
+            attrs_ = nullptr;
+        }
+        if (conditions_ != nullptr) {
+            for (int i = 0; i < conditions_num_; i++)
+                conditions_[i].Destroy();
+            delete[] conditions_;
+            conditions_ = nullptr;
+        }
     }
     void AddRelAttr(const RelAttr &rel_attr) { attrs_[attrs_num_++] = rel_attr; }
     void AddRelName(const char *str) { rel_names_[rel_names_num_++] = StrNew(str); }
@@ -338,11 +349,19 @@ public:
     }
     void Destroy() override {
         delete[] rel_name_;
-        for (int i = 0; i < values_num_; i++)
-            values_[i].Destroy();
-        delete[] values_;
+        rel_name_ = nullptr;
+        if (values_ != nullptr) {
+            for (int i = 0; i < values_num_; i++)
+                values_[i].Destroy();
+            delete[] values_;
+            values_ = nullptr;
+        }
     }
-    void SetRelName(const char *str) { rel_name_ = StrNew(str); }
+    void SetRelName(const char *str) {
+        if (rel_name_ != nullptr)
+            delete[] rel_name_;
+        rel_name_ = StrNew(str);
+    }
     void AddValue(const Value &value) { values_[values_num_++] = value; }
     void AddValues(const size_t value_num, const Value *values) {
         for (int i = 0; i < value_num; i++)
@@ -368,11 +387,19 @@ public:
     }
     void Destroy() override {
         delete[] rel_name_;
-        for (int i = 0; i < attrs_num_; i++)
-            attrs_[i].Destroy();
-        delete[] attrs_;
+        rel_name_ = nullptr;
+        if (attrs_ != nullptr) {
+            for (int i = 0; i < attrs_num_; i++)
+                attrs_[i].Destroy();
+            delete[] attrs_;
+            attrs_ = nullptr;
+        }
     }
-    void SetRelName(const char *str) { rel_name_ = StrNew(str); }
+    void SetRelName(const char *str) {
+        if (rel_name_ != nullptr)
+            delete[] rel_name_;
+        rel_name_ = StrNew(str);
+    }
     void AddAttr(const AttrInfo &attr) { attrs_[attrs_num_++] = attr; }
     char *GetRelName() { return rel_name_; }
     [[nodiscard]] int GetAttrNum() const { return attrs_num_; }
@@ -394,9 +421,12 @@ public:
     }
     void Destroy() override {
         delete[] rel_name_;
-        for (int i = 0; i < conditions_num_; i++)
-            conditions_[i].Destroy();
-        delete[] conditions_;
+        if (conditions_ != nullptr) {
+            for (int i = 0; i < conditions_num_; i++)
+                conditions_[i].Destroy();
+            delete[] conditions_;
+            conditions_ == nullptr;
+        }
     }
     void SetRelName(const char *str) { rel_name_ = StrNew(str); }
     void AddConditions(size_t conditions_num, const Condition *conditions) {
@@ -411,6 +441,35 @@ private:
     int conditions_num_;
     char *rel_name_;
     Condition *conditions_;
+};
+class CreateIndexQuery : public Query
+{
+public:
+    CreateIndexQuery() : Query(SqlCommandFlag::ScfCreateIndex), index_name_(nullptr), attr_(nullptr) {}
+    void Init() {
+        attr_ = new RelAttr;
+        index_name_ = nullptr;
+    }
+    void Destroy() {
+        delete[] index_name_;
+        index_name_ = nullptr;
+        if (attr_ != nullptr) {
+            attr_->Destroy();
+            attr_ = nullptr;
+        }
+    }
+    void SetIndexName(const char *index_name) {
+        if (index_name_ != nullptr)
+            delete[] index_name_;
+        index_name_ = StrNew(index_name);
+    }
+    void SetAttr(const RelAttr &attr) { attr_->Copy(attr); }
+    const char *GetIndexName() { return index_name_; }
+    RelAttr *GetAttr() { return attr_; }
+
+private:
+    char *index_name_;
+    RelAttr *attr_;
 };
 class ErrorQuery : public Query
 {

@@ -1,7 +1,17 @@
 #include "filter.h"
-#include "../storage/database.h"
-#include "../storage/field.h"
-#include "../storage/table.h"
+
+#include <stdio.h>                                           // for printf
+#include <utility>                                           // for pair
+
+#include "../storage/database.h"                             // for DataBase
+#include "../storage/field.h"                                // for Field
+#include "../storage/table.h"                                // for Table
+#include "/home/ubuntu/idbms/src/common/common_defs.h"       // for DebugPrint
+#include "/home/ubuntu/idbms/src/server/common/re.h"         // for Re, Success
+#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"  // for AttrType
+#include "expression.h"                                      // for FieldExp...
+#include "tuple.h"                                           // for TupleUnit
+
 Re GetTableAndField(DataBase *db, Table *default_table, std::unordered_map<std::string, Table *> *tables,
                     const RelAttr &attr, Table *&table, const FieldMeta *&field) {
     if (attr.rel_name == nullptr)

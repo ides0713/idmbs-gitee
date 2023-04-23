@@ -1,13 +1,31 @@
 #include "execute_main.h"
+
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "../resolve/resolve_main.h"
 #include "../storage/txn.h"
+#include "delete_operator.h"
 #include "index_scan_operator.h"
 #include "predicate_operator.h"
 #include "project_operator.h"
 #include "table_scan_operator.h"
-#include "delete_operator.h"
-#include <cassert>
-#include <sstream>
+#include "/home/ubuntu/idbms/src/common/common_defs.h"
+#include "/home/ubuntu/idbms/src/server/common/global_main_manager.h"
+#include "/home/ubuntu/idbms/src/server/common/global_managers.h"
+#include "/home/ubuntu/idbms/src/server/common/re.h"
+#include "/home/ubuntu/idbms/src/server/resolve/resolve_defs.h"
+#include "/home/ubuntu/idbms/src/server/resolve/tuple.h"
+#include "/home/ubuntu/idbms/src/server/storage/clog_manager.h"
+#include "/home/ubuntu/idbms/src/server/storage/database.h"
+#include "/home/ubuntu/idbms/src/server/storage/field.h"
+#include "/home/ubuntu/idbms/src/server/storage/table.h"
+
+class BaseMain;
+class Filter;
+class Operator;
+
 IndexScanOperator *CreateIndexScanOperator(Filter *filter) {
     // TODO: implement index
     return nullptr;
@@ -64,6 +82,9 @@ Re ExecuteMain::Handle() {
             break;
         case StatementType::Delete:
             r = DoDelete(stmt_);
+            break;
+        case StatementType::CreateIndex:
+            r=DoCreateIndex(stmt_);
             break;
         default:
             r = Re::GenericError;
@@ -165,39 +186,42 @@ Re ExecuteMain::DoDelete(Statement *stmt) {
         return Re::GenericError;
     }
     auto ds = static_cast<DeleteStatement *>(stmt);
-    TableScanOperator * scan_oper=new TableScanOperator(ds->GetTable());
-    PredicateOperator * pred_oper=new PredicateOperator(ds->GetFilter());
-    DeleteOperator* del_oper=new DeleteOperator(ds,txn);
+    TableScanOperator *scan_oper = new TableScanOperator(ds->GetTable());
+    PredicateOperator *pred_oper = new PredicateOperator(ds->GetFilter());
     pred_oper->AddOper(scan_oper);
+    DeleteOperator *del_oper = new DeleteOperator(ds, txn);
     del_oper->AddOper(pred_oper);
-    GlobalMainManager& gmm=GlobalManagers::GetGlobalMainManager();
-    Re r=del_oper->Init();
-    if(r!=Re::Success){
+    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
+    Re r = del_oper->Init();
+    if (r != Re::Success) {
         DebugPrint("ExecuteMain:init operators failed\n");
         gmm.SetResponse("SQL ERROR,INIT OPERATOR FAILED\n");
         return r;
     }
-    r=del_oper->Handle();
-    if(r!=Re::Success){
+    r = del_oper->Handle();
+    if (r != Re::Success) {
         DebugPrint("ExecuteMain:handle operators failed\n");
         gmm.SetResponse("SQL ERROR,HANDLE OPERATOR FAILED\n");
         return r;
     }
-    if(!GetTmo()){
-        CLogRecord* clog_record=nullptr;
-        r=clog_manager->MakeRecord(CLogType::RedoMiniTxnCommit,txn->GetTxnId(),clog_record);
-        if(r!=Re::Success or clog_record==nullptr){
-            DebugPrint("ExecuteMain:make clog record failed re:%d,%s\n",r,StrRe(r));
+    if (!GetTmo()) {
+        CLogRecord *clog_record = nullptr;
+        r = clog_manager->MakeRecord(CLogType::RedoMiniTxnCommit, txn->GetTxnId(), clog_record);
+        if (r != Re::Success or clog_record == nullptr) {
+            DebugPrint("ExecuteMain:make clog record failed re:%d,%s\n", r, StrRe(r));
             gmm.SetResponse("SQL ERROR,CAN NOT MAKE LOG\n");
             return r;
         }
-        r=clog_manager->AppendRecord(clog_record);
-        if(r!=Re::Success){
-            DebugPrint("ExecuteMain:append clog record failed re:%d,%s\n",r,StrRe(r));
+        r = clog_manager->AppendRecord(clog_record);
+        if (r != Re::Success) {
+            DebugPrint("ExecuteMain:append clog record failed re:%d,%s\n", r, StrRe(r));
             gmm.SetResponse("SQL ERROR,CAN NOT APPEND LOG\n");
             return r;
         }
         txn->NextCurrentId();
     }
     return Re::Success;
+}
+Re ExecuteMain::DoCreateIndex(Statement *stmt) {
+    return Re::GenericError;
 }
