@@ -304,7 +304,7 @@ Re DeleteStatement::Handle(Query *query, ResolveMain *resolve_main) {
     return Re::Success;
 }
 void DeleteStatement::Destroy() {
-    delete table_name_;
+    delete[] table_name_;
     for (int i = 0; i < conditions_num_; i++)
         conditions_[i].Destroy();
     delete[] conditions_;
@@ -313,9 +313,16 @@ CreateIndexStatement::CreateIndexStatement(Query *query)
     : Statement(query->GetScf()), index_name_(nullptr), attr_(nullptr) {
 }
 void CreateIndexStatement::Init(Query *query) {
+    auto ciq=static_cast<CreateIndexQuery*>(query);
+    index_name_=StrNew(ciq->GetIndexName());
+    attr_=new RelAttr;
+    attr_->Copy(*ciq->GetAttr());
 }
 Re CreateIndexStatement::Handle(Query *query, ResolveMain *resolve_main) {
-    return Re();
+    return Re::Success;
 }
 void CreateIndexStatement::Destroy() {
+    delete[]index_name_;
+    attr_->Destroy();
+    delete attr_;
 }

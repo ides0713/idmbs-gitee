@@ -47,6 +47,7 @@ void GlobalMainManager::Handle(const char *sql) {
         DebugPrint("%s main handle succeeded\n", StrMainType(mains_[i]->GetType()).c_str());
     }
     DoneResponse();
+    Clear();
 }
 void GlobalMainManager::Destroy() {
     for (int i = 0; i < mains_.size(); i++)
@@ -79,4 +80,5 @@ void GlobalMainManager::DoneResponse() {
 void GlobalMainManager::Clear() {
     for (int i = 0; i < mains_.size(); i++)
         mains_[i]->Clear();
+    response_.clear();
 }

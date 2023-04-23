@@ -119,7 +119,7 @@ public:
     void Destroy() override;
     StatementType GetType() override { return StatementType::CreateIndex; }
     const char *GetIndexName() { return index_name_; }
-    RelAttr *getAttr() { return attr_; }
+    RelAttr *GetAttr() { return attr_; }
 
 private:
     char *index_name_;

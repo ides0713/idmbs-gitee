@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        ".clang-tidy": "cpp",
         "array": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
@@ -62,6 +63,7 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "chrono": "cpp"
     }
 }
