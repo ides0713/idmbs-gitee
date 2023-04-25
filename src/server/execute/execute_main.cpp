@@ -1,16 +1,6 @@
 #include "execute_main.h"
-
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include "../resolve/resolve_main.h"
 #include "../storage/txn.h"
-#include "delete_operator.h"
-#include "index_scan_operator.h"
-#include "predicate_operator.h"
-#include "project_operator.h"
-#include "table_scan_operator.h"
 #include "/home/ubuntu/idbms/src/common/common_defs.h"
 #include "/home/ubuntu/idbms/src/server/common/global_main_manager.h"
 #include "/home/ubuntu/idbms/src/server/common/global_managers.h"
@@ -21,11 +11,17 @@
 #include "/home/ubuntu/idbms/src/server/storage/database.h"
 #include "/home/ubuntu/idbms/src/server/storage/field.h"
 #include "/home/ubuntu/idbms/src/server/storage/table.h"
-
+#include "delete_operator.h"
+#include "index_scan_operator.h"
+#include "predicate_operator.h"
+#include "project_operator.h"
+#include "table_scan_operator.h"
+#include <sstream>
+#include <string>
+#include <vector>
 class BaseMain;
 class Filter;
 class Operator;
-
 IndexScanOperator *CreateIndexScanOperator(Filter *filter) {
     // TODO: implement index
     return nullptr;
@@ -84,7 +80,7 @@ Re ExecuteMain::Handle() {
             r = DoDelete(stmt_);
             break;
         case StatementType::CreateIndex:
-            r=DoCreateIndex(stmt_);
+            r = DoCreateIndex(stmt_);
             break;
         default:
             r = Re::GenericError;
@@ -223,21 +219,23 @@ Re ExecuteMain::DoDelete(Statement *stmt) {
     return Re::Success;
 }
 Re ExecuteMain::DoCreateIndex(Statement *stmt) {
-    DataBase* current_database=GetDb();
-    auto cis=static_cast<CreateIndexStatement*>(stmt);
-    std::string table_name=std::string(cis->GetAttr()->rel_name);
-    Table* table=current_database->GetTable(table_name);
-//       SessionEvent *session_event = sql_event->session_event();
-//   Db *db = session_event->session()->get_current_db();
-//   const CreateIndex &create_index = sql_event->query()->sstr.create_index;
-//   Table *table = db->find_table(create_index.relation_name);
-//   if (nullptr == table) {
-//     session_event->set_response("FAILURE\n");
-//     return RC::SCHEMA_TABLE_NOT_EXIST;
-//   }
-
-//   RC rc = table->create_index(nullptr, create_index.index_name, create_index.attribute_name);
-//   sql_event->session_event()->set_response(rc == RC::SUCCESS ? "SUCCESS\n" : "FAILURE\n");
-//   return rc;
-return Re::Success;
+    DataBase *current_database = GetDb();
+    auto cis = static_cast<CreateIndexStatement *>(stmt);
+    RelAttr *attr = cis->GetAttr();
+    std::string table_name = std::string(attr->rel_name);
+    Table *table = current_database->GetTable(table_name);
+    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
+    if (table == nullptr) {
+        DebugPrint("ExecuteMain:get table:%s failed,no such table\n", table_name.c_str());
+        gmm.SetResponse("SQL ERROR,NO SUCH TABLE '%s'\n", table_name.c_str());
+        return Re::SchemaTableNotExist;
+    }
+    Re r = table->CreateIndex(nullptr, cis->GetIndexName(), attr->attr_name);
+    if (r != Re::Success) {
+        DebugPrint("ExecuteMain:create index failed re=%d,%s\n", r, StrRe(r));
+        gmm.SetResponse("SQL ERROR,CREATE INDEX '%s' ON '%s'.'%s' failed\n", cis->GetIndexName(), attr->rel_name,
+                        attr->attr_name);
+        return r;
+    }
+    return Re::Success;
 }

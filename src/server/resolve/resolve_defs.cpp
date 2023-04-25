@@ -213,7 +213,7 @@ Re InsertStatement::Handle(Query *query, ResolveMain *resolve_main) {
     resolve_main->SetTxn(txn);
     DataBase *current_db = resolve_main->GetDb();
     GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
-    if (current_db == nullptr or table_name_ == nullptr or values_num_ <= 0) {
+    if (current_db == nullptr or StrBlank(table_name_) or values_num_ <= 0) {
         DebugPrint("InsertStatement:invalid argument. db=%p, table_name=%p,values_num=%d\n", current_db, table_name_,
                    values_num_);
         gmm.SetResponse("INSERT ERROR,INVALID GIVEN ARGS.\n");
@@ -274,7 +274,7 @@ void DeleteStatement::Init(Query *query) {
 }
 Re DeleteStatement::Handle(Query *query, ResolveMain *resolve_main) {
     GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
-    if (table_name_ == nullptr or strlen(table_name_) == 0) {
+    if (StrBlank(table_name_)) {
         DebugPrint("DeleteStatement:invalid argument.can not resolve table name\n");
         gmm.SetResponse("SELECT ERROR,CAN NOT RESOLVE TABLE NAME.\n");
         return Re::InvalidArgument;

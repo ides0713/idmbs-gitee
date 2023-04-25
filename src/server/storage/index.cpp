@@ -1,26 +1,27 @@
 #include "index.h"
-
-#include <jsoncpp/json/config.h>                      // for String
-#include <jsoncpp/json/value.h>                       // for Value, StaticSt...
-#include <cstring>                                    // for strlen
-
-#include "../../common/common_defs.h"                 // for DebugPrint
-#include "field.h"                                    // for FieldMeta
-#include "table.h"                                    // for TableMeta
-#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re, GenericError
-
+#include <cstring>                                  // for strlen
+#include <jsoncpp/json/config.h>                    // for String
+#include <jsoncpp/json/value.h>                     // for Value, StaticSt...
+#include "../../common/common_defs.h"               // for DebugPrint
+#include "/home/ubuntu/idbms/src/server/common/re.h"// for Re, GenericError
+#include "field.h"                                  // for FieldMeta
+#include "table.h"                                  // for TableMeta
 const static Json::StaticString FIELD_NAME("name");
 const static Json::StaticString FIELD_FIELD_NAME("field_name");
 Re IndexMeta::Init(const char *name, const FieldMeta &field) {
-    if (strlen(name) == 0) {
+    if (StrBlank(name)) {
         DebugPrint("IndexMeta:Failed to init index, index_name is empty.\n");
         return Re::InvalidArgument;
     }
     index_name_ = name, field_name_ = field.GetFieldName();
     return Re::Success;
 }
-std::string IndexMeta::GetIndexName() const { return index_name_; }
-std::string IndexMeta::GetFieldName() const { return field_name_; }
+std::string IndexMeta::GetIndexName() const {
+    return index_name_;
+}
+std::string IndexMeta::GetFieldName() const {
+    return field_name_;
+}
 void IndexMeta::ToJson(Json::Value &json_value) const {
     json_value[FIELD_NAME] = index_name_;
     json_value[FIELD_FIELD_NAME] = field_name_;

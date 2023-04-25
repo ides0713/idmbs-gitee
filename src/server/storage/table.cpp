@@ -1,28 +1,25 @@
 #include "table.h"
-
-#include <bits/chrono.h>                                     // for filesystem
-#include <errno.h>                                           // for errno
-#include <ext/alloc_traits.h>                                // for __alloc_...
-#include <jsoncpp/json/config.h>                             // for String
-#include <jsoncpp/json/reader.h>                             // for parseFro...
-#include <jsoncpp/json/value.h>                              // for Value
-#include <jsoncpp/json/writer.h>                             // for StreamWr...
-#include <cstdio>                                            // for fclose
-#include <fstream>                                           // for fstream
-#include <utility>                                           // for move
-#include <algorithm>                                         // for sort
-#include <compare>                                           // for operator<
-#include <memory>                                            // for allocato...
-
-#include "../common/global_managers.h"                       // for GlobalMa...
-#include "buffer_pool.h"                                     // for GlobalBu...
-#include "clog_manager.h"                                    // for CLogManager
-#include "record.h"                                          // for Record
-#include "storage_defs.h"                                    // for GetTable...
-#include "txn.h"                                             // for Txn
-#include "/home/ubuntu/idbms/src/common/common_defs.h"       // for DebugPrint
-#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"  // for Value
-
+#include "../common/global_managers.h"                     // for GlobalMa...
+#include "/home/ubuntu/idbms/src/common/common_defs.h"     // for DebugPrint
+#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"// for Value
+#include "buffer_pool.h"                                   // for GlobalBu...
+#include "clog_manager.h"                                  // for CLogManager
+#include "record.h"                                        // for Record
+#include "storage_defs.h"                                  // for GetTable...
+#include "txn.h"                                           // for Txn
+#include <algorithm>                                       // for sort
+#include <bits/chrono.h>                                   // for filesystem
+#include <compare>                                         // for operator<
+#include <cstdio>                                          // for fclose
+#include <errno.h>                                         // for errno
+#include <ext/alloc_traits.h>                              // for __alloc_...
+#include <fstream>                                         // for fstream
+#include <jsoncpp/json/config.h>                           // for String
+#include <jsoncpp/json/reader.h>                           // for parseFro...
+#include <jsoncpp/json/value.h>                            // for Value
+#include <jsoncpp/json/writer.h>                           // for StreamWr...
+#include <memory>                                          // for allocato...
+#include <utility>                                         // for move
 static const Json::StaticString FIELD_TABLE_NAME("table_name");
 static const Json::StaticString FIELD_FIELDS("fields");
 static const Json::StaticString FIELD_INDEXES("indexes");
@@ -32,7 +29,7 @@ TableMeta::TableMeta(const TableMeta &other)
       record_size_(other.record_size_) {
 }
 Re TableMeta::Init(const char *table_name, int32_t attr_infos_num, const AttrInfo *attr_infos) {
-    if (strlen(table_name) == 0 or strlen(table_name) > TABLE_NAME_MAX_LEN) {
+    if (StrBlank(table_name) or strlen(table_name) > TABLE_NAME_MAX_LEN) {
         DebugPrint("TableMeta:init table_meta:%s failed,table name:%s is not valid\n", table_name, table_name);
         return Re::InvalidArgument;
     }
@@ -185,6 +182,23 @@ const FieldMeta *TableMeta::GetField(const char *field_name) const {
 const FieldMeta *TableMeta::GetField(std::string field_name) const {
     return GetField(field_name.c_str());
 }
+const IndexMeta *TableMeta::GetIndex(int i) {
+    if (i < indexes_.size() and i >= 0)
+        return &indexes_[i];
+    return nullptr;
+}
+const IndexMeta *TableMeta::GetIndex(const char *index_name) {
+    for (int i = 0; i < indexes_.size(); i++)
+        if (strcmp(index_name, indexes_[i].GetIndexName()) == 0)
+            return &indexes_[i];
+    return nullptr;
+}
+const IndexMeta *TableMeta::GetIndexByField(const char *field_name) {
+    for (int i = 0; i < indexes_.size(); i++)
+        if (strcmp(field_name, indexes_[i].GetFieldName()) == 0)
+            return &indexes_[i];
+    return nullptr;
+}
 int TableMeta::GetSysFieldsNum() {
     return sys_fields.size();
 }
@@ -193,7 +207,7 @@ const FieldMeta *TableMeta::GetTxnField() const {
 }
 Re Table::Init(std::filesystem::path database_path, const char *table_name, const size_t attr_infos_num,
                const AttrInfo *attr_infos, CLogManager *clog_manager) {
-    if (strlen(table_name) == 0 or strlen(table_name) > TABLE_NAME_MAX_LEN) {
+    if (StrBlank(table_name) or strlen(table_name) > TABLE_NAME_MAX_LEN) {
         DebugPrint("Table:init table:%s failed,table getTableName:%s is not valid \n", table_name, table_name);
         return Re::InvalidArgument;
     }
@@ -308,25 +322,49 @@ Re Table::InsertRecord(Txn *txn, int values_num, const Value *values) {
 Re Table::DeleteRecord(Txn *txn, class Record *record) {
     //TODO delete entry of indexes(not implemented)
     Re r = record_handler_->DeleteRecord(&record->GetRecordId());
-    if(r!=Re::Success){
-        DebugPrint("Table:failed to delete record rid=%d,%d re=%d,%s\n",record->GetRecordId().page_id,record->GetRecordId().slot_id,r,StrRe(r));
+    if (r != Re::Success) {
+        DebugPrint("Table:failed to delete record rid=%d,%d re=%d,%s\n", record->GetRecordId().page_id,
+                   record->GetRecordId().slot_id, r, StrRe(r));
         return r;
     }
-    if(txn!=nullptr){
-        txn->DeleteRecord(this,record);
-        CLogRecord *clog_record=nullptr;
-        r=clog_manager_->MakeRecord(CLogType::RedoDelete,txn->GetTxnId(),clog_record,GetTableName(),0,record);
-        if(r!=Re::Success){
-            DebugPrint("Table:failed to create a clog record re=%d,%s\n",r,StrRe(r));
+    if (txn != nullptr) {
+        txn->DeleteRecord(this, record);
+        CLogRecord *clog_record = nullptr;
+        r = clog_manager_->MakeRecord(CLogType::RedoDelete, txn->GetTxnId(), clog_record, GetTableName(), 0, record);
+        if (r != Re::Success) {
+            DebugPrint("Table:failed to create a clog record re=%d,%s\n", r, StrRe(r));
             return r;
-        }    
-        r=clog_manager_->AppendRecord(clog_record);
-        if(r!=Re::Success){
-            DebugPrint("Table:failed to append clog record re=%d,%s\n",r,StrRe(r));
+        }
+        r = clog_manager_->AppendRecord(clog_record);
+        if (r != Re::Success) {
+            DebugPrint("Table:failed to append clog record re=%d,%s\n", r, StrRe(r));
             return r;
         }
     }
     return Re::Success;
+}
+Re Table::CreateIndex(Txn *txn, const char *index_name, const char *attr_name) {
+    if (StrBlank(index_name) or StrBlank(attr_name)) {
+        DebugPrint("Table:create index failed,invalid args\n");
+        return Re::InvalidArgument;
+    }
+    if (table_meta_.GetIndex(index_name) != nullptr or table_meta_.GetIndexByField(attr_name) != nullptr) {
+        DebugPrint("Table:create index failed,index already exists with same name or on target attr\n");
+        return Re::SchemaIndexExist;
+    }
+    const FieldMeta *field_meta = table_meta_.GetField(attr_name);
+    if (field_meta == nullptr) {
+        DebugPrint("Table:create index failed,no such field '%s'.'%s'\n", GetTableName(), attr_name);
+        return Re::SchemaFieldMissing;
+    }
+    IndexMeta new_index_meta;
+    Re r = new_index_meta.Init(index_name, *field_meta);
+    if (r != Re::Success) {
+        DebugPrint("Talbe:create index failed,init index meta on index failed\n");
+        return r;
+    }
+    //TODO:ING
+    return Re::GenericError;
 }
 Re Table::GetRecordFileScanner(RecordFileScanner &scanner) {
     Re r = scanner.Init(*data_buffer_pool_, nullptr);

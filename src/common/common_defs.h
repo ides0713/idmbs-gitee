@@ -9,10 +9,8 @@ const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 100;
 static FILE *LOG_STREAM = nullptr;
 void DebugPrint(const char *format, ...);
+bool StrBlank(const char * str);
 char *SubStr(const char *s, int n_1, int n_2);
-class Abc
-{
-};
 struct Message {
     Message() = default;
     Message(int type, const char *message);

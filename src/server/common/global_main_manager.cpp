@@ -68,7 +68,7 @@ void GlobalMainManager::SetResponse(const char *format, ...) {
 }
 void GlobalMainManager::Response() {
     if (response_.empty())
-        SetResponse("SQL ended and response is empty\n");
+        SetResponse("SQL ENDED AND RESPONSE IS EMPTY\n");
     printf("%s", response_.c_str());
 }
 void GlobalMainManager::DoneResponse() {

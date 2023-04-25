@@ -26,7 +26,7 @@ void DataBase::Destroy() {
 }
 Re DataBase::Init(const char *database_name, const std::filesystem::path &database_path) {
     namespace fs = std::filesystem;
-    if (strlen(database_name) == 0) {
+    if (StrBlank(database_name)) {
         DebugPrint("DataBase:failed to init DB, name invalid:%s.\n", database_name);
         return Re::InvalidArgument;
     }

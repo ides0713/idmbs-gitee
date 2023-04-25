@@ -1,14 +1,11 @@
 #include "common_defs.h"
-
-#include <bits/chrono.h>     // for filesystem
-#include <cassert>           // for assert
-#include <cstdio>            // for fflush, fopen, vfprintf
-#include <cstring>           // for strcpy
-#include <filesystem>        // for path
-#include <cstdarg>           // for va_end, va_list, va_start
-
-#include "params_deliver.h"  // for PROJECT_PATH
-
+#include <bits/chrono.h>   // for filesystem
+#include <cassert>         // for assert
+#include <cstdarg>         // for va_end, va_list, va_start
+#include <cstdio>          // for fflush, fopen, vfprintf
+#include <cstring>         // for strcpy
+#include <filesystem>      // for path
+#include "params_deliver.h"// for PROJECT_PATH
 void DebugPrint(const char *format, ...) {
     // #ifdef DEBUG
     if (LOG_STREAM == nullptr) {
@@ -27,6 +24,11 @@ void DebugPrint(const char *format, ...) {
     fflush(LOG_STREAM);
     va_end(var_list);
     // #endif
+}
+bool StrBlank(const char *str) {
+    if (str == nullptr)
+        return true;
+    return strlen(str) == 0;
 }
 char *SubStr(const char *s, int n_1, int n_2) /*从s中提取下标为n1~n2的字符组成一个新字符串，然后返回这个新串的首地址*/
 {

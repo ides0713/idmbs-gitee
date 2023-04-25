@@ -27,7 +27,7 @@ AttrType CastStringAttrType(const char *s) {
     return AttrType::Undefined;
 }
 Re FieldMeta::Init(const char *field_name, AttrType attr_type, int attr_offset, int attr_len, bool visible) {
-    if (strlen(field_name) == 0) {
+    if (StrBlank(field_name)) {
         DebugPrint("FieldMeta:field_meta name:%s invalid\n", field_name);
         return Re::InvalidArgument;
     }

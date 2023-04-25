@@ -1,1 +1,11 @@
 
+GlobalParamsManager:
+project_path:/home/ubuntu/idbms
+binary_path:/home/ubuntu/idbms/build
+bin_path:/home/ubuntu/idbms/bin
+GlobalParamsManager:initialized done
+default database path is /home/ubuntu/idbms/bin/sys
+bin path is /home/ubuntu/idbms/bin
+GlobalDataBaseManager:initialized done
+GlobalBufferPoolManager:initialized done
+GlobalManagers initialized done

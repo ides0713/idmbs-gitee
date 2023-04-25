@@ -36,7 +36,9 @@ public:
     [[nodiscard]] int GetFieldsNum() const { return fields_.size(); }
     [[nodiscard]] int GetRecordSize() const { return record_size_; }
     [[nodiscard]] const std::vector<FieldMeta> *GetFields() const { return &fields_; }
-
+    [[nodiscard]] const IndexMeta* GetIndex(int i);
+    [[nodiscard]] const IndexMeta* GetIndex(const char * index_name);
+    [[nodiscard]] const IndexMeta* GetIndexByField(const char * field_name);
 public:
     static int GetSysFieldsNum();
 
@@ -67,6 +69,7 @@ public:
     const TableMeta &GetTableMeta() const { return table_meta_; }
     Re InsertRecord(Txn *txn, int values_num, const Value *values);
     Re DeleteRecord(Txn *txn, class Record *record);
+    Re CreateIndex(Txn* txn,const char * index_name,const char * attr_name);
     RecordFileHandler *GetRecordFileHandler() { return record_handler_; }
     Re GetRecordFileScanner(RecordFileScanner &scanner);
     void Destroy();
