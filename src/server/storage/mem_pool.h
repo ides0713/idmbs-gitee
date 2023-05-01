@@ -34,8 +34,6 @@ private:
     std::recursive_mutex lock_;
     int size_;
     std::string name_;
-    // why list and set
-    // pools_中的单位只是作为申请新空间的单位 本身所有pools_中的成员数组构成一整个pool作为整体活动
     std::list<T *> pools_;
     std::set<T *> used_;
     std::list<T *> free_;

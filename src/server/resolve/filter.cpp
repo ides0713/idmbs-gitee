@@ -6,9 +6,9 @@
 #include "../storage/database.h"                             // for DataBase
 #include "../storage/field.h"                                // for Field
 #include "../storage/table.h"                                // for Table
-#include "/home/ubuntu/idbms/src/common/common_defs.h"       // for DebugPrint
-#include "/home/ubuntu/idbms/src/server/common/re.h"         // for Re, Success
-#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"  // for AttrType
+#include "../../common/common_defs.h"       // for DebugPrint
+#include "../common/re.h"         // for Re, Success
+#include "../parse/parse_defs.h"  // for AttrType
 #include "expression.h"                                      // for FieldExp...
 #include "tuple.h"                                           // for TupleUnit
 

@@ -5,7 +5,7 @@
 #include <string>                                     // for string, hash
 #include <unordered_map>                              // for unordered_map
 
-#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re
+#include "../common/re.h"  // for Re
 
 class CLogManager;
 class Table;

@@ -1,6 +1,6 @@
 #include "storage_main.h"
 
-#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re, Success
+#include "../common/re.h"  // for Re, Success
 
 class BaseMain;
 

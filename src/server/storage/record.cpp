@@ -6,8 +6,8 @@
 #include <sstream>                                      // for basic_ostream...
 
 #include "condition_filter.h"                           // for ConditionFilter
-#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
-#include "/home/ubuntu/idbms/src/server/common/re.h"    // for Re, Success
+#include "../../common/common_defs.h"  // for DebugPrint
+#include "../common/re.h"    // for Re, Success
 
 ///@brief calculate how many bit data(size=param:size) will use (unit is byte(8 bit))
 int Align8(int size) {

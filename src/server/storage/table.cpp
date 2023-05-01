@@ -1,7 +1,7 @@
 #include "table.h"
 #include "../common/global_managers.h"                     // for GlobalMa...
-#include "/home/ubuntu/idbms/src/common/common_defs.h"     // for DebugPrint
-#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"// for Value
+#include "../../common/common_defs.h"     // for DebugPrint
+#include "../parse/parse_defs.h"// for Value
 #include "buffer_pool.h"                                   // for GlobalBu...
 #include "clog_manager.h"                                  // for CLogManager
 #include "record.h"                                        // for Record

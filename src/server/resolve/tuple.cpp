@@ -9,9 +9,9 @@
 
 #include "../../common/common_defs.h"                      // for DebugPrint
 #include "expression.h"                                    // for FieldExpre...
-#include "/home/ubuntu/idbms/src/server/storage/field.h"   // for Field, Fie...
-#include "/home/ubuntu/idbms/src/server/storage/record.h"  // for Record
-#include "/home/ubuntu/idbms/src/server/storage/table.h"   // for Table
+#include "../storage/field.h"   // for Field, Fie...
+#include "../storage/record.h"  // for Record
+#include "../storage/table.h"   // for Table
 
 std::string Double2string(double v) {
     char buf[256];

@@ -2,8 +2,8 @@
 
 #include "../resolve/tuple.h"                              // for RowTuple
 #include "../storage/table.h"                              // for Table, Tab...
-#include "/home/ubuntu/idbms/src/server/common/re.h"       // for Re, RecordEof
-#include "/home/ubuntu/idbms/src/server/storage/record.h"  // for RecordFile...
+#include "../common/re.h"       // for Re, RecordEof
+#include "../storage/record.h"  // for RecordFile...
 
 Re TableScanOperator::Init() {
     Re r = table_->GetRecordFileScanner(record_scanner_);

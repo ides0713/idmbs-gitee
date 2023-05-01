@@ -1,11 +1,11 @@
 #include "resolve_main.h"
 
 #include "../parse/parse_main.h"
-#include "/home/ubuntu/idbms/src/common/common_defs.h"
-#include "/home/ubuntu/idbms/src/server/common/global_main_manager.h"
-#include "/home/ubuntu/idbms/src/server/common/global_managers.h"
-#include "/home/ubuntu/idbms/src/server/common/re.h"
-#include "/home/ubuntu/idbms/src/server/storage/database.h"
+#include "../../common/common_defs.h"
+#include "../common/global_main_manager.h"
+#include "../common/global_managers.h"
+#include "../common/re.h"
+#include "../storage/database.h"
 #include "resolve_defs.h"
 
 class BaseMain;

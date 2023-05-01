@@ -1,0 +1,12 @@
+CREATE TABLE Select_tables_1(id int, age int, u_name char);
+INSERT INTO Select_tables_1 VALUES (1,18,'a');
+SELECT * FROM Select_tables_1 WHERE id=1;
+INSERT INTO Select_tables_1 VALUES (2,15,'b');
+SELECT * FROM Select_tables_1 WHERE id=1;
+INSERT INTO Select_tables_1 VALUES (2,15,'b');
+INSERT INTO Select_tables_1 VALUES (1,20,'a');
+INSERT INTO Select_tables_1 VALUES (2,21,'c');
+INSERT INTO Select_tables_1 VALUES (1,35,'a');
+INSERT INTO Select_tables_1 VALUES (2,37,'a'); 
+INSERT INTO Select_tables_1 VALUES (1,35,'a');
+SELECT * FROM Select_tables_1 WHERE id=1;

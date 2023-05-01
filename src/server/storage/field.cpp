@@ -6,8 +6,8 @@
 
 #include "../../common/common_defs.h"                        // for DebugPrint
 #include "table.h"                                           // for Table
-#include "/home/ubuntu/idbms/src/server/common/re.h"         // for Re, Gene...
-#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"  // for AttrType
+#include "../common/re.h"         // for Re, Gene...
+#include "../parse/parse_defs.h"  // for AttrType
 
 const static Json::StaticString FIELD_NAME("name");
 const static Json::StaticString FIELD_TYPE("type");

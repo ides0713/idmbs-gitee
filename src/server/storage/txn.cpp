@@ -4,8 +4,8 @@
 
 #include "record.h"                                          // for Record
 #include "table.h"                                           // for Table
-#include "/home/ubuntu/idbms/src/server/common/re.h"         // for Re, Gene...
-#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"  // for AttrType
+#include "../common/re.h"         // for Re, Gene...
+#include "../parse/parse_defs.h"  // for AttrType
 #include "field.h"                                           // for FieldMeta
 
 static const uint32_t DELETED_FLAG_BIT_MASK = 0x80000000;

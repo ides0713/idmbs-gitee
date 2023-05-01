@@ -11,8 +11,8 @@
 #include <cstdio>                                       // for printf, ssize_t
 #include <utility>                                      // for pair
 
-#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
-#include "/home/ubuntu/idbms/src/server/common/re.h"    // for Re, Success
+#include "../../common/common_defs.h"  // for DebugPrint
+#include "../common/re.h"    // for Re, Success
 
 static const int32_t BP_HEADER_PAGE = 0;
 static const int MEM_POOL_ITEM_NUM = 128;

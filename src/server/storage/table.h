@@ -8,7 +8,7 @@
 
 #include "field.h"                                    // for FieldMeta
 #include "index.h"                                    // for IndexMeta
-#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re
+#include "../common/re.h"  // for Re
 
 class DiskBufferPool;
 class RecordFileHandler;

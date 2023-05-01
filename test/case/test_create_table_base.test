@@ -1,0 +1,1 @@
+CREATE TABLE Create_tables_1(id int, age int, u_name char);

@@ -5,8 +5,8 @@
 #include "../common/global_managers.h"
 #include "../common/start_main.h"
 #include "parse.h"
-#include "/home/ubuntu/idbms/src/server/common/global_main_manager.h"
-#include "/home/ubuntu/idbms/src/server/common/re.h"
+#include "../common/global_main_manager.h"
+#include "../common/re.h"
 #include "parse_defs.h"
 
 class BaseMain;

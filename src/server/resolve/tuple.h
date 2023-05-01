@@ -1,16 +1,12 @@
 #pragma once
-#include <iosfwd>                                            // for ostream
-#include <vector>                                            // for vector
-
-#include "../storage/field.h"                                // for FieldMeta
-#include "/home/ubuntu/idbms/src/server/common/re.h"         // for Re
-#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"  // for AttrType
-
+#include "../storage/field.h"                              // for FieldMeta
+#include "../common/re.h"       // for Re
+#include "../parse/parse_defs.h"// for AttrType
+#include <iosfwd>                                          // for ostream
+#include <vector>                                          // for vector
 class Table;
-
 enum class ExprType;
 class Expression;
-
 class TupleUnit
 {
 public:

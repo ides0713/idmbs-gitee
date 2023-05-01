@@ -191,7 +191,7 @@ drop_index:			/*drop index 语句的语法解析树*/
         // drop_index_init(&CONTEXT->ssql->sstr.drop_index, $3);
 	}
     ;
-create_table:		/*create table 语句的语法解析树*/
+create_table:
     CREATE TABLE ID LBRACE attr_def attr_def_list RBRACE SEMICOLON {
 		(static_cast<CreateTableQuery*>(CONTEXT->query))->SetRelName($3);
 	}
@@ -211,7 +211,6 @@ attr_def:
 		static_cast<CreateTableQuery*>(CONTEXT->query)->AddAttr(attribute);
 	}
     |ID_get type{
-		//attr with default length
 		if(CONTEXT->query==nullptr){
 			CONTEXT->query=new CreateTableQuery();
 			CONTEXT->query->Init();

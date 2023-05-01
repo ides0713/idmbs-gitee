@@ -4,9 +4,9 @@
 #include <new>
 #include <filesystem>
 
-#include "/home/ubuntu/idbms/src/common/common_defs.h"
-#include "/home/ubuntu/idbms/src/server/common/persist_file_io_handler.h"
-#include "/home/ubuntu/idbms/src/server/common/re.h"
+#include "../../common/common_defs.h"
+#include "../common/persist_file_io_handler.h"
+#include "../common/re.h"
 
 const char *CLOG_FILE_NAME = "clog";
 const size_t CLOG_INSERT_RECORD_NO_PTR_SIZE = sizeof(CLogInsertRecord) - sizeof(char *);

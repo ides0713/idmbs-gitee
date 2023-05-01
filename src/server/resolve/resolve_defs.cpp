@@ -9,13 +9,13 @@
 #include "../storage/txn.h"
 #include "filter.h"
 #include "resolve_main.h"
-#include "/home/ubuntu/idbms/src/common/common_defs.h"
-#include "/home/ubuntu/idbms/src/server/common/global_main_manager.h"
-#include "/home/ubuntu/idbms/src/server/common/global_managers.h"
-#include "/home/ubuntu/idbms/src/server/common/re.h"
-#include "/home/ubuntu/idbms/src/server/parse/parse_defs.h"
-#include "/home/ubuntu/idbms/src/server/storage/database.h"
-#include "/home/ubuntu/idbms/src/server/storage/table.h"
+#include "../../common/common_defs.h"
+#include "../common/global_main_manager.h"
+#include "../common/global_managers.h"
+#include "../common/re.h"
+#include "../parse/parse_defs.h"
+#include "../storage/database.h"
+#include "../storage/table.h"
 
 void WildcardFields(Table *table, std::vector<Field> &fields) {
     const TableMeta &table_meta = table->GetTableMeta();

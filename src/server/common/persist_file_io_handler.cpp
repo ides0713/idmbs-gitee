@@ -4,7 +4,7 @@
 #include <errno.h>                                      // for errno
 #include <cstring>                                      // for strerror
 
-#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
+#include "../../common/common_defs.h"  // for DebugPrint
 
 PersistFileIoHandler::PersistFileIoHandler() : file_(nullptr) {
 }

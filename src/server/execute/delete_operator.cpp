@@ -5,7 +5,7 @@
 #include "../../common/common_defs.h"                     // for DebugPrint
 #include "../resolve/resolve_defs.h"                      // for DeleteState...
 #include "../storage/table.h"                             // for Table
-#include "/home/ubuntu/idbms/src/server/resolve/tuple.h"  // for RowTuple
+#include "../resolve/tuple.h"  // for RowTuple
 
 Re DeleteOperator::Init() {
     if (opers_.size() != 1) {

@@ -8,7 +8,7 @@
 #include "../resolve/resolve_main.h"                    // for ResolveMain
 #include "../storage/storage_main.h"                    // for StorageMain
 #include "start_main.h"                                 // for StartMain
-#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
+#include "../../common/common_defs.h"  // for DebugPrint
 #include "base_main.h"                                  // for StrMainType
 #include "re.h"                                         // for Re, Success
 

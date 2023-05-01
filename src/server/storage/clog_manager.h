@@ -231,6 +231,5 @@ private:
     CLogMiniTxnManager *clog_mini_txn_manager_;
 
 private:
-    // 通常不需要在外部调用
     Re Sync();
 };

@@ -3,7 +3,7 @@
 
 #include "../storage/field.h"                         // for Field
 #include "tuple.h"                                    // for TupleUnit
-#include "/home/ubuntu/idbms/src/server/common/re.h"  // for Re
+#include "../common/re.h"  // for Re
 
 class Table;
 struct Value;

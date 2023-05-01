@@ -5,7 +5,7 @@
 #include "../resolve/expression.h"                      // for FieldExpression
 #include "../resolve/tuple.h"                           // for ProjectTuple
 #include "../storage/field.h"                           // for FieldMeta
-#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
+#include "../../common/common_defs.h"  // for DebugPrint
 
 ProjectOperator::ProjectOperator() {
     tuple_ = new ProjectTuple;

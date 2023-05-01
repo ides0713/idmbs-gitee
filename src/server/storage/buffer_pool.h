@@ -137,9 +137,11 @@ private:
 
 private:
     std::mutex lock_;
+    // a lru cache of allocated frames@n(NOTE:the lru cache includes all allocated frames)
     LruCache<FrameId, Frame *, FrameIdHash, std::equal_to<FrameId>>
-            frame_lru_cache_;// a lru cache of allocated frames@n(NOTE:the lru cache includes all allocated frames)
-    MemoryPool<Frame> frame_allocator_;// a allocator of frames,implemented with memory pool
+            frame_lru_cache_;
+    // a allocator of frames,implemented with memory pool
+    MemoryPool<Frame> frame_allocator_;
 };
 class GlobalBufferPoolManager;
 

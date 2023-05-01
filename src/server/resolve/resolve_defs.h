@@ -1,14 +1,11 @@
 #pragma once
-#include <vector>                                         // for vector
-
-#include "../common/re.h"                                 // for Re
-#include "../parse/parse_defs.h"                          // for SqlCommandFlag
-#include "/home/ubuntu/idbms/src/server/storage/field.h"  // for Field
-
+#include "../common/re.h"                               // for Re
+#include "../parse/parse_defs.h"                        // for SqlCommandFlag
+#include "../storage/field.h"// for Field
+#include <vector>                                       // for vector
 class ResolveMain;
 class Filter;
 class Table;
-
 enum StatementType
 {
     Select = 0,

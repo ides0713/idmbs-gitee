@@ -1,7 +1,7 @@
 #include "start_main.h"
 
 #include "../parse/parse_defs.h"                        // for StrNew
-#include "/home/ubuntu/idbms/src/common/common_defs.h"  // for DebugPrint
+#include "../../common/common_defs.h"  // for DebugPrint
 
 Re StartMain::Init(BaseMain *last_main) {
     return Re::Success;
