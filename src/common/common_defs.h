@@ -11,9 +11,7 @@ static FILE *LOG_STREAM = nullptr;
 void DebugPrint(const char *format, ...);
 bool StrBlank(const char * str);
 char *SubStr(const char *s, int n_1, int n_2);
-struct Message {
-    Message() = default;
-    Message(int type, const char *message);
-    int type = MSG_TYPE_TEST;
-    char message[MSG_MSG_LEN];
-};
+
+int CompareInt(void *arg1, void *arg2);
+int CompareFloat(void *arg1, void *arg2);
+int CompareString(void *arg1, int arg1_max_length, void *arg2, int arg2_max_length);

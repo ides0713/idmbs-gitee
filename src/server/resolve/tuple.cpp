@@ -1,18 +1,15 @@
 #include "tuple.h"
-
-#include <assert.h>                                        // for assert
-#include <stdio.h>                                         // for printf
-#include <string.h>                                        // for strcmp
-#include <algorithm>                                       // for min
-#include <ostream>                                         // for ostream
-#include <string>                                          // for operator<<
-
-#include "../../common/common_defs.h"                      // for DebugPrint
-#include "expression.h"                                    // for FieldExpre...
-#include "../storage/field.h"   // for Field, Fie...
-#include "../storage/record.h"  // for Record
-#include "../storage/table.h"   // for Table
-
+#include "../../common/common_defs.h"// for DebugPrint
+#include "../storage/field.h"        // for Field, Fie...
+#include "../storage/record.h"       // for Record
+#include "../storage/table.h"        // for Table
+#include "expression.h"              // for FieldExpre...
+#include <algorithm>                 // for min
+#include <assert.h>                  // for assert
+#include <ostream>                   // for ostream
+#include <stdio.h>                   // for printf
+#include <string.h>                  // for strcmp
+#include <string>                    // for operator<<
 std::string Double2string(double v) {
     char buf[256];
     snprintf(buf, sizeof(buf), "%.2f", v);
@@ -55,40 +52,22 @@ void TupleUnit::ToString(std::ostream &os) const {
 int TupleUnit::Compare(const TupleUnit &other) {
     if (attr_type_ == other.attr_type_) {
         switch (attr_type_) {
-            case AttrType::Ints: {
-                int int_1 = *reinterpret_cast<int *>(data_), int_2 = *reinterpret_cast<int *>(other.data_);
-                return int_1 - int_2;
-            }
-            case AttrType::Undefined:
-                printf("undefined compare not implemented yet\n");
-                assert(false);
-            case AttrType::Chars: {
-                const char *str_1 = reinterpret_cast<const char *>(data_),
-                           *str_2 = reinterpret_cast<const char *>(other.data_);
-                int compare_len = std::min(length_, other.length_);
-                int compare_result = strncmp(str_1, str_2, compare_len);
-                if (compare_result != 0)
-                    return compare_result;
-                if (length_ == other.length_)
-                    return compare_result;
-                if (length_ > other.length_)
-                    return str_1[compare_len] - '\0';
-                return str_2[compare_len] - '\0';
-            }
-            case AttrType::Floats: {
-                float res = *reinterpret_cast<float *>(data_) - *reinterpret_cast<float *>(other.data_);
-                if (res > 0)
-                    return 1;
-                if (res < 0)
-                    return -1;
-                return 0;
-            }
+            case AttrType::Ints:
+                return CompareInt((void *) data_, (void *) other.data_);
+            case AttrType::Chars:
+                return CompareString((void *) data_, length_, (void *) other.data_, other.length_);
+            case AttrType::Floats:
+                return CompareFloat((void *) data_, (void *) other.data_);
             case AttrType::Dates:
                 printf("dates compare not implemented yet\n");
                 assert(false);
+            case AttrType::Undefined:
+                printf("undefined compare not implemented yet\n");
+                assert(false);
+            default:
+                assert(false);
         }
     }
-    assert(false);
 }
 TupleUnitSpec::~TupleUnitSpec() {
     delete expression_;
