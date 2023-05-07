@@ -1,6 +1,6 @@
 #include "b_plus_tree.h"
-#include "record.h"
 #include "buffer_pool.h"
+#include "record.h"
 void AttrComparator::Init(AttrType type, int length) {
     attr_type_ = type;
     attr_length_ = length;
@@ -79,5 +79,61 @@ const std::string IndexFileHeader::ToString() {
        << "root_page_id:" << root_page_id << ","
        << "internal_max_size:" << internal_max_size << ","
        << "leaf_max_size:" << leaf_max_size << ";";
+    return ss.str();
+}
+IndexNodeHandler::IndexNodeHandler(const IndexFileHeader &header, Frame *frame)
+    : header_(header), page_id_(frame->GetPageId()), node_(reinterpret_cast<IndexNode *>(frame->GetPageData())) {
+}
+void IndexNodeHandler::InitEmpty(bool is_leaf) {
+    node_->is_leaf = is_leaf;
+    node_->key_num = 0;
+    node_->parent = BP_INVALID_PAGE_NUM;
+}
+bool IndexNodeHandler::IsLeaf() const {
+    return node_->is_leaf;
+}
+int IndexNodeHandler::GetKeySize() const {
+    return header_.key_length;
+}
+int IndexNodeHandler::GetValueSize() const {
+    return sizeof(RecordId);
+}
+int IndexNodeHandler::GetItemSize() const {
+    return GetKeySize() + GetValueSize();
+}
+void IndexNodeHandler::IncreaseSize(int n) {
+    node_->key_num += n;
+}
+int IndexNodeHandler::GetSize() const {
+    return node_->key_num;
+}
+void IndexNodeHandler::SetParentPageId(int32_t page_id) {
+    node_->parent = page_id;
+}
+int32_t IndexNodeHandler::GetParentPageId() const {
+    return node_->parent;
+}
+int32_t IndexNodeHandler::GetPageId() const {
+    return page_id_;
+}
+bool IndexNodeHandler::IsValidate() const {
+    if (GetParentPageId() == BP_INVALID_PAGE_NUM) {
+        if (GetSize() < 1) {
+            DebugPrint("IndexNodeHandler:root page has no item\n");
+            return false;
+        }
+        if (!IsLeaf() and GetSize() < 2) {
+            DebugPrint("IndexNodeHandler:root page internal node has less than 2 child. size=%d\n", GetSize());
+            return false;
+        }
+    }
+    return true;
+}
+std::string ToString(const IndexNodeHandler &handler) {
+    std::stringstream ss;
+    ss << "PageId:" << handler.GetPageId() << ","
+       << "is_leaf:" << handler.IsLeaf() << ","
+       << "key_num:" << handler.GetSize() << ","
+       << "parent:" << handler.GetParentPageId() << ",";
     return ss.str();
 }
