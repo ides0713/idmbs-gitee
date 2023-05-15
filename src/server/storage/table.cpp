@@ -1,25 +1,27 @@
 #include "table.h"
-#include "../common/global_managers.h"                     // for GlobalMa...
-#include "../../common/common_defs.h"     // for DebugPrint
-#include "../parse/parse_defs.h"// for Value
-#include "buffer_pool.h"                                   // for GlobalBu...
-#include "clog_manager.h"                                  // for CLogManager
-#include "record.h"                                        // for Record
-#include "storage_defs.h"                                  // for GetTable...
-#include "txn.h"                                           // for Txn
-#include <algorithm>                                       // for sort
-#include <bits/chrono.h>                                   // for filesystem
-#include <compare>                                         // for operator<
-#include <cstdio>                                          // for fclose
-#include <errno.h>                                         // for errno
-#include <ext/alloc_traits.h>                              // for __alloc_...
-#include <fstream>                                         // for fstream
-#include <jsoncpp/json/config.h>                           // for String
-#include <jsoncpp/json/reader.h>                           // for parseFro...
-#include <jsoncpp/json/value.h>                            // for Value
-#include <jsoncpp/json/writer.h>                           // for StreamWr...
-#include <memory>                                          // for allocato...
-#include <utility>                                         // for move
+#include "../../common/common_defs.h" // for DebugPrint
+#include "../common/global_managers.h"// for GlobalMa...
+#include "../parse/parse_defs.h"      // for Value
+#include "b_plus_tree_index.h"
+#include "buffer_pool.h" // for GlobalBu...
+#include "clog_manager.h"// for CLogManager
+#include "condition_filter.h"
+#include "record.h"             // for Record
+#include "storage_defs.h"       // for GetTable...
+#include "txn.h"                // for Txn
+#include <algorithm>            // for sort
+#include <bits/chrono.h>        // for filesystem
+#include <compare>              // for operator<
+#include <cstdio>               // for fclose
+#include <errno.h>              // for errno
+#include <ext/alloc_traits.h>   // for __alloc_...
+#include <fstream>              // for fstream
+#include <jsoncpp/json/config.h>// for String
+#include <jsoncpp/json/reader.h>// for parseFro...
+#include <jsoncpp/json/value.h> // for Value
+#include <jsoncpp/json/writer.h>// for StreamWr...
+#include <memory>               // for allocato...
+#include <utility>              // for move
 static const Json::StaticString FIELD_TABLE_NAME("table_name");
 static const Json::StaticString FIELD_FIELDS("fields");
 static const Json::StaticString FIELD_INDEXES("indexes");
@@ -265,13 +267,13 @@ Re Table::InitRecordHandler(const char *base_dir) {
     GlobalBufferPoolManager &bpm = GlobalManagers::GetGlobalBufferPoolManager();
     Re r = bpm.OpenFile(data_file_path, data_buffer_pool_);
     if (r != Re::Success) {
-        DebugPrint("TableMeta:failed to open disk buffer pool for file:%s. rc=%d\n", data_file_name.c_str(), r);
+        DebugPrint("TableMeta:failed to open disk buffer pool for file:%s. r=%d\n", data_file_name.c_str(), r);
         return r;
     }
     record_handler_ = new RecordFileHandler();
     r = record_handler_->Init(data_buffer_pool_);
     if (r != Re::Success) {
-        DebugPrint("TableMeta:failed to init record handler. rc=%d:%s\n", r, StrRe(r));
+        DebugPrint("TableMeta:failed to init record handler. r=%d:%s\n", r, StrRe(r));
         bpm.CloseFile(data_file_path);
         data_buffer_pool_ = nullptr;
         delete record_handler_;
@@ -344,6 +346,7 @@ Re Table::DeleteRecord(Txn *txn, class Record *record) {
     return Re::Success;
 }
 Re Table::CreateIndex(Txn *txn, const char *index_name, const char *attr_name) {
+    namespace fs = std::filesystem;
     if (StrBlank(index_name) or StrBlank(attr_name)) {
         DebugPrint("Table:create index failed,invalid args\n");
         return Re::InvalidArgument;
@@ -360,10 +363,29 @@ Re Table::CreateIndex(Txn *txn, const char *index_name, const char *attr_name) {
     IndexMeta new_index_meta;
     Re r = new_index_meta.Init(index_name, *field_meta);
     if (r != Re::Success) {
-        DebugPrint("Talbe:create index failed,init index meta on index failed\n");
+        DebugPrint("Table:create index failed,init index meta on index failed\n");
         return r;
     }
-    //TODO:ING
+    // 创建索引相关数据
+    BplusTreeIndex *index = new BplusTreeIndex();
+    fs::path index_file_path = GetTableIndexFilePath(database_path_.c_str(), GetTableName(), index_name);
+    r = index->Create(index_file_path.c_str(), new_index_meta, *field_meta);
+    if (r != Re::Success) {
+        delete index;
+        DebugPrint("Table:failed to create bplus tree index. file name=%s, r=%d:%s\n", index_file_path.c_str(), r,
+                   StrRe(r));
+        return r;
+    }
+    // 遍历当前的所有数据，插入这个索引
+    IndexInserter index_inserter(index);
+    r = ScanRecord(txn, nullptr, -1, &index_inserter, InsertIndexRecordReaderAdapter);
+    if (r != Re::Success) {
+        // rollback
+        delete index;
+        DebugPrint("Table:failed to insert index to all records. table=%s, r=%d:%s\n", GetTableName(), r, StrRe(r));
+        return r;
+    }
+    indexes_.push_back(index);
     return Re::GenericError;
 }
 Re Table::GetRecordFileScanner(RecordFileScanner &scanner) {
@@ -388,6 +410,11 @@ void Table::Destroy() {
     }
     DebugPrint("Table:table has been destroyed\n");
 }
+Re Table::ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context,
+                     void (*record_reader)(const char *data, void *context)) {
+    RecordReaderScanAdapter adapter(record_reader, context);
+    return ScanRecord(txn, filter, limit, (void *) &adapter, ScanRecordReaderAdapter);
+}
 Re Table::InsertRecord(Txn *txn, class Record *rec) {
     if (txn != nullptr)
         txn->Init(this, *rec);
@@ -403,13 +430,100 @@ Re Table::InsertRecord(Txn *txn, class Record *rec) {
             Re r_2 = record_handler_->DeleteRecord(&rec->GetRecordId());
             if (r_2 != Re::Success)
                 DebugPrint(
-                        "Table:failed to rollback record data when insert index entry failed table name=%s, rc=%d:%s\n",
+                        "Table:failed to rollback record data when insert index entry failed table name=%s, r=%d:%s\n",
                         GetTableName(), r_2, StrRe(r_2));
             return r;
         }
     }
     // todo after implement index of table,we must update the index of the table in order to keep it usable
     return Re::Success;
+}
+Re Table::ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context,
+                     Re (*record_reader)(class Record *record, void *context)) {
+    if (nullptr == record_reader)
+        return Re::InvalidArgument;
+    if (limit == 0)
+        return Re::Success;
+    if (limit < 0)
+        limit = INT_MAX;
+    IndexScanner *index_scanner = FindIndexForScan(filter);
+    if (index_scanner != nullptr)
+        return ScanRecordByIndex(txn, index_scanner, filter, limit, context, record_reader);
+    Re r;
+    RecordFileScanner scanner;
+    r = scanner.Init(*data_buffer_pool_, filter);
+    if (r != Re::Success) {
+        DebugPrint("Table:failed to open scanner. r=%d:%s\n", r, StrRe(r));
+        return r;
+    }
+    int record_count = 0;
+    class Record record;
+    while (scanner.HasNext()) {
+        r = scanner.Next(record);
+        if (r != Re::Success) {
+            DebugPrint("Table:failed to fetch next record. r=%d:%s\n", r, StrRe(r));
+            return r;
+        }
+        if (txn == nullptr or txn->IsVisible(this, &record)) {
+            r = record_reader(&record, context);
+            if (r != Re::Success)
+                break;
+            record_count++;
+        }
+    }
+    scanner.Destroy();
+    return Re::Success;
+}
+Re Table::ScanRecordByIndex(Txn *txn, IndexScanner *scanner, ConditionFilter *filter, int limit, void *context,
+                            Re (*record_reader)(class Record *record, void *context)) {
+    Re r = Re::Success;
+    RecordId rid;
+    class Record record;
+    int record_count = 0;
+    while (record_count < limit) {
+        r = scanner->NextEntry(&rid);
+        if (r != Re::Success) {
+            if (Re::RecordEof == r) {
+                r = Re::Success;
+                break;
+            }
+            DebugPrint("Table:failed to scan table by index. r=%d:%s\n", r, StrRe(r));
+            break;
+        }
+        r = record_handler_->GetRecord(&rid, &record);
+        if (r != Re::Success) {
+            DebugPrint("Table:failed to fetch record of rid=%d:%d, r=%d:%s\n", rid.page_id, rid.slot_id, r, StrRe(r));
+            break;
+        }
+        if ((txn == nullptr or txn->IsVisible(this, &record)) and (filter == nullptr or filter->Filter(record))) {
+            r = record_reader(&record, context);
+            if (r != Re::Success) {
+                DebugPrint("Table:record reader break the table scanning. r=%d:%s\n", r, StrRe(r));
+                break;
+            }
+        }
+        record_count++;
+    }
+    scanner->Destroy();
+    return r;
+}
+IndexScanner *Table::FindIndexForScan(const ConditionFilter *filter) {
+    if (filter==nullptr)
+        return nullptr;
+    // remove dynamic_cast
+    const DefaultConditionFilter *default_condition_filter = dynamic_cast<const DefaultConditionFilter *>(filter);
+    if (default_condition_filter != nullptr)
+        return FindIndexForScan(*default_condition_filter);
+    const CompositeConditionFilter *composite_condition_filter = dynamic_cast<const CompositeConditionFilter *>(filter);
+    if (composite_condition_filter != nullptr) {
+        int filter_num = composite_condition_filter->GetFilterNum();
+        for (int i = 0; i < filter_num; i++) {
+            IndexScanner *scanner = FindIndexForScan(&composite_condition_filter->filter(i));
+            if (scanner != nullptr)
+                return scanner;// 可以找到一个最优的，比如比较符号是=
+        }
+    }
+    return nullptr;
 }
 Re Table::MakeRecord(int values_num, const Value *values, char *&record_data) {
     int table_sys_fields_num = table_meta_.GetSysFieldsNum();
@@ -440,4 +554,26 @@ Re Table::MakeRecord(int values_num, const Value *values, char *&record_data) {
         memmove(record_data + offset, values[i].data, len);
     }
     return Re::Success;
+}
+Re IndexInserter::InsertIndex(class Record *record) {
+    return index_->InsertEntry(record->GetData(), &record->GetRecordId());
+}
+static Re InsertIndexRecordReaderAdapter(class Record *record, void *context) {
+    IndexInserter &inserter = *reinterpret_cast<IndexInserter *>(context);
+    return inserter.InsertIndex(record);
+}
+Re ScanRecordReaderAdapter(class Record *record, void *context) {
+    RecordReaderScanAdapter &adapter = *reinterpret_cast<RecordReaderScanAdapter *>(context);
+    adapter.Consume(record);
+    return Re::Success;
+}
+void RecordReaderScanAdapter::Consume(class Record *record) {
+    record_reader_(record->GetData(), context_);
+}
+Re RecordDeleter::DeleteRecord(class Record *record) {
+    Re r;
+    r = table_.DeleteRecord(txn_, record);
+    if (r == Re::Success)
+        deleted_count_++;
+    return r;
 }

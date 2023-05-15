@@ -1,12 +1,9 @@
 #include "storage_defs.h"
-
-#include <dirent.h>                    // for dirent, opendir, readdir, DIR
-#include <errno.h>                     // for errno
-#include <cstring>                     // for strerror
-#include <regex>                       // for regex_match, match_results<>::...
-
-#include "../../common/common_defs.h"  // for DebugPrint
-
+#include "../../common/common_defs.h"// for DebugPrint
+#include <cstring>                   // for strerror
+#include <dirent.h>                  // for dirent, opendir, readdir, DIR
+#include <errno.h>                   // for errno
+#include <regex>                     // for regex_match, match_results<>::...
 std::filesystem::path GetDataBasePath(std::filesystem::path bin_path, const char *database_name) {
     return bin_path.append(database_name);
 }
@@ -17,6 +14,11 @@ std::filesystem::path GetTableMetaFilePath(std::filesystem::path database_path, 
 std::filesystem::path GetTableDataFilePath(std::filesystem::path database_path, const char *table_name) {
     std::string table_data_file_name = std::string(table_name) + ".data";
     return database_path.append(table_data_file_name);
+}
+std::filesystem::path GetTableIndexFilePath(std::filesystem::path database_path, const char *table_name,
+                                            const char *index_name) {
+    std::string table_index_file_name = std::string(table_name) + "-" + std::string(index_name) + ".index";
+    return database_path.append(table_index_file_name);
 }
 int ListFile(std::filesystem::path dir_path, const char *regx, std::vector<std::string> &files_name) {
     int b_size = files_name.size();

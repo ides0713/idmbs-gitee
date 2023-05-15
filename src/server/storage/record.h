@@ -1,12 +1,10 @@
 #pragma once
-#include <cstdint>         // for int32_t
-#include <string>          // for string
-#include <unordered_set>   // for unordered_set
-
-#include "../common/re.h"  // for Re
-#include "bitmap.h"        // for BitMap
-#include "buffer_pool.h"   // for BP_INVALID_PAGE_NUM, BufferPoolIterator
-
+#include <cstdint>       // for int32_t
+#include <string>        // for string
+#include <unordered_set> // for unordered_set
+#include "../common/re.h"// for Re
+#include "bitmap.h"      // for BitMap
+#include "buffer_pool.h" // for BP_INVALID_PAGE_NUM, BufferPoolIterator
 int Align8(int size);
 int PageHeaderSize();
 int PageRecordCapacity(int page_data_size, int record_size);
@@ -48,7 +46,6 @@ private:
     char *data_;
 };
 class ConditionFilter;
-
 ///@brief there are some meta params in page header
 ///@NOTE page header is part of page's data
 ///@n actually,page header is composed of 2 parts--struct PageHeader and bitmap of the page
@@ -60,12 +57,11 @@ struct PageHeader {
     int32_t first_record_offset;// 第一条记录的偏移量
 };
 class RecordPageHandler;
-
 ///@brief iterator of records in a page
 class RecordPageIterator
 {
 public:
-    RecordPageIterator() : record_page_handler_(nullptr), page_id_(BP_INVALID_PAGE_NUM), next_slot_id_(0) {}
+    RecordPageIterator() : record_page_handler_(nullptr), page_id_(BP_INVALID_PAGE_ID), next_slot_id_(0) {}
     void Init(RecordPageHandler &record_page_handler);
     bool HasNext();
     Re Next(class Record &record);

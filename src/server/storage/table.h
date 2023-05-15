@@ -1,23 +1,23 @@
 #pragma once
-#include <stdint.h>                                   // for int32_t
-#include <cstring>                                    // for size_t
-#include <filesystem>                                 // for path
-#include <string>                                     // for string
-#include <iosfwd>                                     // for istream, ostream
-#include <vector>                                     // for vector
-
-#include "field.h"                                    // for FieldMeta
-#include "index.h"                                    // for IndexMeta
-#include "../common/re.h"  // for Re
-
+#include "../common/re.h"// for Re
+#include "field.h"       // for FieldMeta
+#include "index.h"       // for IndexMeta
+#include <cstring>       // for size_t
+#include <filesystem>    // for path
+#include <iosfwd>        // for istream, ostream
+#include <stdint.h>      // for int32_t
+#include <string>        // for string
+#include <vector>        // for vector
 class DiskBufferPool;
 class RecordFileHandler;
 class RecordFileScanner;
 class Txn;
 class CLogManager;
+class ConditionFilter;
+class DefaultConditionFilter;
+class CompositeConditionFilter;
 struct AttrInfo;
 struct Value;
-
 #define TABLE_NAME_MAX_LEN 20
 class TableMeta
 {
@@ -36,9 +36,10 @@ public:
     [[nodiscard]] int GetFieldsNum() const { return fields_.size(); }
     [[nodiscard]] int GetRecordSize() const { return record_size_; }
     [[nodiscard]] const std::vector<FieldMeta> *GetFields() const { return &fields_; }
-    [[nodiscard]] const IndexMeta* GetIndex(int i);
-    [[nodiscard]] const IndexMeta* GetIndex(const char * index_name);
-    [[nodiscard]] const IndexMeta* GetIndexByField(const char * field_name);
+    [[nodiscard]] const IndexMeta *GetIndex(int i);
+    [[nodiscard]] const IndexMeta *GetIndex(const char *index_name);
+    [[nodiscard]] const IndexMeta *GetIndexByField(const char *field_name);
+
 public:
     static int GetSysFieldsNum();
 
@@ -69,10 +70,12 @@ public:
     const TableMeta &GetTableMeta() const { return table_meta_; }
     Re InsertRecord(Txn *txn, int values_num, const Value *values);
     Re DeleteRecord(Txn *txn, class Record *record);
-    Re CreateIndex(Txn* txn,const char * index_name,const char * attr_name);
+    Re CreateIndex(Txn *txn, const char *index_name, const char *attr_name);
     RecordFileHandler *GetRecordFileHandler() { return record_handler_; }
     Re GetRecordFileScanner(RecordFileScanner &scanner);
     void Destroy();
+    Re ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context,
+                  void (*record_reader)(const char *data, void *context));
 
 private:
     std::filesystem::path database_path_;
@@ -87,4 +90,44 @@ private:
     Re InitRecordHandler(std::filesystem::path base_dir);
     Re MakeRecord(int values_num, const Value *values, char *&record_data);
     Re InsertRecord(Txn *txn, class Record *rec);
+    Re ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context,
+                  Re (*record_reader)(class Record *record, void *context));
+    Re ScanRecordByIndex(Txn *txn, IndexScanner *scanner, ConditionFilter *filter, int limit, void *context,
+                         Re (*record_reader)(class Record *record, void *context));
+    IndexScanner *FindIndexForScan(const ConditionFilter *filter);
+    IndexScanner *FindIndexForScan(const DefaultConditionFilter &filter);
+};
+class IndexInserter
+{
+public:
+    explicit IndexInserter(Index *index) : index_(index) {}
+    Re InsertIndex(class Record *record);
+
+private:
+    Index *index_;
+};
+static Re InsertIndexRecordReaderAdapter(class Record *record, void *context);
+class RecordReaderScanAdapter
+{
+public:
+    explicit RecordReaderScanAdapter(void (*record_reader)(const char *data, void *context), void *context)
+        : record_reader_(record_reader), context_(context) {}
+    void Consume(class Record *record);
+
+private:
+    void (*record_reader_)(const char *, void *);
+    void *context_;
+};
+static Re ScanRecordReaderAdapter(class Record *record, void *context);
+class RecordDeleter
+{
+public:
+    RecordDeleter(Table &table, Txn *txn) : table_(table), txn_(txn), deleted_count_(0) {}
+    Re DeleteRecord(class Record *record);
+    int GetDeletedCount() const { return deleted_count_; }
+
+private:
+    Table &table_;
+    Txn *txn_;
+    int deleted_count_;
 };

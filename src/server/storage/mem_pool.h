@@ -142,3 +142,59 @@ inline int MemoryPool<T>::GetUsedSize() {
     lock_.unlock();
     return res;
 }
+class MemPoolItem
+{
+public:
+    MemPoolItem(const char *tag);
+    virtual ~MemPoolItem();
+    /**
+   * init memory pool, the major job is to alloc memory for memory pool
+   * @param pool_num, memory pool's number
+   * @param item_num_per_pool, how many items per pool.
+   * @return
+   */
+    int Init(int item_size, bool dynamic = true, int pool_num = DEFAULT_POOL_NUM,
+             int item_num_per_pool = DEFAULT_ITEM_NUM_PER_POOL);
+    /**
+   * Do cleanup job for memory pool
+   */
+    void Cleanup();
+    /**
+   * If dynamic has been set, extend current memory pool,
+   */
+    int Extend();
+    /**
+   * Alloc one frame from memory Pool
+   * @return
+   */
+    void *Alloc();
+    /**
+   * Free one item, the resouce will return to memory Pool
+   * @param item
+   */
+    void Free(void *item);
+    /**
+   * Check whether this item has been used before.
+   * @param item
+   * @return
+   */
+    bool IsUsed(void *item);
+    std::string ToString();
+    const std::string GetName() const { return name; }
+    bool IsDynamic() const { return dynamic; }
+    int GetSize() const { return size; }
+    int GetItemSize() const { return item_size; }
+    int GetItemNumPerPool() const { return item_num_per_pool; }
+    int GetUsedNum();
+
+protected:
+    pthread_mutex_t mutex;
+    std::string name;
+    bool dynamic;
+    int size;
+    int item_size;
+    int item_num_per_pool;
+    std::list<void *> pools;
+    std::set<void *> used;
+    std::list<void *> frees;
+};

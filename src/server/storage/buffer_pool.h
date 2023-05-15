@@ -1,20 +1,18 @@
 #pragma once
-#include <cstdint>         // for int32_t
-#include <cstring>         // for size_t, memset
-#include <unordered_map>   // for unordered_map
-#include <functional>      // for equal_to
-#include <list>            // for list
-#include <mutex>           // for mutex
-#include <set>             // for set
-#include <string>          // for string, hash
-#include <unordered_set>   // for unordered_set
-
-#include "../common/re.h"  // for Re
-#include "bitmap.h"        // for BitMap
-#include "lru_cache.h"     // for LruCache
-#include "mem_pool.h"      // for MemoryPool
-
-#define BP_INVALID_PAGE_NUM (-1)
+#include <cstdint>       // for int32_t
+#include <cstring>       // for size_t, memset
+#include <functional>    // for equal_to
+#include <list>          // for list
+#include <mutex>         // for mutex
+#include <set>           // for set
+#include <string>        // for string, hash
+#include <unordered_map> // for unordered_map
+#include <unordered_set> // for unordered_set
+#include "../common/re.h"// for Re
+#include "bitmap.h"      // for BitMap
+#include "lru_cache.h"   // for LruCache
+#include "mem_pool.h"    // for MemoryPool
+#define BP_INVALID_PAGE_ID (-1)
 #define BP_PAGE_SIZE (1 << 14)// 2^14 16KB
 #define BP_PAGE_DATA_SIZE (BP_PAGE_SIZE - sizeof(int32_t))
 #define BP_FILE_HDR_SIZE (sizeof(BPFileHeader))
@@ -138,13 +136,11 @@ private:
 private:
     std::mutex lock_;
     // a lru cache of allocated frames@n(NOTE:the lru cache includes all allocated frames)
-    LruCache<FrameId, Frame *, FrameIdHash, std::equal_to<FrameId>>
-            frame_lru_cache_;
+    LruCache<FrameId, Frame *, FrameIdHash, std::equal_to<FrameId>> frame_lru_cache_;
     // a allocator of frames,implemented with memory pool
     MemoryPool<Frame> frame_allocator_;
 };
 class GlobalBufferPoolManager;
-
 ///@brief a buffer pool of corresponding file,i.e. a buffer pool can be used by only one on-disk file
 class DiskBufferPool
 {
@@ -178,6 +174,8 @@ public:
     ///@brief destroy the file/unlink the buffer pool and the on-disk file
     Re CloseFile();
     void Destroy();
+    ///@brief flush all pages of the on-disk file in buffer
+    Re FlushAllPages();
 
 private:
     GlobalBufferPoolManager &buffer_pool_manager_;
@@ -204,8 +202,6 @@ private:
     Re CheckPageId(int32_t page_id);
     ///@brief load a page from file to given frame
     Re LoadPage(int32_t page_id, Frame *frame);
-    ///@brief flush all pages of the on-disk file in buffer
-    Re FlushAllPages();
     // todo:ascertain the relationship between allocated_page and pages_num of file header
     ///@brief as a buffer pool correspond one on-disk file,openFile is initialization of the instance indeed
     Re OpenFile(std::string file_name);

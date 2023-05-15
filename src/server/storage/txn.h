@@ -1,16 +1,13 @@
 #pragma once
-#include <stdint.h>               // for int32_t
-#include <atomic>                 // for atomic
-#include <cstddef>                // for size_t
-#include <unordered_map>          // for unordered_map
-#include <unordered_set>          // for unordered_set
-
-#include "../common/re.h"         // for Re
-#include "../parse/parse_defs.h"  // for AttrType
-
+#include "../common/re.h"       // for Re
+#include "../parse/parse_defs.h"// for AttrType
+#include <atomic>               // for atomic
+#include <cstddef>              // for size_t
+#include <stdint.h>             // for int32_t
+#include <unordered_map>        // for unordered_map
+#include <unordered_set>        // for unordered_set
 class Table;
 struct RecordId;
-
 class Operation
 {
 public:
@@ -57,6 +54,7 @@ public:
     int32_t GetTxnId() { return txn_id_; }
     void SetTxnId(int32_t txn_id) { txn_id_ = txn_id; }
     void NextCurrentId();
+    bool IsVisible(Table *table, class Record *rec);
 
 public:
     static std::atomic<int32_t> global_txn_id;
@@ -80,4 +78,7 @@ private:
     Operation *FindOperation(Table *table, const RecordId &record_id);
     void InsertOperation(Table *table, Operation::Type type, const RecordId &rid);
     void DeleteOperation(Table *table, const RecordId &rid);
+
+private:
+    static void GetRecordTxnId(Table *table,class Record &record, int32_t &txn_id, bool &deleted);
 };
