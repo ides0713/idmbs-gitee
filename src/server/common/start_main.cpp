@@ -1,8 +1,6 @@
 #include "start_main.h"
-
-#include "../parse/parse_defs.h"                        // for StrNew
-#include "../../common/common_defs.h"  // for DebugPrint
-
+#include "../../common/common_defs.h"// for DebugPrint
+#include "../parse/parse_defs.h"     // for StrNew
 Re StartMain::Init(BaseMain *last_main) {
     return Re::Success;
 }

@@ -1,9 +1,9 @@
 #pragma once
-#include "../storage/field.h"                              // for FieldMeta
 #include "../common/re.h"       // for Re
 #include "../parse/parse_defs.h"// for AttrType
-#include <iosfwd>                                          // for ostream
-#include <vector>                                          // for vector
+#include "../storage/field.h"   // for FieldMeta
+#include <iosfwd>               // for ostream
+#include <vector>               // for vector
 class Table;
 enum class ExprType;
 class Expression;

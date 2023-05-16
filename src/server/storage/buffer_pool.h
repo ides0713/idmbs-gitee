@@ -1,4 +1,8 @@
 #pragma once
+#include "../common/re.h"// for Re
+#include "bitmap.h"      // for BitMap
+#include "lru_cache.h"   // for LruCache
+#include "mem_pool.h"    // for MemoryPool
 #include <cstdint>       // for int32_t
 #include <cstring>       // for size_t, memset
 #include <functional>    // for equal_to
@@ -8,10 +12,6 @@
 #include <string>        // for string, hash
 #include <unordered_map> // for unordered_map
 #include <unordered_set> // for unordered_set
-#include "../common/re.h"// for Re
-#include "bitmap.h"      // for BitMap
-#include "lru_cache.h"   // for LruCache
-#include "mem_pool.h"    // for MemoryPool
 #define BP_INVALID_PAGE_ID (-1)
 #define BP_PAGE_SIZE (1 << 14)// 2^14 16KB
 #define BP_PAGE_DATA_SIZE (BP_PAGE_SIZE - sizeof(int32_t))

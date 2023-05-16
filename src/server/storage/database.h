@@ -1,16 +1,13 @@
 #pragma once
-#include <cstdio>                                     // for size_t
-#include <filesystem>                                 // for path
-#include <map>                                        // for map
-#include <string>                                     // for string, hash
-#include <unordered_map>                              // for unordered_map
-
-#include "../common/re.h"  // for Re
-
+#include <cstdio>        // for size_t
+#include <filesystem>    // for path
+#include <map>           // for map
+#include <string>        // for string, hash
+#include <unordered_map> // for unordered_map
+#include "../common/re.h"// for Re
 class CLogManager;
 class Table;
 struct AttrInfo;
-
 #define DATABASE_NAME_MAX_LEN 20
 class DataBase
 {

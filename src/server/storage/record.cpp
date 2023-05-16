@@ -1,14 +1,11 @@
 #include "record.h"
-
-#include <stdio.h>                                      // for printf
-#include <string.h>                                     // for memcpy, memmove
-#include <limits>                                       // for numeric_limits
-#include <sstream>                                      // for basic_ostream...
-
-#include "condition_filter.h"                           // for ConditionFilter
-#include "../../common/common_defs.h"  // for DebugPrint
-#include "../common/re.h"    // for Re, Success
-
+#include <limits>                    // for numeric_limits
+#include <sstream>                   // for basic_ostream...
+#include <stdio.h>                   // for printf
+#include <string.h>                  // for memcpy, memmove
+#include "../../common/common_defs.h"// for DebugPrint
+#include "../common/re.h"            // for Re, Success
+#include "condition_filter.h"        // for ConditionFilter
 ///@brief calculate how many bit data(size=param:size) will use (unit is byte(8 bit))
 int Align8(int size) {
     return size / 8 * 8 + ((size % 8 == 0) ? 0 : 8);

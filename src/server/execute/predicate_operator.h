@@ -1,11 +1,9 @@
 #pragma once
-#include "operator.h"                                 // for Operator
-#include "../common/re.h"  // for Re
-
+#include "../common/re.h"// for Re
+#include "operator.h"    // for Operator
 class Filter;
 class RowTuple;
 class Tuple;
-
 ///@brief filter predicate for only one table
 class PredicateOperator : public Operator
 {

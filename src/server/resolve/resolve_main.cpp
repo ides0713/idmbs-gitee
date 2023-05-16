@@ -1,15 +1,12 @@
 #include "resolve_main.h"
-
-#include "../parse/parse_main.h"
 #include "../../common/common_defs.h"
 #include "../common/global_main_manager.h"
 #include "../common/global_managers.h"
 #include "../common/re.h"
+#include "../parse/parse_main.h"
 #include "../storage/database.h"
 #include "resolve_defs.h"
-
 class BaseMain;
-
 Re ResolveMain::Init(BaseMain *last_main) {
     BaseSet(*last_main);
     auto parse_main = static_cast<ParseMain *>(last_main);

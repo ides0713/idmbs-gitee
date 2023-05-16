@@ -1,6 +1,5 @@
 #pragma once
-#include <filesystem>  // for path
-
+#include <filesystem>// for path
 const int MAX_CONNECTS = 10;
 const int READ_BUFFER_SIZE = 1024;
 class GlobalParamsManager

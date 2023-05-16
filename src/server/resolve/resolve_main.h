@@ -1,10 +1,8 @@
 #pragma once
-#include "../common/base_main.h"  // for BaseMain, MainType, Resolve
-#include "../common/re.h"         // for Re
-
+#include "../common/base_main.h"// for BaseMain, MainType, Resolve
+#include "../common/re.h"       // for Re
 class Query;
 class Statement;
-
 class ResolveMain : public BaseMain
 {
 public:

@@ -1,10 +1,8 @@
 #include "table_scan_operator.h"
-
-#include "../resolve/tuple.h"                              // for RowTuple
-#include "../storage/table.h"                              // for Table, Tab...
-#include "../common/re.h"       // for Re, RecordEof
-#include "../storage/record.h"  // for RecordFile...
-
+#include "../common/re.h"     // for Re, RecordEof
+#include "../resolve/tuple.h" // for RowTuple
+#include "../storage/record.h"// for RecordFile...
+#include "../storage/table.h" // for Table, Tab...
 Re TableScanOperator::Init() {
     Re r = table_->GetRecordFileScanner(record_scanner_);
     if (r == Re ::Success)

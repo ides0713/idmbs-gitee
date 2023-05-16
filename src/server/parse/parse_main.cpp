@@ -1,16 +1,12 @@
 #include "parse_main.h"
-
 #include <string.h>
-
+#include "../common/global_main_manager.h"
 #include "../common/global_managers.h"
+#include "../common/re.h"
 #include "../common/start_main.h"
 #include "parse.h"
-#include "../common/global_main_manager.h"
-#include "../common/re.h"
 #include "parse_defs.h"
-
 class BaseMain;
-
 Re ParseMain::Init(BaseMain *last_main) {
     BaseSet(*last_main);
     auto start_main = static_cast<StartMain *>(last_main);

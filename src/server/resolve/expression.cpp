@@ -1,10 +1,7 @@
 #include "expression.h"
-
-#include <assert.h>                                          // for assert
-#include <cstring>                                           // for strlen
-
-#include "../parse/parse_defs.h"  // for Value
-
+#include <assert.h>             // for assert
+#include <cstring>              // for strlen
+#include "../parse/parse_defs.h"// for Value
 Re FieldExpression::GetValue(const Tuple &tuple, TupleUnit &unit) const {
     return tuple.GetUnit(field_, unit);
 }

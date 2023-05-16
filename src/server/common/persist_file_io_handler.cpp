@@ -1,11 +1,8 @@
 #include "persist_file_io_handler.h"
-
-#include <bits/chrono.h>                                // for filesystem
-#include <errno.h>                                      // for errno
-#include <cstring>                                      // for strerror
-
-#include "../../common/common_defs.h"  // for DebugPrint
-
+#include <bits/chrono.h>             // for filesystem
+#include <cstring>                   // for strerror
+#include <errno.h>                   // for errno
+#include "../../common/common_defs.h"// for DebugPrint
 PersistFileIoHandler::PersistFileIoHandler() : file_(nullptr) {
 }
 PersistFileIoHandler::~PersistFileIoHandler() {

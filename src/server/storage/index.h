@@ -1,6 +1,6 @@
 #pragma once
-#include "index_meta.h"
 #include "field.h"
+#include "index_meta.h"
 #include "record.h"
 class IndexDataOperator
 {
@@ -11,7 +11,6 @@ public:
 };
 class IndexScanner;
 //implementation now only support index on one field
-
 class Index
 {
 public:
@@ -21,7 +20,7 @@ public:
     virtual Re InsertEntry(const char *record, const RecordId *rid) = 0;
     virtual Re DeleteEntry(const char *record, const RecordId *rid) = 0;
     virtual IndexScanner *CreateScanner(const char *left_key, int left_len, bool left_inclusive, const char *right_key,
-                                         int right_len, bool right_inclusive) = 0;
+                                        int right_len, bool right_inclusive) = 0;
     virtual Re Sync() = 0;
 
 protected:

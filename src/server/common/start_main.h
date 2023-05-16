@@ -1,7 +1,6 @@
 #pragma once
-#include "base_main.h"  // for BaseMain, MainType, Start
-#include "re.h"         // for Re
-
+#include "base_main.h"// for BaseMain, MainType, Start
+#include "re.h"       // for Re
 class StartMain : public BaseMain
 {
 public:

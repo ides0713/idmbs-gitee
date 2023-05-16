@@ -1,13 +1,10 @@
 #include "clog_manager.h"
-
 #include <bits/chrono.h>
-#include <new>
 #include <filesystem>
-
+#include <new>
 #include "../../common/common_defs.h"
 #include "../common/persist_file_io_handler.h"
 #include "../common/re.h"
-
 const char *CLOG_FILE_NAME = "clog";
 const size_t CLOG_INSERT_RECORD_NO_PTR_SIZE = sizeof(CLogInsertRecord) - sizeof(char *);
 CLogRecord::CLogRecord(CLogType flag, int32_t txn_id, const char *table_name, int data_len, class Record *rec) {

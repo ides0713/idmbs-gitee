@@ -1,11 +1,9 @@
 #pragma once
-#include "operator.h"                                 // for Operator
-#include "../common/re.h"  // for Re
-
+#include "../common/re.h"// for Re
+#include "operator.h"    // for Operator
 class Txn;
 class DeleteStatement;
 class Tuple;
-
 class DeleteOperator : public Operator
 {
 public:

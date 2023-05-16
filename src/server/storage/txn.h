@@ -80,5 +80,5 @@ private:
     void DeleteOperation(Table *table, const RecordId &rid);
 
 private:
-    static void GetRecordTxnId(Table *table,class Record &record, int32_t &txn_id, bool &deleted);
+    static void GetRecordTxnId(Table *table, class Record &record, int32_t &txn_id, bool &deleted);
 };

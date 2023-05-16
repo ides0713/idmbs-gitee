@@ -1,10 +1,8 @@
 #pragma once
-#include <cstdio>      // for size_t, FILE
-#include <filesystem>  // for path
-#include <string>      // for string
-
-#include "re.h"        // for Re
-
+#include <cstdio>    // for size_t, FILE
+#include <filesystem>// for path
+#include <string>    // for string
+#include "re.h"      // for Re
 class PersistFileIoHandler
 {
 public:

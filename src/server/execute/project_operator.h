@@ -1,13 +1,11 @@
 #pragma once
-#include "operator.h"                                 // for Operator
-#include "../common/re.h"  // for Re
-
+#include "../common/re.h"// for Re
+#include "operator.h"    // for Operator
 class TupleUnitSpec;
 class ProjectTuple;
 class FieldMeta;
 class Table;
 class Tuple;
-
 class ProjectOperator : public Operator
 {
 public:

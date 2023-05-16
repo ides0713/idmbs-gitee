@@ -1,17 +1,14 @@
 #include "global_main_manager.h"
-
-#include <stdio.h>                                      // for printf, vsprintf
-#include <cstdarg>                                      // for va_end, va_list
-
-#include "../execute/execute_main.h"                    // for ExecuteMain
-#include "../parse/parse_main.h"                        // for ParseMain
-#include "../resolve/resolve_main.h"                    // for ResolveMain
-#include "../storage/storage_main.h"                    // for StorageMain
-#include "start_main.h"                                 // for StartMain
-#include "../../common/common_defs.h"  // for DebugPrint
-#include "base_main.h"                                  // for StrMainType
-#include "re.h"                                         // for Re, Success
-
+#include <cstdarg>                   // for va_end, va_list
+#include <stdio.h>                   // for printf, vsprintf
+#include "../../common/common_defs.h"// for DebugPrint
+#include "../execute/execute_main.h" // for ExecuteMain
+#include "../parse/parse_main.h"     // for ParseMain
+#include "../resolve/resolve_main.h" // for ResolveMain
+#include "../storage/storage_main.h" // for StorageMain
+#include "base_main.h"               // for StrMainType
+#include "re.h"                      // for Re, Success
+#include "start_main.h"              // for StartMain
 void GlobalMainManager::Init() {
     BaseMain *start_main = new StartMain();
     mains_.push_back(start_main);

@@ -8,9 +8,7 @@
 // #include <cstring>                  // for strcmp, strcpy
 // #include <iostream>                 // for cin, istream
 // #include <thread>                   // for thread
-
 // #include "../common/common_defs.h"  // for Message, BUFFER_SIZE, MSG_TYPE_EXIT
-
 // void RecvFunc(int fd) {
 //     Message m;
 //     while (read(fd, reinterpret_cast<char *>(&m), sizeof(m)) > 0) {

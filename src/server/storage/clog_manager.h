@@ -1,15 +1,12 @@
 #pragma once
-#include <string.h>        // for strcmp, memcmp
-#include <atomic>          // for atomic
-#include <cstdint>         // for int32_t, int16_t, uint64_t
-#include <list>            // for list
-#include <unordered_map>   // for unordered_map
-
-#include "../common/re.h"  // for Re
-#include "record.h"        // for RecordId
-
+#include <atomic>        // for atomic
+#include <cstdint>       // for int32_t, int16_t, uint64_t
+#include <list>          // for list
+#include <string.h>      // for strcmp, memcmp
+#include <unordered_map> // for unordered_map
+#include "../common/re.h"// for Re
+#include "record.h"      // for RecordId
 class PersistFileIoHandler;
-
 #define CLOG_FILE_SIZE (48 * 1024 * 1024) // 48MB
 #define CLOG_BUFFER_SIZE (4 * 1024 * 1024)// 4MB
 #define TABLE_NAME_MAX_LEN 20
@@ -118,7 +115,6 @@ private:
 };
 class CLogBlock;
 class CLogFile;
-
 class CLogBuffer
 {
 public:
@@ -140,7 +136,6 @@ private:
 };
 struct CLogBlockHeader;
 struct CLogFileHeader;
-
 #define CLOG_FILE_HEADER_SIZE sizeof(CLogFileHeader)                   // 8B
 #define CLOG_BLOCK_SIZE (1 << 9)                                       // 512B
 #define CLOG_BLOCK_HEADER_SIZE sizeof(CLogBlockHeader)                 // 8B
@@ -176,7 +171,6 @@ public:
     char data[CLOG_BLOCK_DATA_SIZE];
 };
 class CLogMiniTxnManager;
-
 class CLogFile
 {
 public:

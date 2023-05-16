@@ -1,14 +1,9 @@
 #include "resolve_defs.h"
-
-#include <string.h>
 #include <cassert>
+#include <string.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
-
-#include "../storage/txn.h"
-#include "filter.h"
-#include "resolve_main.h"
 #include "../../common/common_defs.h"
 #include "../common/global_main_manager.h"
 #include "../common/global_managers.h"
@@ -16,7 +11,9 @@
 #include "../parse/parse_defs.h"
 #include "../storage/database.h"
 #include "../storage/table.h"
-
+#include "../storage/txn.h"
+#include "filter.h"
+#include "resolve_main.h"
 void WildcardFields(Table *table, std::vector<Field> &fields) {
     const TableMeta &table_meta = table->GetTableMeta();
     for (int i = TableMeta::GetSysFieldsNum(); i < table_meta.GetFieldsNum(); i++) {
@@ -313,16 +310,16 @@ CreateIndexStatement::CreateIndexStatement(Query *query)
     : Statement(query->GetScf()), index_name_(nullptr), attr_(nullptr) {
 }
 void CreateIndexStatement::Init(Query *query) {
-    auto ciq=static_cast<CreateIndexQuery*>(query);
-    index_name_=StrNew(ciq->GetIndexName());
-    attr_=new RelAttr;
+    auto ciq = static_cast<CreateIndexQuery *>(query);
+    index_name_ = StrNew(ciq->GetIndexName());
+    attr_ = new RelAttr;
     attr_->Copy(*ciq->GetAttr());
 }
 Re CreateIndexStatement::Handle(Query *query, ResolveMain *resolve_main) {
     return Re::Success;
 }
 void CreateIndexStatement::Destroy() {
-    delete[]index_name_;
+    delete[] index_name_;
     attr_->Destroy();
     delete attr_;
 }

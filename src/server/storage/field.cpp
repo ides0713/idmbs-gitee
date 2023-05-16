@@ -1,14 +1,11 @@
 #include "field.h"
-
-#include <jsoncpp/json/config.h>                             // for String
-#include <jsoncpp/json/value.h>                              // for Value
-#include <cstring>                                           // for strcmp
-
-#include "../../common/common_defs.h"                        // for DebugPrint
-#include "table.h"                                           // for Table
-#include "../common/re.h"         // for Re, Gene...
-#include "../parse/parse_defs.h"  // for AttrType
-
+#include <cstring>                   // for strcmp
+#include <jsoncpp/json/config.h>     // for String
+#include <jsoncpp/json/value.h>      // for Value
+#include "../../common/common_defs.h"// for DebugPrint
+#include "../common/re.h"            // for Re, Gene...
+#include "../parse/parse_defs.h"     // for AttrType
+#include "table.h"                   // for Table
 const static Json::StaticString FIELD_NAME("name");
 const static Json::StaticString FIELD_TYPE("type");
 const static Json::StaticString FIELD_OFFSET("offset");

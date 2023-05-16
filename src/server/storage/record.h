@@ -1,10 +1,10 @@
 #pragma once
-#include <cstdint>       // for int32_t
-#include <string>        // for string
-#include <unordered_set> // for unordered_set
 #include "../common/re.h"// for Re
 #include "bitmap.h"      // for BitMap
 #include "buffer_pool.h" // for BP_INVALID_PAGE_NUM, BufferPoolIterator
+#include <cstdint>       // for int32_t
+#include <string>        // for string
+#include <unordered_set> // for unordered_set
 int Align8(int size);
 int PageHeaderSize();
 int PageRecordCapacity(int page_data_size, int record_size);

@@ -3,7 +3,6 @@ class GlobalBufferPoolManager;
 class GlobalDataBaseManager;
 class GlobalMainManager;
 class GlobalParamsManager;
-
 class GlobalManagers
 {
 public:

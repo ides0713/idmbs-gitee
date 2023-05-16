@@ -1,15 +1,13 @@
-#include <bits/chrono.h>                 // for filesystem
-#include <cstdio>                        // for printf, getchar, scanf
-#include <cstring>                       // for strlen, strcmp, memset
-#include <filesystem>                    // for path
-#include <fstream>                       // for basic_istream, ifstream
-#include <string>                        // for allocator, string, getline
-
-#include "../common/common_defs.h"       // for DebugPrint
-#include "common/global_managers.h"      // for GlobalManagers
-#include "common/server_defs.h"          // for GlobalParamsManager, READ_BU...
-#include "common/global_main_manager.h"  // for GlobalMainManager
-
+#include <bits/chrono.h>               // for filesystem
+#include <cstdio>                      // for printf, getchar, scanf
+#include <cstring>                     // for strlen, strcmp, memset
+#include <filesystem>                  // for path
+#include <fstream>                     // for basic_istream, ifstream
+#include <string>                      // for allocator, string, getline
+#include "../common/common_defs.h"     // for DebugPrint
+#include "common/global_main_manager.h"// for GlobalMainManager
+#include "common/global_managers.h"    // for GlobalManagers
+#include "common/server_defs.h"        // for GlobalParamsManager, READ_BU...
 const char *EXIT_COMMAND = "exit;";
 const char *TEST_COMMAND = "t";
 void DoTest();

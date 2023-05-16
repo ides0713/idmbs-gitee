@@ -38,8 +38,11 @@ Re IndexScanOperator::Handle() {
     return record_handler_->GetRecord(&rid, &current_record_);
 }
 Re IndexScanOperator::Destroy() {
-    return Re();
+    index_scanner_->Destroy();
+    index_scanner_ = nullptr;
+    return Re::Success;
 }
 Tuple *IndexScanOperator::GetCurrentTuple() {
-    return nullptr;
+    tuple_.SetRecord(&current_record_);
+    return &tuple_;
 }

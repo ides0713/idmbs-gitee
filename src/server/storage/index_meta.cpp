@@ -1,8 +1,8 @@
 #include "index_meta.h"
-#include <jsoncpp/json/json.h>
-#include "../../common/common_defs.h"               // for DebugPrint
-#include "table.h"
+#include "../../common/common_defs.h"// for DebugPrint
 #include "field.h"
+#include "table.h"
+#include <jsoncpp/json/json.h>
 const static Json::StaticString FIELD_NAME("name");
 const static Json::StaticString FIELD_FIELD_NAME("field_name");
 Re IndexMeta::Init(const char *name, const FieldMeta &field) {

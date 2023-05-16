@@ -1,16 +1,12 @@
 #include "predicate_operator.h"
-
-#include <assert.h>                                            // for assert
-#include <vector>                                              // for vector
-
-#include "../resolve/filter.h"                                 // for Filter...
-#include "../../common/common_defs.h"         // for DebugP...
-#include "../parse/parse_defs.h"    // for CompOp
-#include "../resolve/expression.h"  // for Expres...
-#include "../resolve/tuple.h"       // for RowTuple
-
+#include <assert.h>                  // for assert
+#include <vector>                    // for vector
+#include "../../common/common_defs.h"// for DebugP...
+#include "../parse/parse_defs.h"     // for CompOp
+#include "../resolve/expression.h"   // for Expres...
+#include "../resolve/filter.h"       // for Filter...
+#include "../resolve/tuple.h"        // for RowTuple
 class Table;
-
 Re PredicateOperator::Init() {
     if (opers_.size() != 1) {
         DebugPrint("PredicateOperator:predicate operator must has one operator\n");

@@ -1,12 +1,9 @@
 #include "project_operator.h"
-
-#include <vector>                                       // for vector
-
-#include "../resolve/expression.h"                      // for FieldExpression
-#include "../resolve/tuple.h"                           // for ProjectTuple
-#include "../storage/field.h"                           // for FieldMeta
-#include "../../common/common_defs.h"  // for DebugPrint
-
+#include <vector>                    // for vector
+#include "../../common/common_defs.h"// for DebugPrint
+#include "../resolve/expression.h"   // for FieldExpression
+#include "../resolve/tuple.h"        // for ProjectTuple
+#include "../storage/field.h"        // for FieldMeta
 ProjectOperator::ProjectOperator() {
     tuple_ = new ProjectTuple;
 }

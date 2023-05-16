@@ -1,13 +1,10 @@
 #pragma once
-#include <string>                                     // for string
-
-#include "../storage/field.h"                         // for Field
-#include "tuple.h"                                    // for TupleUnit
-#include "../common/re.h"  // for Re
-
+#include <string>            // for string
+#include "../common/re.h"    // for Re
+#include "../storage/field.h"// for Field
+#include "tuple.h"           // for TupleUnit
 class Table;
 struct Value;
-
 enum class ExprType
 {
     None,
