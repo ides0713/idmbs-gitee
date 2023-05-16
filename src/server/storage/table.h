@@ -32,13 +32,14 @@ public:
     [[nodiscard]] const FieldMeta *GetField(int index) const;
     const FieldMeta *GetField(const char *field_name) const;
     [[nodiscard]] const FieldMeta *GetField(std::string field_name) const;
+    [[nodiscard]] const FieldMeta *GetFieldByOffset(int offset) const;
     [[nodiscard]] const char *GetTableName() const { return table_name_.c_str(); }
     [[nodiscard]] int GetFieldsNum() const { return fields_.size(); }
     [[nodiscard]] int GetRecordSize() const { return record_size_; }
     [[nodiscard]] const std::vector<FieldMeta> *GetFields() const { return &fields_; }
-    [[nodiscard]] const IndexMeta *GetIndex(int i);
-    [[nodiscard]] const IndexMeta *GetIndex(const char *index_name);
-    [[nodiscard]] const IndexMeta *GetIndexByField(const char *field_name);
+    [[nodiscard]] const IndexMeta *GetIndex(int i) const;
+    [[nodiscard]] const IndexMeta *GetIndex(const char *index_name) const;
+    [[nodiscard]] const IndexMeta *GetIndexByField(const char *field_name) const;
 
 public:
     static int GetSysFieldsNum();
@@ -71,11 +72,13 @@ public:
     Re InsertRecord(Txn *txn, int values_num, const Value *values);
     Re DeleteRecord(Txn *txn, class Record *record);
     Re CreateIndex(Txn *txn, const char *index_name, const char *attr_name);
-    RecordFileHandler *GetRecordFileHandler() { return record_handler_; }
+    RecordFileHandler *GetRecordFileHandler() const { return record_handler_; }
     Re GetRecordFileScanner(RecordFileScanner &scanner);
     void Destroy();
     Re ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context,
                   void (*record_reader)(const char *data, void *context));
+    Index *GetIndex(const char *index_name) const;
+    Index *GetIndexByField(const char *field_name) const;
 
 private:
     std::filesystem::path database_path_;
@@ -96,6 +99,8 @@ private:
                          Re (*record_reader)(class Record *record, void *context));
     IndexScanner *FindIndexForScan(const ConditionFilter *filter);
     IndexScanner *FindIndexForScan(const DefaultConditionFilter &filter);
+    Re InsertEntryOfIndexes(const char *record, const RecordId &rid);
+    Re DeleteEntryOfIndexes(const char *record, const RecordId &rid, bool not_exists_error);
 };
 class IndexInserter
 {

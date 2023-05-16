@@ -13,12 +13,6 @@ Re IndexMeta::Init(const char *name, const FieldMeta &field) {
     index_name_ = name, field_name_ = field.GetFieldName();
     return Re::Success;
 }
-std::string IndexMeta::GetIndexName() const {
-    return index_name_;
-}
-std::string IndexMeta::GetFieldName() const {
-    return field_name_;
-}
 void IndexMeta::ToJson(Json::Value &json_value) const {
     json_value[FIELD_NAME] = index_name_;
     json_value[FIELD_FIELD_NAME] = field_name_;

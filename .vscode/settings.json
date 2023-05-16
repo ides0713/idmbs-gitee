@@ -64,6 +64,8 @@
         "thread": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "buffer": "cpp",
+        "netfwd": "cpp"
     }
 }

@@ -1,11 +1,8 @@
 #include "parse.h"
-
-#include <assert.h>      // for assert
-#include <string.h>      // for strcpy, strlen
-#include <string>        // for allocator, string
-
-#include "parse_defs.h"  // for CompOp, AttrType, Chars, Dates, EqualTo, Floats
-
+#include "parse_defs.h"// for CompOp, AttrType, Chars, Dates, EqualTo, Floats
+#include <assert.h>    // for assert
+#include <string.h>    // for strcpy, strlen
+#include <string>      // for allocator, string
 int SqlParse(const char *st, Query *&res);
 int Parse(const char *st, Query *&res) {
     SqlParse(st, res);
@@ -37,38 +34,38 @@ char *StrNew(const char *str) {
     res[len] = '\0';
     return res;
 }
-std::string StrAttrType(AttrType type) {
+const char *StrAttrType(AttrType type) {
     switch (type) {
         case AttrType::Undefined:
-            return std::string{"Undefined"};
+            return "Undefined";
         case AttrType::Ints:
-            return std::string{"Ints"};
+            return "Ints";
         case AttrType::Floats:
-            return std::string{"Floats"};
+            return "Floats";
         case AttrType::Chars:
-            return std::string{"Chars"};
+            return "Chars";
         case AttrType::Dates:
-            return std::string{"Dates"};
+            return "Dates";
         default:
             assert(false);
     }
 }
-std::string StrCompOp(CompOp cmp) {
+const char *StrCompOp(CompOp cmp) {
     switch (cmp) {
         case CompOp::NoOp:
-            return std::string{"NoOp"};
+            return "NoOp";
         case CompOp::EqualTo:
-            return std::string{"EqualTo"};
+            return "EqualTo";
         case CompOp::GreatEqual:
-            return std::string{"GreatEqual"};
+            return "GreatEqual";
         case CompOp::GreatThan:
-            return std::string{"GreatThan"};
+            return "GreatThan";
         case CompOp::LessEqual:
-            return std::string{"LessEqual"};
+            return "LessEqual";
         case CompOp::LessThan:
-            return std::string{"LessThan"};
+            return "LessThan";
         case CompOp::NotEqual:
-            return std::string{"NotEqual"};
+            return "NotEqual";
         default:
             assert(false);
     }

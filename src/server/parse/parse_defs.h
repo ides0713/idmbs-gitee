@@ -46,7 +46,7 @@ enum AttrType
     Floats,
     Dates
 };
-std::string StrAttrType(AttrType type);
+const char *StrAttrType(AttrType type);
 enum CompOp
 {
     EqualTo = 0,//"="     0
@@ -57,7 +57,7 @@ enum CompOp
     GreatThan,  //">"     5
     NoOp
 };
-std::string StrCompOp(CompOp cmp);
+const char *StrCompOp(CompOp cmp);
 struct Value {
 public:
     AttrType type;// 属性类型(数据类型)

@@ -1,16 +1,18 @@
 #include "execute_main.h"
-#include "../resolve/resolve_main.h"
-#include "../storage/txn.h"
 #include "../../common/common_defs.h"
 #include "../common/global_main_manager.h"
 #include "../common/global_managers.h"
 #include "../common/re.h"
+#include "../resolve/expression.h"
+#include "../resolve/filter.h"
 #include "../resolve/resolve_defs.h"
+#include "../resolve/resolve_main.h"
 #include "../resolve/tuple.h"
 #include "../storage/clog_manager.h"
 #include "../storage/database.h"
 #include "../storage/field.h"
 #include "../storage/table.h"
+#include "../storage/txn.h"
 #include "delete_operator.h"
 #include "index_scan_operator.h"
 #include "predicate_operator.h"
@@ -19,12 +21,104 @@
 #include <sstream>
 #include <string>
 #include <vector>
-class BaseMain;
-class Filter;
-class Operator;
 IndexScanOperator *CreateIndexScanOperator(Filter *filter) {
-    // TODO: implement index
-    return nullptr;
+    const std::vector<FilterUnit *> &filter_units = filter->GetFilterUnits();
+    if (filter_units.empty())
+        return nullptr;
+    // 在所有过滤条件中，找到字段与值做比较的条件，然后判断字段是否可以使用索引
+    // 如果是多列索引，这里的处理需要更复杂。
+    // 这里的查找规则是比较简单的，就是尽量找到使用相等比较的索引
+    // 如果没有就找范围比较的，但是直接排除不等比较的索引查询.
+    const FilterUnit *better_filter = nullptr;
+    for (const FilterUnit *filter_unit: filter_units) {
+        if (filter_unit->GetComp() == CompOp::NotEqual)
+            continue;
+        Expression *left = filter_unit->GetLeft(), *right = filter_unit->GetRight();
+        if (left->GetExprType() == ExprType::Field and right->GetExprType() == ExprType::Value) {
+        } else if (left->GetExprType() == ExprType::Value and right->GetExprType() == ExprType::Field) {
+            std::swap(left, right);
+        } else
+            continue;
+        FieldExpression &left_field_expr = *static_cast<FieldExpression *>(left);
+        const Field &field = left_field_expr.GetField();
+        const Table *table = field.GetTable();
+        Index *index = table->GetIndexByField(field.GetFieldName());
+        if (index != nullptr) {
+            if (better_filter == nullptr)
+                better_filter = filter_unit;
+            else if (filter_unit->GetComp() == CompOp::EqualTo) {
+                better_filter = filter_unit;
+                break;
+            }
+        }
+    }
+    if (better_filter == nullptr)
+        return nullptr;
+    Expression *left = better_filter->GetLeft(), *right = better_filter->GetRight();
+    CompOp comp = better_filter->GetComp();
+    if (left->GetExprType() == ExprType::Value and right->GetExprType() == ExprType::Field) {
+        std::swap(left, right);
+        switch (comp) {
+            case CompOp::EqualTo:
+            case CompOp::NotEqual:
+                break;
+            case CompOp::LessEqual: {
+                comp = CompOp::GreatThan;
+            } break;
+            case CompOp::LessThan: {
+                comp = CompOp::GreatEqual;
+            } break;
+            case CompOp::GreatEqual: {
+                comp = CompOp::LessThan;
+            } break;
+            case CompOp::GreatThan: {
+                comp = CompOp::LessEqual;
+            } break;
+            default: {
+                DebugPrint("execute_main:should not happen\n");
+            } break;
+        }
+    }
+    FieldExpression &left_field_expr = *static_cast<FieldExpression *>(left);
+    const Field &field = left_field_expr.GetField();
+    const Table *table = field.GetTable();
+    Index *index = table->GetIndexByField(field.GetFieldName());
+    assert(index != nullptr);
+    ValueExpression &right_value_expr = *static_cast<ValueExpression *>(right);
+    TupleUnit value;
+    right_value_expr.GetTupleUnit(value);
+    const TupleUnit *left_unit = nullptr, *right_unit = nullptr;
+    bool left_inclusive = false, right_inclusive = false;
+    switch (comp) {
+        case CompOp::EqualTo: {
+            left_unit = &value, right_unit = &value;
+            left_inclusive = true, right_inclusive = true;
+        } break;
+        case CompOp::LessEqual: {
+            left_unit = nullptr, right_unit = &value;
+            left_inclusive = false, right_inclusive;
+        } break;
+        case CompOp::LessThan: {
+            left_unit = nullptr, right_unit = &value;
+            left_inclusive = false, right_inclusive = false;
+        } break;
+        case CompOp::GreatEqual: {
+            left_unit = &value, right_unit = nullptr;
+            left_inclusive = true, right_inclusive = false;
+        } break;
+        case CompOp::GreatThan: {
+            left_unit = &value, right_unit = nullptr;
+            left_inclusive = false, right_inclusive = false;
+        } break;
+        default: {
+            DebugPrint("execute_main:should not happen. comp=%d:%s\n", comp, StrCompOp(comp));
+        } break;
+    }
+    IndexScanOperator *oper =
+            new IndexScanOperator(table, index, left_unit, left_inclusive, right_unit, right_inclusive);
+    DebugPrint("execute_main:use index for scan: %s in table %s\n", index->GetIndexMeta().GetIndexName(),
+               table->GetTableName());
+    return oper;
 }
 void PrintTupleHeader(std::ostream &os, const ProjectOperator &oper) {
     const int units_num = oper.GetTupleUnitsNum();
@@ -45,7 +139,7 @@ void DescStrTuple(std::ostream &os, Tuple *tuple) {
     for (int i = 0; i < tuple->GetUnitsNum(); i++) {
         Re r = tuple->GetUnitAt(i, unit);
         if (r != Re::Success) {
-            DebugPrint("descStrTuple:failed to fetch field of cell. index=%d, re=%s", i, StrRe(r));
+            DebugPrint("descStrTuple:failed to fetch field of cell. index=%d, r=%s", i, StrRe(r));
             break;
         }
         if (!first_field)
@@ -122,14 +216,14 @@ Re ExecuteMain::DoSelect(Statement *stmt) {
         Tuple *tuple = project_oper->GetCurrentTuple();
         if (tuple == nullptr) {
             r = Re::Internal;
-            DebugPrint("ExecuteMain:failed to get current record. re=%s\n", StrRe(r));
+            DebugPrint("ExecuteMain:failed to get current record. r=%s\n", StrRe(r));
             break;
         }
         DescStrTuple(sstream, tuple);
         sstream << std::endl;
     }
     if (r != Re::RecordEof) {
-        DebugPrint("ExecuteMain:something wrong while iterate operator. re=%s\n", StrRe(r));
+        DebugPrint("ExecuteMain:something wrong while iterate operator. r=%s\n", StrRe(r));
         project_oper->Destroy();
     } else
         r = project_oper->Destroy();
@@ -148,18 +242,20 @@ Re ExecuteMain::DoCreateTable(Statement *stmt) {
     return db->CreateTable(s->GetTableName(), s->GetAttrInfosNum(), s->GetAttrInfos());
 }
 Re ExecuteMain::DoInsert(Statement *stmt) {
-    //    auto rs = static_cast<ResolveSession *>(resolve_session_);
     auto s = static_cast<InsertStatement *>(stmt);
     DataBase *db = GetDb();
     Txn *txn = GetTxn();
+    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     if (db == nullptr) {
         DebugPrint("ExecuteMain:getDb failed,no db was set\n");
         return Re::SchemaDbNotExist;
     }
     Table *table = db->GetTable(std::string(s->GetTableName()));
     Re r = table->InsertRecord(txn, s->GetValuesNum(), s->GetValues());
-    if (r != Re::Success)
+    if (r != Re::Success) {
+        gmm.SetResponse("INSERT FAILED,INSERT RECORD TO TABLE '%s' FAILED\n", table->GetTableName());
         return r;
+    }
     CLogManager *clog_manager = db->GetCLogManager();
     if (!GetTmo()) {
         CLogRecord *clog_record = nullptr;
@@ -167,15 +263,20 @@ Re ExecuteMain::DoInsert(Statement *stmt) {
         if (r != Re::Success or clog_record == nullptr)
             return r;
         r = clog_manager->AppendRecord(clog_record);
-        if (r != Re::Success)
+        if (r != Re::Success) {
+            gmm.SetResponse("INSERT FAILED,CAN NOT APPEND LOG\n");
             return r;
+        }
         txn->NextCurrentId();
-    }
+        gmm.SetResponse("INSERT SUCCEEDED\n");
+    } else
+        gmm.SetResponse("INSERT SUCCEEDED\n");
     return Re::Success;
 }
 Re ExecuteMain::DoDelete(Statement *stmt) {
     DataBase *current_database = GetDb();
     Txn *txn = GetTxn();
+    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     CLogManager *clog_manager = current_database->GetCLogManager();
     if (stmt == nullptr) {
         DebugPrint("ExecuteMain:cannot find delete statement\n");
@@ -187,35 +288,36 @@ Re ExecuteMain::DoDelete(Statement *stmt) {
     pred_oper->AddOper(scan_oper);
     DeleteOperator *del_oper = new DeleteOperator(ds, txn);
     del_oper->AddOper(pred_oper);
-    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     Re r = del_oper->Init();
     if (r != Re::Success) {
         DebugPrint("ExecuteMain:init operators failed\n");
-        gmm.SetResponse("SQL ERROR,INIT OPERATOR FAILED\n");
+        gmm.SetResponse("DELETE FAILED,INIT OPERATOR FAILED\n");
         return r;
     }
     r = del_oper->Handle();
     if (r != Re::Success) {
         DebugPrint("ExecuteMain:handle operators failed\n");
-        gmm.SetResponse("SQL ERROR,HANDLE OPERATOR FAILED\n");
+        gmm.SetResponse("DELETE FAILED,HANDLE OPERATOR FAILED\n");
         return r;
     }
     if (!GetTmo()) {
         CLogRecord *clog_record = nullptr;
         r = clog_manager->MakeRecord(CLogType::RedoMiniTxnCommit, txn->GetTxnId(), clog_record);
         if (r != Re::Success or clog_record == nullptr) {
-            DebugPrint("ExecuteMain:make clog record failed re:%d,%s\n", r, StrRe(r));
-            gmm.SetResponse("SQL ERROR,CAN NOT MAKE LOG\n");
+            DebugPrint("ExecuteMain:make clog record failed r:%d,%s\n", r, StrRe(r));
+            gmm.SetResponse("DELETE FAILED,CAN NOT MAKE LOG\n");
             return r;
         }
         r = clog_manager->AppendRecord(clog_record);
         if (r != Re::Success) {
-            DebugPrint("ExecuteMain:append clog record failed re:%d,%s\n", r, StrRe(r));
-            gmm.SetResponse("SQL ERROR,CAN NOT APPEND LOG\n");
+            DebugPrint("ExecuteMain:append clog record failed r:%d,%s\n", r, StrRe(r));
+            gmm.SetResponse("DELETE FAILED,CAN NOT APPEND LOG\n");
             return r;
         }
         txn->NextCurrentId();
-    }
+        gmm.SetResponse("DELETE SUCCEEDED\n");
+    } else
+        gmm.SetResponse("DELETE SUCCEEDED\n");
     return Re::Success;
 }
 Re ExecuteMain::DoCreateIndex(Statement *stmt) {
@@ -227,14 +329,14 @@ Re ExecuteMain::DoCreateIndex(Statement *stmt) {
     GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     if (table == nullptr) {
         DebugPrint("ExecuteMain:get table:%s failed,no such table\n", table_name.c_str());
-        gmm.SetResponse("SQL ERROR,NO SUCH TABLE '%s'\n", table_name.c_str());
+        gmm.SetResponse("CREATE INDEX FAILED,NO SUCH TABLE '%s'\n", table_name.c_str());
         return Re::SchemaTableNotExist;
     }
     Re r = table->CreateIndex(nullptr, cis->GetIndexName(), attr->attr_name);
     if (r != Re::Success) {
-        DebugPrint("ExecuteMain:create index failed re=%d,%s\n", r, StrRe(r));
-        gmm.SetResponse("SQL ERROR,CREATE INDEX '%s' ON '%s'.'%s' failed\n", cis->GetIndexName(), attr->rel_name,
-                        attr->attr_name);
+        DebugPrint("ExecuteMain:create index failed r=%d,%s\n", r, StrRe(r));
+        gmm.SetResponse("CREATE INDEX FAILED,CREATE INDEX '%s' ON '%s'.'%s' FAILED\n", cis->GetIndexName(),
+                        attr->rel_name, attr->attr_name);
         return r;
     }
     return Re::Success;

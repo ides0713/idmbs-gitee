@@ -184,18 +184,24 @@ const FieldMeta *TableMeta::GetField(const char *field_name) const {
 const FieldMeta *TableMeta::GetField(std::string field_name) const {
     return GetField(field_name.c_str());
 }
-const IndexMeta *TableMeta::GetIndex(int i) {
+const FieldMeta *TableMeta::GetFieldByOffset(int offset) const {
+    for (const FieldMeta &field: fields_)
+        if (field.GetOffset() == offset)
+            return &field;
+    return nullptr;
+}
+const IndexMeta *TableMeta::GetIndex(int i) const {
     if (i < indexes_.size() and i >= 0)
         return &indexes_[i];
     return nullptr;
 }
-const IndexMeta *TableMeta::GetIndex(const char *index_name) {
+const IndexMeta *TableMeta::GetIndex(const char *index_name) const {
     for (int i = 0; i < indexes_.size(); i++)
         if (strcmp(index_name, indexes_[i].GetIndexName()) == 0)
             return &indexes_[i];
     return nullptr;
 }
-const IndexMeta *TableMeta::GetIndexByField(const char *field_name) {
+const IndexMeta *TableMeta::GetIndexByField(const char *field_name) const {
     for (int i = 0; i < indexes_.size(); i++)
         if (strcmp(field_name, indexes_[i].GetFieldName()) == 0)
             return &indexes_[i];
@@ -322,10 +328,15 @@ Re Table::InsertRecord(Txn *txn, int values_num, const Value *values) {
     return r;
 }
 Re Table::DeleteRecord(Txn *txn, class Record *record) {
-    //TODO delete entry of indexes(not implemented)
-    Re r = record_handler_->DeleteRecord(&record->GetRecordId());
+    Re r = DeleteEntryOfIndexes(record->GetData(), record->GetRecordId(), false);// again refer to commit_delete
     if (r != Re::Success) {
-        DebugPrint("Table:failed to delete record rid=%d,%d re=%d,%s\n", record->GetRecordId().page_id,
+        DebugPrint("Table:failed to delete indexes of record (rid=%d.%d). r=%d:%s\n", record->GetRecordId().page_id,
+                   record->GetRecordId().slot_id, r, StrRe(r));
+        return r;
+    }
+    r = record_handler_->DeleteRecord(&record->GetRecordId());
+    if (r != Re::Success) {
+        DebugPrint("Table:failed to delete record rid=%d,%d r=%d,%s\n", record->GetRecordId().page_id,
                    record->GetRecordId().slot_id, r, StrRe(r));
         return r;
     }
@@ -334,12 +345,12 @@ Re Table::DeleteRecord(Txn *txn, class Record *record) {
         CLogRecord *clog_record = nullptr;
         r = clog_manager_->MakeRecord(CLogType::RedoDelete, txn->GetTxnId(), clog_record, GetTableName(), 0, record);
         if (r != Re::Success) {
-            DebugPrint("Table:failed to create a clog record re=%d,%s\n", r, StrRe(r));
+            DebugPrint("Table:failed to create a clog record r=%d,%s\n", r, StrRe(r));
             return r;
         }
         r = clog_manager_->AppendRecord(clog_record);
         if (r != Re::Success) {
-            DebugPrint("Table:failed to append clog record re=%d,%s\n", r, StrRe(r));
+            DebugPrint("Table:failed to append clog record r=%d,%s\n", r, StrRe(r));
             return r;
         }
     }
@@ -415,27 +426,69 @@ Re Table::ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context
     RecordReaderScanAdapter adapter(record_reader, context);
     return ScanRecord(txn, filter, limit, (void *) &adapter, ScanRecordReaderAdapter);
 }
+Index *Table::GetIndex(const char *index_name) const {
+    for (Index *index: indexes_)
+        if (strcmp(index->GetIndexMeta().GetIndexName(), index_name) == 0)
+            return index;
+    return nullptr;
+}
+Index *Table::GetIndexByField(const char *field_name) const {
+    const TableMeta &table_meta = GetTableMeta();
+    const IndexMeta *index_meta = table_meta.GetIndexByField(field_name);
+    if (index_meta != nullptr)
+        return GetIndex(index_meta->GetIndexName());
+    return nullptr;
+}
 Re Table::InsertRecord(Txn *txn, class Record *rec) {
     if (txn != nullptr)
         txn->Init(this, *rec);
     Re r = record_handler_->InsertRecord(rec->GetData(), table_meta_.GetRecordSize(), &rec->GetRecordId());
     if (r != Re::Success) {
-        DebugPrint("Table:insert record failed. table name=%s, re=%d:%s\n", table_meta_.GetTableName(), r, StrRe(r));
+        DebugPrint("Table:insert record failed. table name=%s, r=%d:%s\n", table_meta_.GetTableName(), r, StrRe(r));
         return r;
     }
     if (txn != nullptr) {
         r = txn->InsertRecord(this, rec);
         if (r != Re::Success) {
-            DebugPrint("Table:failed to log operation(insertion) to trx\n");
+            DebugPrint("Table:failed to log operation(insertion) to txn\n");
             Re r_2 = record_handler_->DeleteRecord(&rec->GetRecordId());
             if (r_2 != Re::Success)
-                DebugPrint(
-                        "Table:failed to rollback record data when insert index entry failed table name=%s, r=%d:%s\n",
-                        GetTableName(), r_2, StrRe(r_2));
+                DebugPrint("Table:failed to rollback record data"
+                           "when insert index entry failed table name=%s, r=%d:%s\n",
+                           GetTableName(), r_2, StrRe(r_2));
             return r;
         }
     }
     // todo after implement index of table,we must update the index of the table in order to keep it usable
+    r = InsertEntryOfIndexes(rec->GetData(), rec->GetRecordId());
+    if (r != Re::Success) {
+        //try to roll back
+        Re r_2 = DeleteEntryOfIndexes(rec->GetData(), rec->GetRecordId(), true);
+        if (r_2 != Re::Success)
+            DebugPrint("Table:failed to rollback index data when insert index entries failed. table name=%s, r=%d:%s\n",
+                       GetTableName(), r_2, StrRe(r_2));
+        r_2 = record_handler_->DeleteRecord(&rec->GetRecordId());
+        if (r_2 != Re::Success)
+            DebugPrint(
+                    "Table:failed to rollback record data when insert index entries failed. table name=%s, r=%d:%s\n",
+                    GetTableName(), r_2, StrRe(r_2));
+        return r;
+    }
+    if (txn != nullptr) {
+        // append clog record
+        CLogRecord *clog_record = nullptr;
+        r = clog_manager_->MakeRecord(CLogType::RedoInsert, txn->GetTxnId(), clog_record, GetTableName(),
+                                      table_meta_.GetRecordSize(), rec);
+        if (r != Re::Success) {
+            DebugPrint("Table:failed to create a clog record. r=%d:%s\n", r, StrRe(r));
+            return r;
+        }
+        r = clog_manager_->AppendRecord(clog_record);
+        if (r != Re::Success) {
+            DebugPrint("Table:failed to append record to clog. r=%d:%s\n", r, StrRe(r));
+            return r;
+        }
+    }
     return Re::Success;
 }
 Re Table::ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context,
@@ -508,7 +561,7 @@ Re Table::ScanRecordByIndex(Txn *txn, IndexScanner *scanner, ConditionFilter *fi
     return r;
 }
 IndexScanner *Table::FindIndexForScan(const ConditionFilter *filter) {
-    if (filter==nullptr)
+    if (filter == nullptr)
         return nullptr;
     // remove dynamic_cast
     const DefaultConditionFilter *default_condition_filter = dynamic_cast<const DefaultConditionFilter *>(filter);
@@ -518,12 +571,85 @@ IndexScanner *Table::FindIndexForScan(const ConditionFilter *filter) {
     if (composite_condition_filter != nullptr) {
         int filter_num = composite_condition_filter->GetFilterNum();
         for (int i = 0; i < filter_num; i++) {
-            IndexScanner *scanner = FindIndexForScan(&composite_condition_filter->filter(i));
+            IndexScanner *scanner = FindIndexForScan(&composite_condition_filter->GetFilter(i));
             if (scanner != nullptr)
                 return scanner;// 可以找到一个最优的，比如比较符号是=
         }
     }
     return nullptr;
+}
+IndexScanner *Table::FindIndexForScan(const DefaultConditionFilter &filter) {
+    const ConDesc *field_con_desc = nullptr, *value_con_desc = nullptr;
+    if (filter.GetLeftConDesc().is_attr and !filter.GetRightConDesc().is_attr)
+        field_con_desc = &filter.GetLeftConDesc(), value_con_desc = &filter.GetRightConDesc();
+    else if (filter.GetRightConDesc().is_attr and !filter.GetLeftConDesc().is_attr)
+        field_con_desc = &filter.GetRightConDesc(), value_con_desc = &filter.GetLeftConDesc();
+    if (field_con_desc == nullptr or value_con_desc == nullptr)
+        return nullptr;
+    const FieldMeta *field_meta = table_meta_.GetFieldByOffset(field_con_desc->attr_offset);
+    if (field_meta == nullptr) {
+        DebugPrint("Table:can not find field by offset %d. table=%s\n", field_con_desc->attr_offset, GetTableName());
+        return nullptr;
+    }
+    const IndexMeta *index_meta = table_meta_.GetIndexByField(field_meta->GetFieldName());
+    if (index_meta == nullptr)
+        return nullptr;
+    Index *index = GetIndex(index_meta->GetIndexName());
+    if (nullptr == index) {
+        return nullptr;
+    }
+    const char *left_key = nullptr, *right_key = nullptr;
+    int left_len = 4, right_len = 4;
+    bool left_inclusive = false, right_inclusive = false;
+    switch (filter.GetCompOp()) {
+        case CompOp::EqualTo: {
+            left_key = reinterpret_cast<const char *>(value_con_desc->value);
+            right_key = reinterpret_cast<const char *>(value_con_desc->value);
+            left_inclusive = true, right_inclusive = true;
+        } break;
+        case CompOp::LessEqual: {
+            right_key = reinterpret_cast<const char *>(value_con_desc->value);
+            right_inclusive = true;
+        } break;
+        case CompOp::GreatEqual: {
+            left_key = reinterpret_cast<const char *>(value_con_desc->value);
+            left_inclusive = true;
+        } break;
+        case CompOp::LessThan: {
+            right_key = reinterpret_cast<const char *>(value_con_desc->value);
+            right_inclusive = false;
+        } break;
+        case CompOp::GreatThan: {
+            left_key = reinterpret_cast<const char *>(value_con_desc->value);
+            left_inclusive = false;
+        } break;
+        default: {
+            return nullptr;
+        }
+    }
+    if (filter.GetAttrType() == AttrType::Chars) {
+        left_len = (left_key != nullptr ? strlen(left_key) : 0);
+        right_len = (right_key != nullptr ? strlen(right_key) : 0);
+    }
+    return index->CreateScanner(left_key, left_len, left_inclusive, right_key, right_len, right_inclusive);
+}
+Re Table::InsertEntryOfIndexes(const char *record, const RecordId &rid) {
+    Re r = Re::Success;
+    for (Index *index: indexes_) {
+        r = index->InsertEntry(record, &rid);
+        if (r != Re::Success)
+            return r;
+    }
+    return r;
+}
+Re Table::DeleteEntryOfIndexes(const char *record, const RecordId &rid, bool not_exists_error) {
+    Re r = Re::Success;
+    for (Index *index: indexes_) {
+        r = index->DeleteEntry(record, &rid);
+        if (r != Re::Success and (r != Re::RecordInvalidKey or !not_exists_error))
+            return r;
+    }
+    return r;
 }
 Re Table::MakeRecord(int values_num, const Value *values, char *&record_data) {
     int table_sys_fields_num = table_meta_.GetSysFieldsNum();
