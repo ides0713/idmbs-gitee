@@ -332,7 +332,6 @@ Re RecordFileHandler::InsertRecord(const char *data, int record_size, RecordId *
     }
     disk_buffer_pool_->UnpinPage(frame);
     free_pages_.insert(current_page_id);
-    printf("before page handler handle(insert record)\n");
     return record_page_handler.InsertRecord(data, rid);
 }
 Re RecordFileHandler::RecoverInsertRecord(const char *data, int record_size, RecordId *rid) {

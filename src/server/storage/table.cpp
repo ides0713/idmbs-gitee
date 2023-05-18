@@ -387,7 +387,7 @@ Re Table::CreateIndex(Txn *txn, const char *index_name, const char *attr_name) {
                    StrRe(r));
         return r;
     }
-    // 遍历当前的所有数据，插入这个索引
+    // 遍历当前的所有数据,并将数据插入这个索引
     IndexInserter index_inserter(index);
     r = ScanRecord(txn, nullptr, -1, &index_inserter, InsertIndexRecordReaderAdapter);
     if (r != Re::Success) {
@@ -397,7 +397,7 @@ Re Table::CreateIndex(Txn *txn, const char *index_name, const char *attr_name) {
         return r;
     }
     indexes_.push_back(index);
-    return Re::GenericError;
+    return Re::Success;
 }
 Re Table::GetRecordFileScanner(RecordFileScanner &scanner) {
     Re r = scanner.Init(*data_buffer_pool_, nullptr);
@@ -493,7 +493,7 @@ Re Table::InsertRecord(Txn *txn, class Record *rec) {
 }
 Re Table::ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context,
                      Re (*record_reader)(class Record *record, void *context)) {
-    if (nullptr == record_reader)
+    if (record_reader==nullptr)
         return Re::InvalidArgument;
     if (limit == 0)
         return Re::Success;
@@ -525,7 +525,7 @@ Re Table::ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context
         }
     }
     scanner.Destroy();
-    return Re::Success;
+    return r;
 }
 Re Table::ScanRecordByIndex(Txn *txn, IndexScanner *scanner, ConditionFilter *filter, int limit, void *context,
                             Re (*record_reader)(class Record *record, void *context)) {

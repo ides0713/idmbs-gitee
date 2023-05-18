@@ -10,7 +10,7 @@ Re IndexMeta::Init(const char *name, const FieldMeta &field) {
         DebugPrint("IndexMeta:Failed to init index, index_name is empty.\n");
         return Re::InvalidArgument;
     }
-    index_name_ = name, field_name_ = field.GetFieldName();
+    index_name_ = std::string(name), field_name_ = std::string(field.GetFieldName());
     return Re::Success;
 }
 void IndexMeta::ToJson(Json::Value &json_value) const {

@@ -4,7 +4,7 @@ BplusTreeIndex::~BplusTreeIndex() noexcept {
 }
 Re BplusTreeIndex::Create(const char *file_name, const IndexMeta &index_meta, const FieldMeta &field_meta) {
     if (inited_) {
-        DebugPrint("BplusTreeIndex:Failed to create index due to the index has been created before. file_name:%s, "
+        DebugPrint("BplusTreeIndex:failed to create index due to the index has been created before. file_name:%s, "
                    "index:%s, field:%s\n",
                    file_name, index_meta.GetIndexName(), index_meta.GetFieldName());
         return Re::RecordOpened;
@@ -12,12 +12,12 @@ Re BplusTreeIndex::Create(const char *file_name, const IndexMeta &index_meta, co
     Index::Init(index_meta, field_meta);
     Re r = index_handler_.Create(file_name, field_meta.GetAttrType(), field_meta.GetLen());
     if (Re::Success != r) {
-        DebugPrint("BplusTreeIndex:Failed to create index_handler, file_name:%s, index:%s, field:%s, r:%s\n", file_name,
+        DebugPrint("BplusTreeIndex:failed to create index_handler, file_name:%s, index:%s, field:%s, r:%s\n", file_name,
                    index_meta.GetIndexName(), index_meta.GetFieldName(), StrRe(r));
         return r;
     }
     inited_ = true;
-    DebugPrint("BplusTreeIndex:Successfully create index, file_name:%s, index:%s, field:%s\n", file_name,
+    DebugPrint("BplusTreeIndex:successfully create index, file_name:%s, index:%s, field:%s\n", file_name,
                index_meta.GetIndexName(), index_meta.GetFieldName());
     return Re::Success;
 }
@@ -31,23 +31,23 @@ Re BplusTreeIndex::Open(const char *file_name, const IndexMeta &index_meta, cons
     Index::Init(index_meta, field_meta);
     Re r = index_handler_.Open(file_name);
     if (Re::Success != r) {
-        DebugPrint("BplusTreeIndex:Failed to open index_handler, file_name:%s, index:%s, field:%s, r:%s\n", file_name,
+        DebugPrint("BplusTreeIndex:failed to open index_handler, file_name:%s, index:%s, field:%s, r:%s\n", file_name,
                    index_meta.GetIndexName(), index_meta.GetFieldName(), StrRe(r));
         return r;
     }
     inited_ = true;
-    DebugPrint("BplusTreeIndex:Successfully open index, file_name:%s, index:%s, field:%s\n", file_name,
+    DebugPrint("BplusTreeIndex:successfully open index, file_name:%s, index:%s, field:%s\n", file_name,
                index_meta.GetIndexName(), index_meta.GetFieldName());
     return Re::Success;
 }
 Re BplusTreeIndex::Close() {
     if (inited_) {
-        DebugPrint("BplusTreeIndex:Begin to close index, index:%s, field:%s\n", index_meta_.GetIndexName(),
+        DebugPrint("BplusTreeIndex:begin to close index, index:%s, field:%s\n", index_meta_.GetIndexName(),
                    index_meta_.GetFieldName());
         index_handler_.Close();
         inited_ = false;
     }
-    DebugPrint("BplusTreeIndex:Successfully close index.\n");
+    DebugPrint("BplusTreeIndex:successfully close index.\n");
     return Re::Success;
 }
 Re BplusTreeIndex::InsertEntry(const char *record, const RecordId *rid) {

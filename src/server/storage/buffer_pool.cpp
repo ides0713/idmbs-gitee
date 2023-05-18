@@ -504,7 +504,7 @@ Re GlobalBufferPoolManager::CreateFile(const char *file_name) {
         return Re::IoErrWrite;
     }
     close(fd);
-    DebugPrint("GlobalBufferPoolManager:successfully createFilter %s.\n", file_name);
+    DebugPrint("GlobalBufferPoolManager:successfully create file %s.\n", file_name);
     return Re::Success;
 }
 Re GlobalBufferPoolManager::OpenFile(std::string file_name, DiskBufferPool *&bp) {

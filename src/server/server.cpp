@@ -1,13 +1,13 @@
+#include "../common/common_defs.h"     // for DebugPrint
+#include "common/global_main_manager.h"// for GlobalMainManager
+#include "common/global_managers.h"    // for GlobalManagers
+#include "common/server_defs.h"        // for GlobalParamsManager, READ_BU...
 #include <bits/chrono.h>               // for filesystem
 #include <cstdio>                      // for printf, getchar, scanf
 #include <cstring>                     // for strlen, strcmp, memset
 #include <filesystem>                  // for path
 #include <fstream>                     // for basic_istream, ifstream
 #include <string>                      // for allocator, string, getline
-#include "../common/common_defs.h"     // for DebugPrint
-#include "common/global_main_manager.h"// for GlobalMainManager
-#include "common/global_managers.h"    // for GlobalManagers
-#include "common/server_defs.h"        // for GlobalParamsManager, READ_BU...
 const char *EXIT_COMMAND = "exit;";
 const char *TEST_COMMAND = "t";
 void DoTest();
@@ -44,9 +44,10 @@ void DoTest() {
     p.append("test_sqls");
     std::string sql, file_name(p.c_str());
     std::ifstream istream(file_name);
+    int i=0;
     while (std::getline(istream, sql)) {
         if (sql.substr(0, 2) != "--" and !sql.empty()) {
-            printf("%s\n", sql.c_str());
+            printf("[SQL %d]:%s\n",++i,sql.c_str());
             gmm.Handle(sql.c_str());
         }
     }

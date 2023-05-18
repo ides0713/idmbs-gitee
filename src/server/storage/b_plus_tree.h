@@ -76,7 +76,7 @@ public:
     int32_t parent;
 
 public:
-    static constexpr int HEADER_SIZE = 12;
+    static const int HEADER_SIZE = 12;
 };
 struct LeafIndexNode : public IndexNode {
 public:
@@ -85,14 +85,14 @@ public:
     char array[0];
 
 public:
-    static constexpr int HEADER_SIZE = IndexNode::HEADER_SIZE + 8;
+    static const int HEADER_SIZE = IndexNode::HEADER_SIZE + 8;
 };
 struct InternalIndexNode : public IndexNode {
 public:
     char array[0];
 
 public:
-    static constexpr int HEADER_SIZE = IndexNode::HEADER_SIZE;
+    static const int HEADER_SIZE = IndexNode::HEADER_SIZE;
 };
 class IndexNodeHandler
 {

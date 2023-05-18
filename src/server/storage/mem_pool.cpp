@@ -95,7 +95,7 @@ void *MemPoolItem::Alloc() {
     frees.pop_front();
     used.insert(buffer);
     pthread_mutex_unlock(&this->mutex);
-    memset(buffer, 0, sizeof(item_size));
+    memset(buffer, 0, item_size);//memset item_size or sizeof(item_size)
     return buffer;
 }
 void MemPoolItem::Free(void *item) {

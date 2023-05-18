@@ -25,6 +25,7 @@ Re DeleteOperator::Handle() {
     Re r;
     Operator *oper = opers_[0];
     while ((r = oper->Handle()) == Re::Success) {
+        printf("loop h\n");
         Tuple *tuple = oper->GetCurrentTuple();
         if (tuple == nullptr) {
             DebugPrint("DeleteOperator:failed to get current tuple,re:%d,%s", r, StrRe(r));

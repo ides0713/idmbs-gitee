@@ -335,9 +335,10 @@ Re ExecuteMain::DoCreateIndex(Statement *stmt) {
     Re r = table->CreateIndex(nullptr, cis->GetIndexName(), attr->attr_name);
     if (r != Re::Success) {
         DebugPrint("ExecuteMain:create index failed r=%d,%s\n", r, StrRe(r));
-        gmm.SetResponse("CREATE INDEX FAILED,CREATE INDEX '%s' ON '%s'.'%s' FAILED\n", cis->GetIndexName(),
+        gmm.SetResponse("CREATE INDEX FAILED,CREATE INDEX '%s' ON '%s.%s' FAILED\n", cis->GetIndexName(),
                         attr->rel_name, attr->attr_name);
         return r;
     }
+    gmm.SetResponse("CREATE INDEX SUCCEEDED\n");
     return Re::Success;
 }

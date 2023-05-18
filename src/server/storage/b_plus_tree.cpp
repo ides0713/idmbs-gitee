@@ -4,14 +4,16 @@
 #include "buffer_pool.h"
 #include "record.h"
 #define FIRST_INDEX_PAGE 1
+/// @brief internal node [key(attr+RecordId),page_id] 
 int CalcInternalPageCapacity(int attr_length) {
     int item_size = attr_length + sizeof(RecordId) + sizeof(int32_t);
-    int capacity = ((int) BP_PAGE_DATA_SIZE - InternalIndexNode::HEADER_SIZE) / item_size;
+    int capacity = (BP_PAGE_DATA_SIZE - InternalIndexNode::HEADER_SIZE) / item_size;
     return capacity;
 }
+/// @brief leaf node [key(attr+RecordId),RecordId]
 int CalcLeafPageCapacity(int attr_length) {
     int item_size = attr_length + sizeof(RecordId) + sizeof(RecordId);
-    int capacity = ((int) BP_PAGE_DATA_SIZE - LeafIndexNode::HEADER_SIZE) / item_size;
+    int capacity = (BP_PAGE_DATA_SIZE - LeafIndexNode::HEADER_SIZE) / item_size;
     return capacity;
 }
 void AttrComparator::Init(AttrType type, int length) {
@@ -659,11 +661,11 @@ Re BplusTreeHandler::Create(const char *file_name, AttrType attr_type, int attr_
     file_header->root_page_id = BP_INVALID_PAGE_ID;
     header_frame->DirtyMark();
     buffer_pool = bp;
-    memmove(&file_header, pdata, sizeof(file_header));
+    memmove(&this->file_header, pdata, sizeof(IndexFileHeader));
     header_dirty = false;
     bp->UnpinPage(header_frame);
-    mem_pool_item = new MemPoolItem(file_name);
-    if (mem_pool_item->Init(file_header->key_length) < 0) {
+    mem_pool_item = new MemPoolItem(file_name);//index of table has its own memory pool
+    if (mem_pool_item->Init(this->file_header.key_length) < 0) {
         DebugPrint("BplusTreeHandler:failed to init memory pool for index %s\n", file_name);
         Close();
         return Re::NoMem;
@@ -1355,6 +1357,9 @@ bool BplusTreeHandler::IsValidateNodeRecursive(Frame *frame) {
     buffer_pool->UnpinPage(frame);
     return result;
 }
+/// @brief return a key and its struct is [field(data),record id];
+/// @param user_key corresponding field of the index of record's data 
+/// @param rid record id of the record 
 char *BplusTreeHandler::MakeKey(const char *user_key, const RecordId &rid) {
     char *key = reinterpret_cast<char *>(mem_pool_item->Alloc());
     if (key == nullptr) {

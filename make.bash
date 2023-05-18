@@ -5,3 +5,4 @@ cd ../../../build || exit
 cmake .. -D DEBUG=1 ..
 make -j 12
 cd ../
+bash clean.bash
