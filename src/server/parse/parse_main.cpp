@@ -20,7 +20,7 @@ Re ParseMain::Handle() {
     int rv = Parse(sql_, query_);
     if (!rv) {
         GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
-        gmm.SetResponse("SQL PARSE ERROR\n");
+        gmm.SetResponse("SQL PARSE FAILED.\n");
         return Re::SqlSyntax;
     }
     return Re::Success;

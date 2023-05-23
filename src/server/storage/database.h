@@ -19,6 +19,7 @@ public:
     std::filesystem::path const GetDbPath() { return database_path_; }
     Re CreateTable(const char *table_name, const size_t attr_infos_num, const AttrInfo *attr_infos);
     Re CreateTable(const std::string &table_name, const size_t attr_infos_num, const AttrInfo *attr_infos);
+    Re DropTable(const char * table_name);
     ///@brief existed table will be opened when database constructed,when table is creating,
     /// it will be added into opened_tables automatically,so all exist valid tables can be find in opened_tables
     Table *GetTable(const std::string &table_name);

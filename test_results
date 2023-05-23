@@ -1,0 +1,6 @@
+test program begin ==========
+[SQL 1]:CREATE TABLE drop_1(id int, age int, u_name char);
+CREATE TABLE SUCCEEDED.
+[SQL 2]:DROP TABLE drop_1;
+SQL ENDED AND RESPONSE IS EMPTY
+test program end   ==========

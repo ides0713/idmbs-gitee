@@ -1,0 +1,52 @@
+test program begin ==========
+[SQL 1]:CREATE TABLE delete_1(id int, age int, u_name char(1));
+CREATE TABLE SUCCEEDED
+[SQL 2]:INSERT INTO delete_1 VALUES (1,10,'a');
+INSERT SUCCEEDED.
+[SQL 3]:INSERT INTO delete_1 VALUES (2,10,'b');
+INSERT SUCCEEDED.
+[SQL 4]:INSERT INTO delete_1 VALUES (3,11,'c');
+INSERT SUCCEEDED.
+[SQL 5]:INSERT INTO delete_1 VALUES (4,12,'d');
+INSERT SUCCEEDED.
+[SQL 6]:INSERT INTO delete_1 VALUES (5,11,'e');
+INSERT SUCCEEDED.
+[SQL 7]:DELETE FROM not_exist;
+DELETE FAILED,NO SUCH TABLE 'not_exist'.
+[SQL 8]:DELETE FROM delete_1 WHERE not_exist=1;
+DELETE FAILED,SOME FIELDS NOT FOUND IN TABLE.
+[SQL 9]:DELETE FROM delete_1 WHERE id=1 and not_exist=1;
+DELETE FAILED,SOME FIELDS NOT FOUND IN TABLE.
+[SQL 10]:DELETE FROM delete_1 WHERE id=1;
+DELETE SUCCEEDED,DELETE 1 RECORDS FROM TABLE.
+[SQL 11]:SELECT * FROM delete_1;
+id | age | u_name
+2 | 10 | b
+3 | 11 | c
+4 | 12 | d
+5 | 11 | e
+[SQL 12]:DELETE FROM delete_1 WHERE age=11;
+DELETE SUCCEEDED,DELETE 2 RECORDS FROM TABLE.
+[SQL 13]:SELECT * FROM delete_1;
+id | age | u_name
+2 | 10 | b
+4 | 12 | d
+[SQL 14]:DELETE FROM delete_1 WHERE id=2 and age=10;
+DELETE SUCCEEDED,DELETE 1 RECORDS FROM TABLE.
+[SQL 15]:SELECT * FROM delete_1;
+id | age | u_name
+4 | 12 | d
+[SQL 16]:DELETE FROM delete_1 WHERE id=4 and age=11;
+DELETE SUCCEEDED,DELETE 0 RECORDS FROM TABLE.
+[SQL 17]:SELECT * FROM delete_1;
+id | age | u_name
+4 | 12 | d
+[SQL 18]:DELETE FROM delete_1 WHERE id=4 and age=12 and u_name='d';
+DELETE SUCCEEDED,DELETE 1 RECORDS FROM TABLE.
+[SQL 19]:SELECT * FROM delete_1;
+id | age | u_name
+[SQL 20]:DELETE FROM delete_1 WHERE id=5 and age=11 and u_name<>'a';
+DELETE SUCCEEDED,DELETE 0 RECORDS FROM TABLE.
+[SQL 21]:SELECT * FROM delete_1;
+id | age | u_name
+test program end   ==========

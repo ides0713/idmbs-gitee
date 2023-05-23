@@ -7,6 +7,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include <iostream>
 
 struct ParserContext {
 	Query * query=nullptr;
@@ -50,7 +51,6 @@ void yyerror(yyscan_t scanner, const char *str)
   context->select_length = 0;
   context->value_length=0;
   context->value_tuple_num = 0;
-  printf("parse sql failed. error=%s\n", str);
 }
 
 //todo:why??
@@ -154,8 +154,11 @@ rollback:
 
 drop_table:		/*drop table 语句的语法解析树*/
     DROP TABLE ID SEMICOLON {
-        // CONTEXT->query_info->SCF_Flag = ScfDropTable;//"drop_table";
-        // drop_table_init(&CONTEXT->ssql->sstr.drop_table, $3);
+        if(CONTEXT->query==nullptr){
+			CONTEXT->query=new DropTableQuery();
+			CONTEXT->query->Init();
+		}
+        static_cast<DropTableQuery*>(CONTEXT->query)->SetRelName($3);
     };
 
 show_tables:
@@ -323,8 +326,8 @@ select:				/*  select 语句的语法解析树*/
         CONTEXT->condition_length=0;
         // CONTEXT->from_length=0;
         // CONTEXT->select_length=0;
-        CONTEXT->value_length = 0;
-        CONTEXT->value_tuple_num=0;
+        // CONTEXT->value_length = 0;
+        // CONTEXT->value_tuple_num=0;
 	}
 	;
 
@@ -357,11 +360,21 @@ select_attr:
 attr_list:
     /* empty */
     | COMMA ID attr_list {
+        if(CONTEXT->query==nullptr){
+            CONTEXT->query=new SelectQuery();
+            CONTEXT->query->Init();
+        }
         RelAttr attr(nullptr,$2);
+        
         static_cast<SelectQuery*>(CONTEXT->query)->AddRelAttr(attr);
     }
     | COMMA ID DOT ID attr_list {
+        if(CONTEXT->query==nullptr){
+            CONTEXT->query=new SelectQuery();
+            CONTEXT->query->Init();
+        }
         RelAttr attr($2, $4);
+        
         static_cast<SelectQuery*>(CONTEXT->query)->AddRelAttr(attr);
   	}
   	;

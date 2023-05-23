@@ -75,6 +75,8 @@ public:
     RecordFileHandler *GetRecordFileHandler() const { return record_handler_; }
     Re GetRecordFileScanner(RecordFileScanner &scanner);
     void Destroy();
+    Re Drop();
+    Re Sync();
     Re ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context,
                   void (*record_reader)(const char *data, void *context));
     Index *GetIndex(const char *index_name) const;

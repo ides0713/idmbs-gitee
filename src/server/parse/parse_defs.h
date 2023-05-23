@@ -172,7 +172,7 @@ struct AttrInfo {
 public:
     char *attr_name;   // 属性名
     AttrType attr_type;// 属性类型(数据类型)
-    size_t attr_len;   // 属性长度(占空间大小)
+    int attr_len;      // 属性长度(占空间大小)
 public:
     void Desc(std::ostream &stream) const {
         stream << "[attr_name: " << attr_name << " attr_type: " << StrAttrType(attr_type) << " attr_len: " << attr_len
@@ -183,7 +183,24 @@ public:
         attr_type = AttrType::Undefined;
         attr_len = 0;
     }
-    AttrInfo(const char *name, AttrType type, size_t len = 1) {
+    AttrInfo(const char *name, AttrType type) {
+        attr_name = StrNew(name);
+        attr_type = type;
+        switch (attr_type) {
+            case AttrType::Ints:
+                attr_len = DEFAULT_INTS_LENGTH;
+                break;
+            case AttrType::Floats:
+                attr_len = DEFAULT_FLOATS_LENGTH;
+                break;
+            case AttrType::Chars:
+                attr_len = DEFAULT_CHARS_LENGTH;
+                break;
+            default:
+                assert(false);
+        }
+    }
+    AttrInfo(const char *name, AttrType type, int len) {
         attr_name = StrNew(name);
         attr_type = type;
         attr_len = len;
@@ -207,6 +224,11 @@ public:
         attr_len = attr_info.attr_len;
         return *this;
     }
+
+public:
+    static const int DEFAULT_INTS_LENGTH = 4;
+    static const int DEFAULT_FLOATS_LENGTH = 4;
+    static const int DEFAULT_CHARS_LENGTH = 4;
 };
 struct Condition {
 public:
@@ -470,6 +492,22 @@ public:
 private:
     char *index_name_;
     RelAttr *attr_;
+};
+class DropTableQuery : public Query
+{
+public:
+    DropTableQuery() : Query(SqlCommandFlag::ScfDropTable), rel_name_(nullptr) {}
+    void Init() override { rel_name_ = nullptr; }
+    void Destroy() override { delete[] rel_name_; }
+    void SetRelName(const char *str) {
+        if (rel_name_ != nullptr)
+            delete[] rel_name_;
+        rel_name_ = StrNew(str);
+    }
+    char *GetRelName() { return rel_name_; }
+
+private:
+    char *rel_name_;
 };
 class ErrorQuery : public Query
 {

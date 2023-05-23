@@ -136,16 +136,15 @@ void PrintTupleHeader(std::ostream &os, const ProjectOperator &oper) {
 void DescStrTuple(std::ostream &os, Tuple *tuple) {
     TupleUnit unit;
     bool first_field = true;
-    for (int i = 0; i < tuple->GetUnitsNum(); i++) {
+    const int units_num = tuple->GetUnitsNum();
+    for (int i = 0; i < units_num; i++) {
         Re r = tuple->GetUnitAt(i, unit);
         if (r != Re::Success) {
             DebugPrint("descStrTuple:failed to fetch field of cell. index=%d, r=%s", i, StrRe(r));
             break;
         }
-        if (!first_field)
+        if (i != 0)
             os << " | ";
-        else
-            first_field = false;
         unit.ToString(os);
     }
 }
@@ -239,7 +238,15 @@ Re ExecuteMain::DoCreateTable(Statement *stmt) {
         DebugPrint("ExecuteMain:getDb failed,no db was set\n");
         return Re::SchemaDbNotExist;
     }
-    return db->CreateTable(s->GetTableName(), s->GetAttrInfosNum(), s->GetAttrInfos());
+    Re r = db->CreateTable(s->GetTableName(), s->GetAttrInfosNum(), s->GetAttrInfos());
+    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
+    if (r != Re::Success) {
+        DebugPrint("ExecuteMain:create table failed,r=%d:%s\n", r, StrRe(r));
+        gmm.SetResponse("CREATE TABLE '%s' FAILED.\n", s->GetTableName());
+        return r;
+    }
+    gmm.SetResponse("CREATE TABLE SUCCEEDED.\n");
+    return Re::Success;
 }
 Re ExecuteMain::DoInsert(Statement *stmt) {
     auto s = static_cast<InsertStatement *>(stmt);
@@ -253,7 +260,7 @@ Re ExecuteMain::DoInsert(Statement *stmt) {
     Table *table = db->GetTable(std::string(s->GetTableName()));
     Re r = table->InsertRecord(txn, s->GetValuesNum(), s->GetValues());
     if (r != Re::Success) {
-        gmm.SetResponse("INSERT FAILED,INSERT RECORD TO TABLE '%s' FAILED\n", table->GetTableName());
+        gmm.SetResponse("INSERT FAILED,INSERT RECORD TO TABLE '%s' FAILED.\n", table->GetTableName());
         return r;
     }
     CLogManager *clog_manager = db->GetCLogManager();
@@ -264,13 +271,13 @@ Re ExecuteMain::DoInsert(Statement *stmt) {
             return r;
         r = clog_manager->AppendRecord(clog_record);
         if (r != Re::Success) {
-            gmm.SetResponse("INSERT FAILED,CAN NOT APPEND LOG\n");
+            gmm.SetResponse("INSERT FAILED,CAN NOT APPEND LOG.\n");
             return r;
         }
         txn->NextCurrentId();
-        gmm.SetResponse("INSERT SUCCEEDED\n");
+        gmm.SetResponse("INSERT SUCCEEDED.\n");
     } else
-        gmm.SetResponse("INSERT SUCCEEDED\n");
+        gmm.SetResponse("INSERT SUCCEEDED.\n");
     return Re::Success;
 }
 Re ExecuteMain::DoDelete(Statement *stmt) {
@@ -280,6 +287,7 @@ Re ExecuteMain::DoDelete(Statement *stmt) {
     CLogManager *clog_manager = current_database->GetCLogManager();
     if (stmt == nullptr) {
         DebugPrint("ExecuteMain:cannot find delete statement\n");
+        gmm.SetResponse("DELETE FAILED.\n");
         return Re::GenericError;
     }
     auto ds = static_cast<DeleteStatement *>(stmt);
@@ -291,13 +299,13 @@ Re ExecuteMain::DoDelete(Statement *stmt) {
     Re r = del_oper->Init();
     if (r != Re::Success) {
         DebugPrint("ExecuteMain:init operators failed\n");
-        gmm.SetResponse("DELETE FAILED,INIT OPERATOR FAILED\n");
+        gmm.SetResponse("DELETE FAILED,INIT OPERATOR FAILED.\n");
         return r;
     }
     r = del_oper->Handle();
     if (r != Re::Success) {
         DebugPrint("ExecuteMain:handle operators failed\n");
-        gmm.SetResponse("DELETE FAILED,HANDLE OPERATOR FAILED\n");
+        gmm.SetResponse("DELETE FAILED,HANDLE OPERATOR FAILED.\n");
         return r;
     }
     if (!GetTmo()) {
@@ -305,40 +313,71 @@ Re ExecuteMain::DoDelete(Statement *stmt) {
         r = clog_manager->MakeRecord(CLogType::RedoMiniTxnCommit, txn->GetTxnId(), clog_record);
         if (r != Re::Success or clog_record == nullptr) {
             DebugPrint("ExecuteMain:make clog record failed r:%d,%s\n", r, StrRe(r));
-            gmm.SetResponse("DELETE FAILED,CAN NOT MAKE LOG\n");
+            gmm.ClearResponse();
+            gmm.SetResponse("DELETE FAILED,CAN NOT MAKE LOG.\n");
             return r;
         }
         r = clog_manager->AppendRecord(clog_record);
         if (r != Re::Success) {
             DebugPrint("ExecuteMain:append clog record failed r:%d,%s\n", r, StrRe(r));
-            gmm.SetResponse("DELETE FAILED,CAN NOT APPEND LOG\n");
+            gmm.ClearResponse();
+            gmm.SetResponse("DELETE FAILED,CAN NOT APPEND LOG.\n");
             return r;
         }
         txn->NextCurrentId();
-        gmm.SetResponse("DELETE SUCCEEDED\n");
-    } else
-        gmm.SetResponse("DELETE SUCCEEDED\n");
+    }
     return Re::Success;
 }
 Re ExecuteMain::DoCreateIndex(Statement *stmt) {
+    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     DataBase *current_database = GetDb();
     auto cis = static_cast<CreateIndexStatement *>(stmt);
     RelAttr *attr = cis->GetAttr();
     std::string table_name = std::string(attr->rel_name);
     Table *table = current_database->GetTable(table_name);
-    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     if (table == nullptr) {
         DebugPrint("ExecuteMain:get table:%s failed,no such table\n", table_name.c_str());
-        gmm.SetResponse("CREATE INDEX FAILED,NO SUCH TABLE '%s'\n", table_name.c_str());
+        gmm.SetResponse("CREATE INDEX FAILED,NO SUCH TABLE '%s'.\n", table_name.c_str());
         return Re::SchemaTableNotExist;
     }
     Re r = table->CreateIndex(nullptr, cis->GetIndexName(), attr->attr_name);
     if (r != Re::Success) {
         DebugPrint("ExecuteMain:create index failed r=%d,%s\n", r, StrRe(r));
-        gmm.SetResponse("CREATE INDEX FAILED,CREATE INDEX '%s' ON '%s.%s' FAILED\n", cis->GetIndexName(),
+        gmm.SetResponse("CREATE INDEX FAILED,CREATE INDEX '%s' ON '%s.%s' FAILED.\n", cis->GetIndexName(),
                         attr->rel_name, attr->attr_name);
         return r;
     }
-    gmm.SetResponse("CREATE INDEX SUCCEEDED\n");
+    gmm.SetResponse("CREATE INDEX SUCCEEDED.\n");
     return Re::Success;
+}
+Re ExecuteMain::DoDropTable(Statement *stmt) {
+    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
+    DataBase *current_database = GetDb();
+    auto dts = static_cast<DropTableStatement *>(stmt);
+    std::string table_name = std::string(dts->GetTableName());
+    Table *table = current_database->GetTable(table_name);
+    if(table==nullptr){
+        DebugPrint("ExecuteMain:drop table %s failed,no such table\n");
+        gmm.SetResponse("DROP TABLE FAILED,NO SUCH TABLE '%s'.\n",table_name.c_str());
+        return Re::SchemaTableNotExist;
+    }
+    Re r=current_database->DropTable(table_name.c_str());
+    if(r!=Re::Success){
+        DebugPrint("ExecuteMain:drop table %s failed,r=%d:%s\n",table_name.c_str(),r,StrRe(r));
+        gmm.SetResponse("DROP TABLE FAILED.\n");
+        return r;
+    }
+    gmm.SetResponse("DROP TABLE SUCCEEDED.\n");
+    return Re::Success;
+    //   SessionEvent *session_event = sql_event->session_event();
+    //   Db *db = session_event->session()->get_current_db();
+    //   const DropTable &drop_table = sql_event->query()->sstr.drop_table;
+    //   Table *table = db->find_table(drop_table.relation_name);
+    //   if (table == nullptr) {
+    //     session_event->set_response("FAILURE\n");
+    //     return RC::SCHEMA_TABLE_NOT_EXIST;
+    //   }
+    //   RC rc = db->drop_table(drop_table.relation_name);
+    //   sql_event->session_event()->set_response(rc == RC::SUCCESS ? "SUCCESS\n" : "FAILURE\n");
+    //   return rc;
 }

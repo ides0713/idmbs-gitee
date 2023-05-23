@@ -1,0 +1,16 @@
+test program begin ==========
+[SQL 1]:CREATE TABLE create_1(id int, age int, u_name char(1));
+CREATE TABLE SUCCEEDED
+[SQL 2]:CREATE TABLE $!L#@$(id int, age int, u_name char(1));
+SQL PARSE FAILED
+[SQL 3]:CREATE TABLE create_1(id int,age int,u_name char(1));
+CREATE TABLE 'create_1' FAILED,TABLE ALREADY EXISTS
+[SQL 4]:CREATE TABLE invalid(id int,age int(2),u_name char(1));
+CREATE TABLE 'invalid' FAILED,ATTRIBUTE LEN IS INVALID
+[SQL 5]:CREATE TABLE invalid(id int,age int,u_name char(-1));
+CREATE TABLE 'invalid' FAILED,ATTRIBUTE LEN IS INVALID
+[SQL 6]:CREATE TABLE invalid(id long,age int,u_name char(1));
+SQL PARSE FAILED
+[SQL 7]:CREATE TABLE invalid(i@d! int,age int,u_name char(1));
+SQL PARSE FAILED
+test program end   ==========

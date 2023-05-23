@@ -1,9 +1,4 @@
 #include "resolve_defs.h"
-#include <cassert>
-#include <string.h>
-#include <string>
-#include <unordered_map>
-#include <utility>
 #include "../../common/common_defs.h"
 #include "../common/global_main_manager.h"
 #include "../common/global_managers.h"
@@ -14,11 +9,15 @@
 #include "../storage/txn.h"
 #include "filter.h"
 #include "resolve_main.h"
+#include <cassert>
+#include <string.h>
+#include <string>
+#include <unordered_map>
+#include <utility>
 void WildcardFields(Table *table, std::vector<Field> &fields) {
     const TableMeta &table_meta = table->GetTableMeta();
-    for (int i = TableMeta::GetSysFieldsNum(); i < table_meta.GetFieldsNum(); i++) {
+    for (int i = TableMeta::GetSysFieldsNum(); i < table_meta.GetFieldsNum(); i++)
         fields.emplace_back(table, table_meta.GetField(i));
-    }
 }
 void Statement::CreateStatement(Query *const query, Statement *&stmt) {
     switch (query->GetScf()) {
@@ -37,6 +36,9 @@ void Statement::CreateStatement(Query *const query, Statement *&stmt) {
         case SqlCommandFlag::ScfCreateIndex:
             stmt = new CreateIndexStatement(query);
             break;
+        case SqlCommandFlag::ScfDropTable:
+            stmt = new DropTableStatement(query);
+            break;
         default:
             DebugPrint("Statement:unrecognized query SCF\n");
             assert(false);
@@ -47,8 +49,8 @@ SelectStatement::SelectStatement(Query *query)
       attrs_num_(0), conditions_num_(0), table_names_num_(0) {
 }
 void SelectStatement::Init(Query *query) {
+    assert(this->GetScf() == SqlCommandFlag::ScfSelect);
     auto sq = static_cast<SelectQuery *>(query);
-    assert(this->GetScf() == ScfSelect);
     table_names_num_ = sq->GetRelNamesNum();
     attrs_num_ = sq->GetAttrsNum();
     conditions_num_ = sq->GetConditionsNum();
@@ -64,7 +66,6 @@ void SelectStatement::Init(Query *query) {
     Condition *conditions = sq->GetConditions();
     for (int i = 0; i < conditions_num_; i++)
         conditions_[i].Copy(conditions[i]);
-    assert(this->GetScf() == ScfSelect);
     filter_ = nullptr;
 }
 Re SelectStatement::Handle(Query *query, ResolveMain *resolve_main) {
@@ -72,7 +73,7 @@ Re SelectStatement::Handle(Query *query, ResolveMain *resolve_main) {
     GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     if (current_db == nullptr) {
         DebugPrint("SelectStatement:invalid argument.can not get db\n");
-        gmm.SetResponse("SELECT ERROR,CAN NOT OPEN DATABASE.\n");
+        gmm.SetResponse("SELECT FAILED,CAN NOT OPEN DATABASE.\n");
         return Re::InvalidArgument;
     }
     std::vector<Table *> tables_vec;
@@ -83,44 +84,47 @@ Re SelectStatement::Handle(Query *query, ResolveMain *resolve_main) {
         if (table == nullptr) {
             DebugPrint("SelectStatement:no such table. db=%s, table_name=%s\n", current_db->GetDbName(),
                        table_name.c_str());
-            gmm.SetResponse("SELECT ERROR,NO SUCH TABLE '%s'.\n", table_name.c_str());
+            gmm.SetResponse("SELECT FAILED,NO SUCH TABLE '%s'.\n", table_name.c_str());
             return Re::SchemaTableNotExist;
         }
         tables_vec.push_back(table);
         tables_map.emplace(table_name, table);
     }
     std::vector<Field> fields_vec;
-    for (int i = 0; i < attrs_num_; i++) {
+    for (int i = attrs_num_ - 1; i >= 0; i--) {
         const RelAttr &attr = attrs_[i];
-        const char *rel_name = attr.rel_name;
-        const char *attr_name = attr.attr_name;
+        const char *rel_name = attr.rel_name, *attr_name = attr.attr_name;
         if (rel_name == nullptr and strcmp(attr_name, "*") == 0) {
+            //SELECT *
             for (auto &t: tables_vec)
                 WildcardFields(t, fields_vec);
         } else if (rel_name != nullptr) {
             if (strcmp(rel_name, "*") == 0) {
+                //only *.* is valid format
                 if (strcmp(attr_name, "*") != 0) {
                     DebugPrint("SelectStatement:invalid field name while table is *. attr=%s\n", attr_name);
-                    gmm.SetResponse("SELECT ERROR,SQL SYNTAX ERROR.\n");
+                    gmm.SetResponse("SELECT FAILED,SQL SYNTAX ERROR.\n");
                     return Re::SchemaFieldMissing;
                 }
                 for (auto &t: tables_vec)
                     WildcardFields(t, fields_vec);
             } else {
+                //select from xxx.xxx
                 auto it = tables_map.find(std::string(rel_name));
                 if (it == tables_map.end()) {
                     DebugPrint("SelectStatement:no such table in from list:%s\n", rel_name);
-                    gmm.SetResponse("SELECT ERROR,NO SUCH TABLE.\n");
+                    gmm.SetResponse("SELECT FAILED,NO SUCH TABLE '%s'.\n", rel_name);
                     return Re::SchemaFieldMissing;
                 }
                 Table *table = it->second;
+                ///select xxx.*
                 if (strcmp(attr_name, "*") == 0)
                     WildcardFields(table, fields_vec);
                 else {
                     const FieldMeta *field_meta = table->GetTableMeta().GetField(attr_name);
                     if (field_meta == nullptr) {
                         DebugPrint("SelectStatement:no such field:%s in the table,invalid args\n", attr_name);
-                        gmm.SetResponse("SELECT ERROR,NO SUCH FIELD '%s' IN TABLE.\n", attr_name);
+                        gmm.SetResponse("SELECT FAILED,NO SUCH FIELD '%s' IN TABLE.\n", attr_name);
                         return Re::SchemaFieldMissing;
                     }
                     fields_vec.emplace_back(table, field_meta);
@@ -129,14 +133,14 @@ Re SelectStatement::Handle(Query *query, ResolveMain *resolve_main) {
         } else {
             if (tables_vec.size() != 1) {
                 DebugPrint("SelectStatement:not clearly given attrs\n");
-                gmm.SetResponse("SELECT ERROR,ATTR GIVEN NOT CLEARLY.\n");
+                gmm.SetResponse("SELECT FAILED,ATTR GIVEN NOT CLEARLY.\n");
                 return Re::SchemaFieldMissing;
             }
             Table *table = tables_vec[0];
             const FieldMeta *field_meta = table->GetTableMeta().GetField(attr_name);
             if (field_meta == nullptr) {
                 DebugPrint("SelectStatement:no such field:%s in the table,invalid args\n", attr_name);
-                gmm.SetResponse("SELECT ERROR,NO SUCH FIELD '%s' IN TABLE.\n", attr_name);
+                gmm.SetResponse("SELECT FAILED,NO SUCH FIELD '%s' IN TABLE.\n", attr_name);
                 return Re::SchemaFieldMissing;
             }
             fields_vec.emplace_back(table, field_meta);
@@ -151,6 +155,8 @@ Re SelectStatement::Handle(Query *query, ResolveMain *resolve_main) {
     Re r = Filter::CreateFilter(current_db, default_table, &tables_map, conditions_num_, conditions_, filter);
     if (r != Re::Success) {
         DebugPrint("SelectStatement:create filter failed\n");
+        if (r == Re::SchemaFieldNotExist)
+            gmm.SetResponse("SELECT FAILED,SOME FIELDS NOT FOUND IN TABLE.\n");
         return r;
     }
     filter_ = filter;
@@ -174,8 +180,8 @@ CreateTableStatement::CreateTableStatement(Query *query)
     : Statement(query->GetScf()), table_name_(nullptr), attr_infos_(nullptr), attr_infos_num_(0) {
 }
 void CreateTableStatement::Init(Query *query) {
+    assert(this->GetScf() == SqlCommandFlag::ScfCreateTable);
     auto ctq = static_cast<CreateTableQuery *>(query);
-    assert(this->GetScf() == ScfCreateTable);
     attr_infos_num_ = ctq->GetAttrNum();
     table_name_ = StrNew(ctq->GetRelName());
     attr_infos_ = new AttrInfo[attr_infos_num_];
@@ -184,6 +190,11 @@ void CreateTableStatement::Init(Query *query) {
         attr_infos_[i].Copy(attr_infos[i]);
 }
 Re CreateTableStatement::Handle(Query *query, ResolveMain *resolve_main) {
+    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
+    if (!IsAllFieldsValid()) {
+        gmm.SetResponse("CREATE TABLE '%s' FAILED,ATTRIBUTE LEN IS INVALID\n", table_name_);
+        return Re::InvalidArgument;
+    }
     return Re::Success;
 }
 void CreateTableStatement::Destroy() {
@@ -192,12 +203,39 @@ void CreateTableStatement::Destroy() {
         attr_infos_[i].Destroy();
     delete[] attr_infos_;
 }
+bool CreateTableStatement::IsAllFieldsValid() {
+    for (int i = 0; i < attr_infos_num_; i++)
+        if (!IsFieldValid(attr_infos_[i]))
+            return false;
+    return true;
+}
+bool CreateTableStatement::IsFieldValid(const AttrInfo &attr) {
+    switch (attr.attr_type) {
+        case AttrType::Ints: {
+            if (attr.attr_len != AttrInfo::DEFAULT_INTS_LENGTH)
+                return false;
+        } break;
+        case AttrType::Floats: {
+            if (attr.attr_len != AttrInfo::DEFAULT_FLOATS_LENGTH)
+                return false;
+        } break;
+        case AttrType::Chars: {
+            if (attr.attr_len <= 0)
+                return false;
+        } break;
+        case AttrType::Dates:
+        case AttrType::Undefined:
+        default:
+            assert(false);
+    }
+    return true;
+}
 InsertStatement::InsertStatement(Query *query)
     : Statement(query->GetScf()), table_name_(nullptr), values_(nullptr), values_num_(0) {
 }
 void InsertStatement::Init(Query *query) {
+    assert(this->GetScf() == SqlCommandFlag::ScfInsert);
     auto iq = static_cast<InsertQuery *>(query);
-    assert(this->GetScf() == ScfInsert);
     values_num_ = iq->GetValuesNum();
     table_name_ = StrNew(iq->GetRelName());
     values_ = new Value[values_num_];
@@ -261,6 +299,7 @@ DeleteStatement::DeleteStatement(Query *query)
       table_(nullptr) {
 }
 void DeleteStatement::Init(Query *query) {
+    assert(this->GetScf() == SqlCommandFlag::ScfDelete);
     auto dq = static_cast<DeleteQuery *>(query);
     table_name_ = StrNew(dq->GetRelName());
     conditions_num_ = dq->GetConditionsNum();
@@ -273,19 +312,20 @@ Re DeleteStatement::Handle(Query *query, ResolveMain *resolve_main) {
     GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     if (StrBlank(table_name_)) {
         DebugPrint("DeleteStatement:invalid argument.can not resolve table name\n");
-        gmm.SetResponse("SELECT ERROR,CAN NOT RESOLVE TABLE NAME.\n");
+        gmm.SetResponse("DELETE FAILED,CAN NOT RESOLVE TABLE NAME.\n");
         return Re::InvalidArgument;
     }
     const std::string table_name_str = std::string(table_name_);
     DataBase *current_db = resolve_main->GetDb();
     if (current_db == nullptr) {
         DebugPrint("DeleteStatement:invalid argument.can not get db\n");
-        gmm.SetResponse("SELECT ERROR,CAN NOT OPEN DATABASE.\n");
+        gmm.SetResponse("DELETE FAILED,CAN NOT OPEN DATABASE.\n");
         return Re::InvalidArgument;
     }
     Table *table = current_db->GetTable(table_name_str);
     if (table == nullptr) {
         DebugPrint("DeleteStatement:no such table. db=%s, table_name=%s\n", current_db->GetDbName(), table_name_);
+        gmm.SetResponse("DELETE FAILED,NO SUCH TABLE '%s'.\n", table_name_);
         return Re::SchemaTableNotExist;
     }
     std::unordered_map<std::string, Table *> table_map;
@@ -293,7 +333,9 @@ Re DeleteStatement::Handle(Query *query, ResolveMain *resolve_main) {
     Filter *filter = nullptr;
     Re r = Filter::CreateFilter(current_db, table, &table_map, conditions_num_, conditions_, filter);
     if (r != Re::Success) {
-        DebugPrint("DeleteStatement:failed to create filter statement. re=%d:%s\n", r, StrRe(r));
+        DebugPrint("DeleteStatement:failed to create filter. r=%d:%s\n", r, StrRe(r));
+        if (r == Re::SchemaFieldNotExist)
+            gmm.SetResponse("DELETE FAILED,SOME FIELDS NOT FOUND IN TABLE.\n");
         return r;
     }
     filter_ = filter;
@@ -310,6 +352,7 @@ CreateIndexStatement::CreateIndexStatement(Query *query)
     : Statement(query->GetScf()), index_name_(nullptr), attr_(nullptr) {
 }
 void CreateIndexStatement::Init(Query *query) {
+    assert(this->GetScf() == SqlCommandFlag::ScfCreateIndex);
     auto ciq = static_cast<CreateIndexQuery *>(query);
     index_name_ = StrNew(ciq->GetIndexName());
     attr_ = new RelAttr;
@@ -322,4 +365,17 @@ void CreateIndexStatement::Destroy() {
     delete[] index_name_;
     attr_->Destroy();
     delete attr_;
+}
+DropTableStatement::DropTableStatement(Query *query) : Statement(query->GetScf()), table_name_(nullptr) {
+}
+void DropTableStatement::Init(Query *query) {
+    assert(this->GetScf() == SqlCommandFlag::ScfDropTable);
+    auto dts = static_cast<DropTableQuery *>(query);
+    table_name_ = StrNew(dts->GetRelName());
+}
+Re DropTableStatement::Handle(Query *query, ResolveMain *resolve_main) {
+    return Re::Success;
+}
+void DropTableStatement::Destroy() {
+    delete[] table_name_;
 }

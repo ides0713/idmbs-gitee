@@ -2,12 +2,14 @@
 #include "common/global_main_manager.h"// for GlobalMainManager
 #include "common/global_managers.h"    // for GlobalManagers
 #include "common/server_defs.h"        // for GlobalParamsManager, READ_BU...
-#include <bits/chrono.h>               // for filesystem
-#include <cstdio>                      // for printf, getchar, scanf
-#include <cstring>                     // for strlen, strcmp, memset
-#include <filesystem>                  // for path
-#include <fstream>                     // for basic_istream, ifstream
-#include <string>                      // for allocator, string, getline
+#include <assert.h>
+#include <bits/chrono.h>// for filesystem
+#include <cstdio>       // for printf, getchar, scanf
+#include <cstring>      // for strlen, strcmp, memset
+#include <filesystem>   // for path
+#include <fstream>      // for basic_istream, ifstream
+#include <string>       // for allocator, string, getline
+#include <unistd.h>
 const char *EXIT_COMMAND = "exit;";
 const char *TEST_COMMAND = "t";
 void DoTest();
@@ -24,8 +26,10 @@ int main(int argc, char *argv[]) {
         memset(str, 0, 1024);
         scanf("%[^\n]", &str);
         getchar();
-        if (strcmp(str, TEST_COMMAND) == 0)
+        if (strcmp(str, TEST_COMMAND) == 0){
             DoTest();
+            break;
+        }
         else if (strcmp(str, EXIT_COMMAND) == 0)
             break;
         else if (strlen(str) != 0)
@@ -36,22 +40,31 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 void DoTest() {
-    printf("test program begin ==========\n");
     namespace fs = std::filesystem;
     GlobalParamsManager &gpm = GlobalManagers::GetGlobalParamsManager();
     GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
-    fs::path p = gpm.GetProjectPath();
-    p.append("test_sqls");
-    std::string sql, file_name(p.c_str());
-    std::ifstream istream(file_name);
-    int i=0;
+    fs::path project_path = gpm.GetProjectPath();
+    fs::path test_sqls_path = fs::path(project_path).append("test_sqls");
+    fs::path test_results_path = fs::path(project_path).append("test_results");
+    FILE *fp = fopen(test_results_path.c_str(), "w+");
+    int fd = fileno(fp), oldfd = dup(STDOUT_FILENO);
+    dup2(fd, STDOUT_FILENO);
+    printf("test program begin ==========\n");
+    std::string sql, sqls_file_name(test_sqls_path.c_str());
+    std::ifstream istream(sqls_file_name);
+    int i = 0;
     while (std::getline(istream, sql)) {
         if (sql.substr(0, 2) != "--" and !sql.empty()) {
-            printf("[SQL %d]:%s\n",++i,sql.c_str());
+            printf("[SQL %d]:%s\n", ++i, sql.c_str());
             gmm.Handle(sql.c_str());
         }
     }
-    printf("test program end   ==========\n");
+    printf("test program end   ==========");
+    //todo:resume
+    fflush(stdout);
+    dup2(oldfd, STDOUT_FILENO);
+    fclose(fp);
+    printf("test done\n");
     return;
 }
 void ToLower(char *str) {

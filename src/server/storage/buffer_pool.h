@@ -176,6 +176,7 @@ public:
     void Destroy();
     ///@brief flush all pages of the on-disk file in buffer
     Re FlushAllPages();
+    const char *GetFileName() { return file_name_.c_str(); }
 
 private:
     GlobalBufferPoolManager &buffer_pool_manager_;

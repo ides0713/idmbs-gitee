@@ -471,7 +471,7 @@ void GlobalBufferPoolManager::Init() {
 Re GlobalBufferPoolManager::CreateFile(const char *file_name) {
     int fd = open(file_name, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
     if (fd < 0) {
-        DebugPrint("GlobalBufferPoolManager:failed to createFilter %s, due to %s.\n", file_name, strerror(errno));
+        DebugPrint("GlobalBufferPoolManager:failed to create file %s, due to %s.\n", file_name, strerror(errno));
         return Re::SchemaDbExist;
     }
     close(fd);

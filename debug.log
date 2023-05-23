@@ -1,1 +1,118 @@
 
+GlobalParamsManager:
+project_path:/home/ubuntu/idbms
+binary_path:/home/ubuntu/idbms/build
+bin_path:/home/ubuntu/idbms/bin
+GlobalParamsManager:initialized done
+default database path is /home/ubuntu/idbms/bin/sys
+bin path is /home/ubuntu/idbms/bin
+GlobalDataBaseManager:initialized done
+GlobalBufferPoolManager:initialized done
+GlobalManagers initialized done
+
+setted sql is         CREATE TABLE select_1(id int, age int, u_name char(1));
+
+Parse main init succeeded
+Parse main handle succeeded
+Resolve main init succeeded
+PersistFileIoHandler:successfully create /home/ubuntu/idbms/bin/sys/clog
+DataBase:all table have been opened. num=0
+GlobalDataBaseManager:get database succeeded,database_name:sys
+Resolve main handle succeeded
+Execute main init succeeded
+FieldMeta:init a field_meta with name:__txn
+FieldMeta:init a field_meta with name:id
+FieldMeta:init a field_meta with name:age
+FieldMeta:init a field_meta with name:u_name
+TableMeta:initialized table meta.table name=select_1
+GlobalBufferPoolManager:successfully create file /home/ubuntu/idbms/bin/sys/select_1.data.
+DiskBufferPool:successfully open file /home/ubuntu/idbms/bin/sys/select_1.data.
+DiskBufferPool:successfully open /home/ubuntu/idbms/bin/sys/select_1.data. file_desc=6, hdr_frame=0x7f4da4ad8010
+RecordFileHandler:open record file handle done. r=0
+Table:successfully create table /home/ubuntu/idbms/bin/sys:select_1
+DataBase:create table succeeded. table name=select_1
+Execute main handle succeeded
+Storage main init succeeded
+Storage main handle succeeded
+read from buffer:[CREATE TABLE select_1(id int, age int, u_name char(1));] len:55
+
+setted sql is         INSERT INTO select_1 VALUES (1,10,'a');
+
+Parse main init succeeded
+Parse main handle succeeded
+Resolve main init succeeded
+GlobalDataBaseManager:get database from opened_databases,database_name:sys
+Resolve main handle succeeded
+Execute main init succeeded
+DiskBufferPool:flush page page_id:1
+DiskBufferPool:Flush block. file desc=6, page id=1
+RecordPageHandler:successfully init page_id 1.
+DiskBufferPool:flush page page_id:1
+DiskBufferPool:Flush block. file desc=6, page id=1
+Execute main handle succeeded
+Storage main init succeeded
+Storage main handle succeeded
+read from buffer:[INSERT INTO select_1 VALUES (1,10,'a');] len:39
+
+setted sql is         INSERT INTO select_1 VALUES (4,12,'d');
+
+Parse main init succeeded
+Parse main handle succeeded
+Resolve main init succeeded
+GlobalDataBaseManager:get database from opened_databases,database_name:sys
+Resolve main handle succeeded
+Execute main init succeeded
+RecordPageHandler:successfully init page_id 1.
+Execute main handle succeeded
+Storage main init succeeded
+Storage main handle succeeded
+read from buffer:[INSERT INTO select_1 VALUES (4,12,'d');] len:39
+
+setted sql is         SELECT not_exist FROM select_1;
+
+Parse main init succeeded
+Parse main handle succeeded
+Resolve main init succeeded
+GlobalDataBaseManager:get database from opened_databases,database_name:sys
+SelectStatement:no such field:not_exist in the table,invalid args
+ResolveMain:statement initialize and handle failed r=2582:SchemaFieldMissing
+Resolve main handle failed
+read from buffer:[SELECT not_exist FROM select_1;] len:31
+
+setted sql is         SELECT id,age FROM select_1;
+
+Parse main init succeeded
+Parse main handle succeeded
+Resolve main init succeeded
+GlobalDataBaseManager:get database from opened_databases,database_name:sys
+SelectStatement:got 1 tables in from stmt and 2 fields in query stmt
+Resolve main handle succeeded
+Execute main init succeeded
+RecordPageHandler:successfully init page_id 1.
+Execute main handle succeeded
+Storage main init succeeded
+Storage main handle succeeded
+read from buffer:[SELECT id,age FROM select_1;] len:28
+
+setted sql is         SELECT * FROM select_1;
+
+Parse main init succeeded
+Parse main handle succeeded
+Resolve main init succeeded
+GlobalDataBaseManager:get database from opened_databases,database_name:sys
+SelectStatement:got 1 tables in from stmt and 3 fields in query stmt
+Resolve main handle succeeded
+Execute main init succeeded
+RecordPageHandler:successfully init page_id 1.
+Execute main handle succeeded
+Storage main init succeeded
+Storage main handle succeeded
+read from buffer:[SELECT * FROM select_1;] len:23
+Table:table has been destroyed
+DiskBufferPool:flush page page_id:1
+DiskBufferPool:Flush block. file desc=6, page id=1
+DiskBufferPool:flush page page_id:0
+DiskBufferPool:Flush block. file desc=6, page id=0
+DiskBufferPool:successfully purge frame =0x7f4da4ad8010, page 0 of 6(file desc)
+DiskBufferPool:successfully destroy file 6:/home/ubuntu/idbms/bin/sys/select_1.data.
+DiskBufferPool:disk buffer pool destructed

@@ -13,6 +13,7 @@ enum StatementType
     Insert,
     Delete,
     CreateIndex,
+    DropTable,
 };
 class Statement
 {
@@ -68,6 +69,10 @@ private:
     char *table_name_;
     AttrInfo *attr_infos_;
     int attr_infos_num_;
+
+private:
+    bool IsAllFieldsValid();
+    bool IsFieldValid(const AttrInfo &attr);
 };
 class InsertStatement : public Statement
 {
@@ -121,4 +126,17 @@ public:
 private:
     char *index_name_;
     RelAttr *attr_;
+};
+class DropTableStatement : public Statement
+{
+public:
+    explicit DropTableStatement(Query *query);
+    void Init(Query *query) override;
+    Re Handle(Query *query, ResolveMain *resolve_main) override;
+    void Destroy() override;
+    StatementType GetType() override { return StatementType::DropTable; }
+    const char *GetTableName() { return table_name_; }
+
+private:
+    char *table_name_;
 };

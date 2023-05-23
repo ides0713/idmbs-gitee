@@ -1,30 +1,4 @@
-CREATE TABLE table_1(id int, age int, u_name char);
-INSERT INTO table_1 VALUES (1,18,'a');
-INSERT INTO table_1 VALUES (1,10,'e');
-INSERT INTO table_1 VALUES (3,8,'d');
-SELECT * FROM table_1;
-CREATE INDEX index_1 ON table_1(id);
-
--- INSERT INTO table_1 VALUES (1,5,'f');
--- INSERT INTO table_1 VALUES (2,9,'b');
--- SELECT * FROM table_1;
--- DELETE FROM table_1 WHERE id=1;
-
-
--- SELECT * FROM table_1;
--- DELETE FROM table_1 WHERE id=2;
--- SELECT * FROM table_1;
-
-
--- INSERT INTO table_1 VALUES (2,9,'b');
--- INSERT INTO table_1 VALUES (3,9,'c');
--- SELECT * FROM table_1 WHERE id=1;
--- SELECT * FROM table_1 WHERE id=2;
--- SELECT * FROM table_1 WHERE id=3;
--- Delete FROM table_1 WHERE u_name='a';
--- SELECT * FROM table_1 WHERE id=1;
-
--- INSERT INTO table_1 VALUES (1,20,'a');
--- SELECT * FROM table_1 WHERE id=1;
--- DELETE FROM table_1 WHERE age=20;
--- SELECT * FROM table_1 WHERE id=1;
+CREATE TABLE drop_1(id int, age int, u_name char);
+-- INSERT INTO drop_1 VALUES(1,10,'a');
+-- CREATE INDEX index_1 on drop_1(id);
+DROP TABLE drop_1;

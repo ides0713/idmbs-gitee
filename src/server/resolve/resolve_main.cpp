@@ -34,7 +34,7 @@ Re ResolveMain::Handle() {
     stmt_->Init(query_);
     Re r = stmt_->Handle(query_, this);
     if (r != Re::Success) {
-        DebugPrint("ResolveMain:statement initialize and handle failed re=%d\n", r);
+        DebugPrint("ResolveMain:statement initialize and handle failed r=%d:%s\n", r, StrRe(r));
         return r;
     }
     return Re::Success;

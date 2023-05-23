@@ -6,9 +6,8 @@
 int SqlParse(const char *st, Query *&res);
 int Parse(const char *st, Query *&res) {
     SqlParse(st, res);
-    if (res->GetScf() == ScfError) {
+    if (res->GetScf() == ScfError)
         return 0;
-    }
     return 1;
 }
 int *InitIntsValue(int value) {

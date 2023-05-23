@@ -1,4 +1,5 @@
 #include "b_plus_tree_index.h"
+#include "../common/persist_file_io_handler.h"
 BplusTreeIndex::~BplusTreeIndex() noexcept {
     Close();
 }
@@ -44,7 +45,11 @@ Re BplusTreeIndex::Close() {
     if (inited_) {
         DebugPrint("BplusTreeIndex:begin to close index, index:%s, field:%s\n", index_meta_.GetIndexName(),
                    index_meta_.GetFieldName());
-        index_handler_.Close();
+        Re r=index_handler_.Close();
+        if(r!=Re::Success){
+            DebugPrint("BplusTreeIndex:close index failed,r=%d:%s\n",r,StrRe(r));
+            return r;
+        }
         inited_ = false;
     }
     DebugPrint("BplusTreeIndex:successfully close index.\n");

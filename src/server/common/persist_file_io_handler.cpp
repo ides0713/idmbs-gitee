@@ -59,16 +59,15 @@ Re PersistFileIoHandler::OpenFile(const char *file_name) {
 Re PersistFileIoHandler::CloseFile() {
     std::string file_str(file_path_.c_str());
     file_path_.clear();
-    if (file_ == nullptr) {
+    if (file_ == nullptr)
         return Re::Success;
-    }
     if (fclose(file_) != 0) {
         DebugPrint("PersistFileIoHandler:failed to close file%d:%s,error %s\n", fileno(file_), file_str.c_str(),
                    strerror(errno));
         return Re::FileClose;
     }
     file_ = nullptr;
-    DebugPrint("PersistFileIoHandler:successfully close file %d:%s.\n", fileno(file_), file_str.c_str());
+    DebugPrint("PersistFileIoHandler:successfully close file %s.\n", file_str.c_str());
     return Re::Success;
 }
 Re PersistFileIoHandler::RemoveFile() {

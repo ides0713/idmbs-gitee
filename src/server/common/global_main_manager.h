@@ -11,8 +11,8 @@ public:
     void SetResponse(std::string str);
     void SetResponse(const char *format, ...);
     void Response();
-    void DoneResponse();
-
+    bool IsResponseSet();
+    void ClearResponse();
 private:
     std::vector<BaseMain *> mains_;
     std::string response_;

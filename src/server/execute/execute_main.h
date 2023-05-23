@@ -17,7 +17,7 @@ private:
     Re DoInsert(Statement *stmt);
     Re DoDelete(Statement *stmt);
     Re DoCreateIndex(Statement *stmt);
-
+    Re DoDropTable(Statement* stmt);
 private:
     Statement *stmt_;
 };

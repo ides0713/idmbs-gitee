@@ -1,5 +1,6 @@
 #include "table.h"
-#include "../../common/common_defs.h" // for DebugPrint
+#include "../../common/common_defs.h"// for DebugPrint
+#include "../common/global_main_manager.h"
 #include "../common/global_managers.h"// for GlobalMa...
 #include "../parse/parse_defs.h"      // for Value
 #include "b_plus_tree_index.h"
@@ -22,6 +23,7 @@
 #include <jsoncpp/json/writer.h>// for StreamWr...
 #include <memory>               // for allocato...
 #include <utility>              // for move
+#include <filesystem>
 static const Json::StaticString FIELD_TABLE_NAME("table_name");
 static const Json::StaticString FIELD_FIELDS("fields");
 static const Json::StaticString FIELD_INDEXES("indexes");
@@ -227,6 +229,7 @@ Re Table::Init(std::filesystem::path database_path, const char *table_name, cons
     fs::path table_meta_file_path = GetTableMetaFilePath(database_path, table_name);
     FILE *f = fopen(table_meta_file_path.c_str(), "r");
     if (f != nullptr) {
+        printf("table already exists\n");
         DebugPrint("Table:init failed,table:%s already exists\n", table_name);
         fclose(f);
         return Re::SchemaTableExist;
@@ -263,7 +266,7 @@ Re Table::Init(std::filesystem::path database_path, const char *table_name, cons
     }
     database_path_ = database_path;
     clog_manager_ = clog_manager;
-    DebugPrint("Table:successfully create table %s:%s", database_path_.c_str(), table_meta_.GetTableName());
+    DebugPrint("Table:successfully create table %s:%s\n", database_path_.c_str(), table_meta_.GetTableName());
     return Re::Success;
 }
 Re Table::InitRecordHandler(const char *base_dir) {
@@ -358,6 +361,7 @@ Re Table::DeleteRecord(Txn *txn, class Record *record) {
 }
 Re Table::CreateIndex(Txn *txn, const char *index_name, const char *attr_name) {
     namespace fs = std::filesystem;
+    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     if (StrBlank(index_name) or StrBlank(attr_name)) {
         DebugPrint("Table:create index failed,invalid args\n");
         return Re::InvalidArgument;
@@ -368,7 +372,8 @@ Re Table::CreateIndex(Txn *txn, const char *index_name, const char *attr_name) {
     }
     const FieldMeta *field_meta = table_meta_.GetField(attr_name);
     if (field_meta == nullptr) {
-        DebugPrint("Table:create index failed,no such field '%s'.'%s'\n", GetTableName(), attr_name);
+        DebugPrint("Table:create index failed,no such field '%s.%s'\n", GetTableName(), attr_name);
+        gmm.SetResponse("CREATE INDEX FAILED,NO SUCH FIELD '%s.%s'.\n", GetTableName(), attr_name);
         return Re::SchemaFieldMissing;
     }
     IndexMeta new_index_meta;
@@ -392,7 +397,13 @@ Re Table::CreateIndex(Txn *txn, const char *index_name, const char *attr_name) {
     r = ScanRecord(txn, nullptr, -1, &index_inserter, InsertIndexRecordReaderAdapter);
     if (r != Re::Success) {
         // rollback
-        delete index;
+        Re r_2 = index->Close();
+        if (r_2 != Re::Success) {
+            DebugPrint("Table:failed to insert index to all records and roll back failed,r=%d:%s\n", r, StrRe(r));
+            gmm.SetResponse("CREATE INDEX FAILED,ROLL BACK FAILED.\n");
+            return r;
+        }
+        index = nullptr;
         DebugPrint("Table:failed to insert index to all records. table=%s, r=%d:%s\n", GetTableName(), r, StrRe(r));
         return r;
     }
@@ -420,6 +431,61 @@ void Table::Destroy() {
         data_buffer_pool_ = nullptr;
     }
     DebugPrint("Table:table has been destroyed\n");
+}
+Re Table::Drop() {
+    //TODO: drop table todo here\n
+    assert(false);
+    return Re::GenericError;
+    // namespace fs=std::filesystem;
+    // Re r = Sync();//刷新所有脏页
+    // if (r != Re::Success)
+    //     return r;
+    // GlobalBufferPoolManager& bpm=GlobalManagers::GetGlobalBufferPoolManager();
+    // std::string meta_file_path = GetTableMetaFilePath(database_path_, GetTableName());
+    // r=bpm.CloseFile(meta_file_path.c_str());
+    // if(r!=Re::Success){
+    //     DebugPrint("Table:drop failed,failed to close file %s from buffer pool\n",meta_file_path.c_str());
+        
+    //     return r;
+    // }
+    // if (!fs::remove(meta_file_path)) {
+    //     DebugPrint("Table:drop failed,failed to remove meta file=%s\n",meta_file_path.c_str());
+        
+    //     return Re::GenericError;
+    // }
+    // std::string data_file_path= GetTableDataFilePath(database_path_,GetTableName());
+    // bpm.CloseFile(data_file_path.c_str());
+    // if (!fs::remove(data_file_path)) {
+    //     DebugPrint("Table:drop failed,failed to remove data file=%s, errno=%d", data_file.c_str(), errno);
+    //     return Re::GenericError;
+    // }
+    // //TODO close file from disk buffer pool?
+    // BufferPoolManager &bpm = BufferPoolManager::instance();
+    // r = bpm.close_file(path.c_str());
+    // const int index_num = table_meta_.index_num();
+    // for (int i = 0; i < index_num; i++) {
+    //     ((BplusTreeIndex *) indexes_[i])->close();
+    //     const IndexMeta *index_meta = table_meta_.index(i);
+    //     std::string index_file = table_index_file(dir, name(), index_meta->name());
+    //     if (unlink(index_file.c_str()) != 0) {
+    //         DebugPrint("Table:failed to remove index file=%s, errno=%d", index_file.c_str(), errno);
+    //         return Re::GenericError;
+    //     }
+    // }
+    // return Re::Success;
+}
+Re Table::Sync() {
+    Re r = Re::Success;
+    for (Index *index: indexes_) {
+        r = index->Sync();
+        if (r != Re::Success) {
+            DebugPrint("Table:failed to flush index's pages.table=%s,index=%s,r=%d:%s\n", GetTableName(),
+                       index->GetIndexMeta().GetIndexName(), r, StrRe(r));
+            return r;
+        }
+    }
+    DebugPrint("Table:sync table over. table=%s\n", GetTableName());
+    return r;
 }
 Re Table::ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context,
                      void (*record_reader)(const char *data, void *context)) {
@@ -493,7 +559,7 @@ Re Table::InsertRecord(Txn *txn, class Record *rec) {
 }
 Re Table::ScanRecord(Txn *txn, ConditionFilter *filter, int limit, void *context,
                      Re (*record_reader)(class Record *record, void *context)) {
-    if (record_reader==nullptr)
+    if (record_reader == nullptr)
         return Re::InvalidArgument;
     if (limit == 0)
         return Re::Success;

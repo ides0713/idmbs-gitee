@@ -88,10 +88,10 @@ INFILE                                  RETURN_TOKEN(INFILE);
 {QUOTE}[0-9]{4}\-((0?[0-9])|([0-9]{2}))\-((0?[0-9])|([0-9]{2})){QUOTE} yylval->string=strdup(yytext); RETURN_TOKEN(DATE_STR);
 \"[^"]*\"                               yylval->string=strdup(yytext); RETURN_TOKEN(SSS);
 '[^']*\'                                yylval->string = strdup(yytext); RETURN_TOKEN(SSS);
-
-.                                       printf("Unknown character [%c]\n",yytext[0]); return yytext[0];
+.                                       return yytext[0];
 %%
 
 void scan_string(const char *str, yyscan_t scanner) {
+  // printf("Unknown character [%c]\n",yytext[0]);
   yy_switch_to_buffer(yy_scan_string(str, scanner), scanner);
 }

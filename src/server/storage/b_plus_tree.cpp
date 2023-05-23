@@ -3,6 +3,7 @@
 #include "../common/lower_bound.h"
 #include "buffer_pool.h"
 #include "record.h"
+#include "../common/persist_file_io_handler.h"
 #define FIRST_INDEX_PAGE 1
 /// @brief internal node [key(attr+RecordId),page_id] 
 int CalcInternalPageCapacity(int attr_length) {
@@ -713,7 +714,16 @@ Re BplusTreeHandler::Open(const char *file_name) {
 }
 Re BplusTreeHandler::Close() {
     if (buffer_pool != nullptr) {
-        buffer_pool->CloseFile();
+        std::string file_name=buffer_pool->GetFileName();
+        GlobalBufferPoolManager & bpm=GlobalManagers::GetGlobalBufferPoolManager();
+        bpm.CloseFile(file_name.c_str());
+        PersistFileIoHandler p;
+        p.OpenFile(file_name.c_str());
+        Re r=p.RemoveFile();
+        if(r!=Re::Success){
+            DebugPrint("BplusTreeHandler:close index failed,delete file '%s' failed\n",file_name.c_str());
+            return r;
+        }
         delete mem_pool_item;
         mem_pool_item = nullptr;
     }

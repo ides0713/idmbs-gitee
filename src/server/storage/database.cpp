@@ -1,14 +1,15 @@
 #include "database.h"
-#include <bits/chrono.h>              // for filesy...
-#include <cstring>                    // for strlen
-#include <utility>                    // for pair
-#include <vector>                     // for vector
-#include "../../common/common_defs.h" // for DebugP...
+#include "../../common/common_defs.h"// for DebugP...
+#include "../common/global_main_manager.h"
 #include "../common/global_managers.h"// for Global...
 #include "../common/server_defs.h"    // for Global...
 #include "clog_manager.h"             // for CLogMa...
 #include "storage_defs.h"             // for ListFile
 #include "table.h"                    // for Table
+#include <bits/chrono.h>              // for filesy...
+#include <cstring>                    // for strlen
+#include <utility>                    // for pair
+#include <vector>                     // for vector
 struct AttrInfo;
 void DataBase::Destroy() {
     // destroy all table of the database,remove them from the memory and
@@ -41,9 +42,11 @@ Re DataBase::Init(const char *database_name, const std::filesystem::path &databa
 }
 Re DataBase::CreateTable(const char *table_name, const size_t attr_infos_num, const AttrInfo *attr_infos) {
     namespace fs = std::filesystem;
+    GlobalMainManager &gmm = GlobalManagers::GetGlobalMainManager();
     if (opened_tables_.count(std::string(table_name))) {
-        DebugPrint("DataBase::createFilter table %s in database %s failed,already exists\n", database_name_.c_str(),
-                   table_name);
+        DebugPrint("DataBase::create table %s in database %s failed,already exists\n", table_name,
+                   database_name_.c_str());
+        gmm.SetResponse("CREATE TABLE '%s' FAILED,TABLE ALREADY EXISTS.\n", table_name);
         return Re::SchemaTableExist;
     }
     Table *new_table = new Table;
@@ -51,14 +54,32 @@ Re DataBase::CreateTable(const char *table_name, const size_t attr_infos_num, co
     if (r != Re::Success) {
         DebugPrint("DataBase:failed to createFilter table %s.\n", table_name);
         delete new_table;
+        if (r == Re::SchemaTableExist)
+            gmm.SetResponse("CREATE TABLE '%s' FAILED,TABLE ALREADY EXISTS.\n", table_name);
+        else if (r == Re::InvalidArgument)
+            gmm.SetResponse("CREATE TABLE '%s' FAILED,ARGUMENT IS INVALID.\n", table_name);
         return r;
     }
     opened_tables_[table_name] = new_table;
-    DebugPrint("DataBase:createFilter table success. table name=%s\n", table_name);
+    DebugPrint("DataBase:create table succeeded. table name=%s\n", table_name);
     return Re::Success;
 }
 Re DataBase::CreateTable(const std::string &table_name, const size_t attr_infos_num, const AttrInfo *attr_infos) {
     return CreateTable(table_name.c_str(), attr_infos_num, attr_infos);
+}
+Re DataBase::DropTable(const char *table_name) {
+    auto it = opened_tables_.find(table_name);
+    if (it == opened_tables_.end()){
+        DebugPrint("Database:drop table failed,can not find table %s\n",table_name);
+        return Re::SchemaTableNotExist;
+        }// 找不到表，要返回错误，测试程序中也会校验这种场景
+    Table *table = it->second;
+    Re r = table->Drop();// 让表自己销毁资源
+    if (r != Re::Success)
+        return r;
+    opened_tables_.erase(it);// 删除成功的话，从表list中将它删除
+    delete table;
+    return Re::Success;
 }
 Re DataBase::OpenAllTables() {
     std::vector<std::string> table_meta_files;
@@ -142,7 +163,7 @@ void GlobalDataBaseManager::Destroy() {
 DataBase *GlobalDataBaseManager::GetDb(const char *database_name) {
     std::string th_database_name = std::string(database_name);
     if (opened_databases_.count(th_database_name)) {
-        DebugPrint("GlobalDataBaseManager:getDb from opened_databases,database_name:%s\n", database_name);
+        DebugPrint("GlobalDataBaseManager:get database from opened_databases,database_name:%s\n", database_name);
         return opened_databases_[th_database_name];
     } else {
         namespace fs = std::filesystem;
@@ -152,14 +173,15 @@ DataBase *GlobalDataBaseManager::GetDb(const char *database_name) {
             Re r = th_new_db->Init(database_name, th_database_path);
             if (r == Re::Success) {
                 opened_databases_.emplace(std::string(database_name), th_new_db);
-                DebugPrint("GlobalDataBaseManager:getDb succeeded,database_name:%s\n", database_name);
+                DebugPrint("GlobalDataBaseManager:get database succeeded,database_name:%s\n", database_name);
                 return th_new_db;
             } else {
-                DebugPrint("GlobalDataBaseManager:getDb failed,createFilter failed,database_name:%s\n", database_name);
+                DebugPrint("GlobalDataBaseManager:get database failed,createFilter failed,database_name:%s\n",
+                           database_name);
                 return nullptr;
             }
         } else {
-            DebugPrint("GlobalDataBaseManager:getDb failed,database %s not exists\n", database_name);
+            DebugPrint("GlobalDataBaseManager:get database failed,database %s not exists\n", database_name);
             return nullptr;
         }
     }

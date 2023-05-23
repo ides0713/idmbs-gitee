@@ -1,0 +1,8 @@
+CREATE TABLE create_1(id int, age int, u_name char(1));
+-- create meta test
+CREATE TABLE $!L#@$(id int, age int, u_name char(1));
+CREATE TABLE create_1(id int,age int,u_name char(1));
+CREATE TABLE invalid(id int,age int(2),u_name char(1));
+CREATE TABLE invalid(id int,age int,u_name char(-1));
+CREATE TABLE invalid(id long,age int,u_name char(1));
+CREATE TABLE invalid(i@d! int,age int,u_name char(1));
