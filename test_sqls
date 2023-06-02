@@ -1,4 +1,2 @@
 CREATE TABLE drop_1(id int, age int, u_name char);
--- INSERT INTO drop_1 VALUES(1,10,'a');
--- CREATE INDEX index_1 on drop_1(id);
 DROP TABLE drop_1;
