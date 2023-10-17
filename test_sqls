@@ -1,2 +1,29 @@
-CREATE TABLE drop_1(id int, age int, u_name char);
-DROP TABLE drop_1;
+CREATE TABLE select_1(id int, age int, u_name char(1));
+INSERT INTO select_1 VALUES (1,10,'a');
+INSERT INTO select_1 VALUES (2,10,'b');
+INSERT INTO select_1 VALUES (3,11,'c');
+INSERT INTO select_1 VALUES (4,12,'d');
+INSERT INTO select_1 VALUES (5,11,'e');
+-- select meta test,select failed
+SELECT not_exist FROM select_1;
+SELECT id,not_exist FROM select_1;
+SELECT * FROM not_exist;
+SELECT *,id FROM select_1;
+SELECT * FROM select_1 WHERE not_exist=1;
+SELECT * FROM select_1 WHERE id=1 AND not_exist=2;
+-- select specific fields of table with single condition
+SELECT id,age FROM select_1;
+SELECT id,u_name FROM select_1;
+SELECT id,id,u_name,age FROM select_1;
+-- select from single table with single condition
+SELECT * FROM select_1 WHERE age=10;
+SELECT * FROM select_1 WHERE age<>11;
+SELECT * FROM select_1 WHERE age<=11;
+SELECT * FROM select_1 WHERE age<11;
+SELECT * FROM select_1 WHERE age>=11;
+SELECT * FROM select_1 WHERE age>11;
+-- select from single table with multiple conditions
+SELECT * FROM select_1 WHERE id=1 AND age=10;
+SELECT * FROM select_1 WHERE id=4 AND age=12 AND u_name='d';
+SELECT * FROM select_1 WHERE id<4 AND age<>11;
+SELECT * FROM select_1 WHERE id>3 AND age=12 AND u_name<>'e';
